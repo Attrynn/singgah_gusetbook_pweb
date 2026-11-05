@@ -11,9 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class SeatingService
 {
-    public function __construct(protected AuditService $audit)
-    {
-    }
+    public function __construct(protected AuditService $audit) {}
 
     public function assign(SeatingTable $table, Guest $guest, ?int $seatNumber, User $actor): TableAssignment
     {
@@ -21,13 +19,25 @@ class SeatingService
             throw ValidationException::withMessages(['guest_id' => 'Tamu berasal dari event yang berbeda.']);
         }
 
-        if ($table->isFull() && ! $guest->tableAssignment) {
-            throw ValidationException::withMessages(['seating_table_id' => 'Meja ini sudah penuh.']);
-        }
-
         return DB::transaction(function () use ($table, $guest, $seatNumber, $actor) {
+            $lockedTable = SeatingTable::where('id', $table->id)->lockForUpdate()->firstOrFail();
+
+            $occupiedCount = TableAssignment::where('seating_table_id', $lockedTable->id)
+                ->where('guest_id', '!=', $guest->id)
+                ->count();
+
+            if ($occupiedCount >= $lockedTable->capacity) {
+                throw ValidationException::withMessages(['seating_table_id' => 'Meja ini sudah penuh.']);
+            }
+
             if ($seatNumber !== null) {
-                $taken = TableAssignment::where('seating_table_id', $table->id)
+                if ($seatNumber < 1 || $seatNumber > $lockedTable->capacity) {
+                    throw ValidationException::withMessages([
+                        'seat_number' => "Nomor kursi harus antara 1 dan {$lockedTable->capacity}.",
+                    ]);
+                }
+
+                $taken = TableAssignment::where('seating_table_id', $lockedTable->id)
                     ->where('seat_number', $seatNumber)
                     ->where('guest_id', '!=', $guest->id)
                     ->exists();
@@ -38,14 +48,14 @@ class SeatingService
             }
 
             $assignment = TableAssignment::updateOrCreate(
-                ['event_id' => $table->event_id, 'guest_id' => $guest->id],
-                ['seating_table_id' => $table->id, 'seat_number' => $seatNumber]
+                ['event_id' => $lockedTable->event_id, 'guest_id' => $guest->id],
+                ['seating_table_id' => $lockedTable->id, 'seat_number' => $seatNumber]
             );
 
             $this->audit->record(
                 'seating.assigned',
-                "{$guest->name} ditempatkan di meja {$table->name}",
-                $table->event,
+                "{$guest->name} ditempatkan di meja {$lockedTable->name}",
+                $lockedTable->event,
                 $actor,
                 $assignment
             );

@@ -11,12 +11,11 @@ use App\Services\AuditService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class GameController extends Controller
 {
-    public function __construct(protected AuditService $audit)
-    {
-    }
+    public function __construct(protected AuditService $audit) {}
 
     public function index(Request $request)
     {
@@ -66,6 +65,12 @@ class GameController extends Controller
 
     public function update(GameRequest $request, Game $game)
     {
+        if ($request->integer('event_id') !== $game->event_id && $game->attempts()->exists()) {
+            throw ValidationException::withMessages([
+                'event_id' => 'Acara permainan tidak dapat dipindahkan karena sudah memiliki riwayat pengerjaan pemain.',
+            ]);
+        }
+
         $game->update([
             'event_id' => $request->integer('event_id'),
             'title' => $request->title,

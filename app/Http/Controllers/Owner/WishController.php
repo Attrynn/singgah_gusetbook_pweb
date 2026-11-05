@@ -13,14 +13,16 @@ class WishController extends Controller
 {
     use ExportsCsv, ResolvesOwnerEvent;
 
-    public function __construct(protected GuestbookService $guestbook)
-    {
-    }
+    public function __construct(protected GuestbookService $guestbook) {}
 
     public function index(Request $request)
     {
         $event = $this->ownerEvent($request);
         $query = $event->messages()->with('guest');
+
+        if ($status = $request->string('status')->value()) {
+            $query->where('status', $status);
+        }
 
         if ($search = $request->string('search')->trim()->value()) {
             $query->where(fn ($q) => $q->where('sender_name', 'like', "%{$search}%")
@@ -42,10 +44,11 @@ class WishController extends Controller
             'event' => $event,
             'messages' => $messages,
             'favoriteIds' => $favoriteIds,
-            'filters' => $request->only(['search', 'date']),
+            'filters' => $request->only(['search', 'date', 'status']),
             'stats' => [
                 'total' => $event->messages()->count(),
                 'approved' => $event->messages()->where('status', 'approved')->count(),
+                'pending' => $event->messages()->where('status', 'pending')->count(),
                 'favorites' => count($favoriteIds),
             ],
         ]);

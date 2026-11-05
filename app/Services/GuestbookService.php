@@ -2,24 +2,36 @@
 
 namespace App\Services;
 
+use App\Enums\GuestStatus;
 use App\Enums\MessageStatus;
+use App\Models\Guest;
 use App\Models\GuestbookMessage;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 
 class GuestbookService
 {
-    public function __construct(protected AuditService $audit)
-    {
-    }
+    public function __construct(protected AuditService $audit) {}
 
-    public function submit(\App\Models\Guest $guest, array $data): GuestbookMessage
+    public function submit(Guest $guest, array $data): GuestbookMessage
     {
         $guest->loadMissing('event');
 
         if (! $guest->event->guestbook_enabled) {
             throw ValidationException::withMessages([
                 'message' => 'Guestbook untuk acara ini sedang dinonaktifkan.',
+            ]);
+        }
+
+        if (! $guest->event->allowsGuestActions()) {
+            throw ValidationException::withMessages([
+                'message' => 'Guestbook untuk acara ini belum dibuka atau sudah ditutup.',
+            ]);
+        }
+
+        if ($guest->status !== GuestStatus::Active) {
+            throw ValidationException::withMessages([
+                'message' => 'Status undangan Anda tidak diizinkan mengirim ucapan.',
             ]);
         }
 

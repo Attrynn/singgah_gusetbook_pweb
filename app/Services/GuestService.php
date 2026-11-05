@@ -2,20 +2,19 @@
 
 namespace App\Services;
 
-use App\Enums\EventStatus;
 use App\Models\Event;
 use App\Models\Guest;
 use App\Models\GuestbookMessage;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class GuestService
 {
     public function __construct(
         protected InvitationService $invitations,
         protected AuditService $audit,
-    ) {
-    }
+    ) {}
 
     public function create(Event $event, array $data, User $actor): Guest
     {
@@ -87,6 +86,11 @@ class GuestService
         }
 
         $header = fgetcsv($handle);
+
+        if ($header && isset($header[0])) {
+            $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string) $header[0]);
+        }
+
         $header = $header ? array_map(fn ($h) => strtolower(trim((string) $h)), $header) : [];
         $required = ['name'];
 
@@ -103,7 +107,11 @@ class GuestService
 
         while (($line = fgetcsv($handle)) !== false) {
             $row++;
-            $data = array_combine($header, array_pad($line, count($header), null));
+            $line = array_slice($line, 0, count($header));
+            if (count($line) < count($header)) {
+                $line = array_pad($line, count($header), null);
+            }
+            $data = array_combine($header, $line);
 
             if (! $data || blank(trim((string) ($data['name'] ?? '')))) {
                 $skipped++;
@@ -140,7 +148,7 @@ class GuestService
 
             $category = $categoryName
                 ? $event->categories()->firstOrCreate(
-                    ['slug' => \Illuminate\Support\Str::slug($categoryName)],
+                    ['slug' => Str::slug($categoryName)],
                     ['name' => $categoryName]
                 )
                 : null;
@@ -155,7 +163,7 @@ class GuestService
                 'phone' => $phone,
                 'guest_category_id' => $category?->id,
                 'guest_group_id' => $group?->id,
-                'max_attendees' => max(1, (int) ($data['max_attendees'] ?? 2)),
+                'max_attendees' => min(20, max(1, (int) ($data['max_attendees'] ?? 2))),
                 'notes' => $data['notes'] ?? null,
             ], $actor);
 

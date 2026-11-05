@@ -8,6 +8,7 @@ use App\Models\Checkin;
 use App\Models\Event;
 use App\Models\Guest;
 use App\Models\GuestbookMessage;
+use App\Models\Invitation;
 use App\Models\MediaAsset;
 use App\Models\Rsvp;
 use Illuminate\Support\Collection;
@@ -23,7 +24,7 @@ class ReportService
             'completed_events' => Event::where('status', EventStatus::Completed->value)->count(),
             'archived_events' => Event::where('status', EventStatus::Archived->value)->count(),
             'total_guests' => Guest::count(),
-            'total_invitations' => \App\Models\Invitation::count(),
+            'total_invitations' => Invitation::count(),
             'rsvp_confirmed' => Rsvp::where('status', RsvpStatus::Confirmed->value)->count(),
             'rsvp_declined' => Rsvp::where('status', RsvpStatus::Declined->value)->count(),
             'rsvp_pending' => Guest::where('rsvp_status', RsvpStatus::Pending->value)->count(),
@@ -73,8 +74,15 @@ class ReportService
      */
     public function checkinTimeline(Event $event): array
     {
+        $driver = DB::connection()->getDriverName();
+        $dateExpr = match ($driver) {
+            'sqlite' => "strftime('%Y-%m-%d %H:00', checked_in_at)",
+            'pgsql' => "to_char(checked_in_at, 'YYYY-MM-DD HH24:00')",
+            default => "DATE_FORMAT(checked_in_at, '%Y-%m-%d %H:00')",
+        };
+
         $rows = $event->checkins()
-            ->select(DB::raw("DATE_FORMAT(checked_in_at, '%Y-%m-%d %H:00') as bucket"), DB::raw('count(*) as total'))
+            ->select(DB::raw("{$dateExpr} as bucket"), DB::raw('count(*) as total'))
             ->groupBy('bucket')
             ->orderBy('bucket')
             ->get();

@@ -14,9 +14,7 @@ class GuestGameController extends Controller
 {
     use ResolvesGuest;
 
-    public function __construct(protected GameService $games)
-    {
-    }
+    public function __construct(protected GameService $games) {}
 
     public function show(Request $request, string $token, Game $game)
     {
@@ -27,6 +25,12 @@ class GuestGameController extends Controller
 
         $attempt = GameAttempt::where('game_id', $game->id)->where('guest_id', $guest->id)->first();
         $game->load(['questions.options' => fn ($q) => $q->orderBy('sort_order')]);
+
+        if ($attempt) {
+            $game->questions->each(function ($question) {
+                $question->options->each->makeVisible('is_correct');
+            });
+        }
 
         return view('guest.game', compact('event', 'guest', 'game', 'attempt'));
     }

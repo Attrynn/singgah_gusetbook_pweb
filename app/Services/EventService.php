@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\EventStatus;
+use App\Models\AppSetting;
 use App\Models\Event;
 use App\Models\EventSchedule;
 use App\Models\EventVenue;
@@ -10,13 +11,10 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class EventService
 {
-    public function __construct(protected AuditService $audit)
-    {
-    }
+    public function __construct(protected AuditService $audit) {}
 
     public function create(array $data, User $actor): Event
     {
@@ -132,7 +130,7 @@ class EventService
             'gallery_enabled' => (bool) ($data['gallery_enabled'] ?? true),
             'gift_enabled' => (bool) ($data['gift_enabled'] ?? true),
             'live_wall_enabled' => (bool) ($data['live_wall_enabled'] ?? false),
-            'timezone' => $data['timezone'] ?? 'Asia/Jakarta',
+            'timezone' => $data['timezone'] ?? AppSetting::get('default_timezone', config('app.timezone', 'Asia/Jakarta')),
         ];
     }
 

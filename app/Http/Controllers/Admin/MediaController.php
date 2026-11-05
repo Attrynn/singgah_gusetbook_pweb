@@ -15,9 +15,7 @@ use Illuminate\Validation\Rule;
 
 class MediaController extends Controller
 {
-    public function __construct(protected MediaService $media)
-    {
-    }
+    public function __construct(protected MediaService $media) {}
 
     public function index(Request $request)
     {
@@ -37,11 +35,12 @@ class MediaController extends Controller
 
         $assets = $query->latest()->paginate(24)->withQueryString();
 
+        $eventId = $request->integer('event_id');
         $stats = [
-            'total' => MediaAsset::when($request->integer('event_id'), fn ($q, $id) => $q->where('event_id', $id))->count(),
-            'pending' => MediaAsset::where('status', MediaStatus::Pending->value)->count(),
-            'approved' => MediaAsset::where('status', MediaStatus::Approved->value)->count(),
-            'featured' => MediaAsset::where('is_featured', true)->count(),
+            'total' => MediaAsset::when($eventId, fn ($q, $id) => $q->where('event_id', $id))->count(),
+            'pending' => MediaAsset::when($eventId, fn ($q, $id) => $q->where('event_id', $id))->where('status', MediaStatus::Pending->value)->count(),
+            'approved' => MediaAsset::when($eventId, fn ($q, $id) => $q->where('event_id', $id))->where('status', MediaStatus::Approved->value)->count(),
+            'featured' => MediaAsset::when($eventId, fn ($q, $id) => $q->where('event_id', $id))->where('is_featured', true)->count(),
         ];
 
         return view('admin.media.index', [
@@ -106,7 +105,13 @@ class MediaController extends Controller
 
     public function attach(Request $request, MediaAlbum $album)
     {
-        $data = $request->validate(['media_asset_id' => ['required', 'integer', 'exists:media_assets,id']]);
+        $data = $request->validate([
+            'media_asset_id' => [
+                'required',
+                'integer',
+                Rule::exists('media_assets', 'id')->where('event_id', $album->event_id),
+            ],
+        ]);
         $this->media->attachToAlbum($album, MediaAsset::findOrFail($data['media_asset_id']));
 
         return back()->with('status', 'Foto ditambahkan ke album.');

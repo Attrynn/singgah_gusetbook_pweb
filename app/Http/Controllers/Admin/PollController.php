@@ -10,14 +10,14 @@ use App\Services\PollService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class PollController extends Controller
 {
     public function __construct(
         protected PollService $polls,
         protected AuditService $audit,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request)
     {
@@ -79,6 +79,12 @@ class PollController extends Controller
 
     public function update(PollRequest $request, Poll $poll)
     {
+        if ($request->integer('event_id') !== $poll->event_id && $poll->responses()->exists()) {
+            throw ValidationException::withMessages([
+                'event_id' => 'Acara polling tidak dapat dipindahkan karena sudah memiliki tanggapan responden.',
+            ]);
+        }
+
         DB::transaction(function () use ($request, $poll) {
             $poll->update([
                 'event_id' => $request->integer('event_id'),

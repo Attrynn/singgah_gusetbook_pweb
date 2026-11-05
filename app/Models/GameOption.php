@@ -9,6 +9,8 @@ class GameOption extends Model
 {
     protected $fillable = ['game_question_id', 'label', 'is_correct', 'sort_order'];
 
+    protected $hidden = ['is_correct'];
+
     protected function casts(): array
     {
         return ['is_correct' => 'boolean'];

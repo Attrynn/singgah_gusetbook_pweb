@@ -13,16 +13,25 @@ trait ResolvesOwnerEvent
 
         abort_if($events->isEmpty(), 403, 'Akun Anda belum terhubung ke event pernikahan.');
 
-        $id = $request->integer('event');
+        $id = $request->integer('event') ?: session('owner_active_event_id');
 
         if ($id) {
-            $event = $events->firstWhere('id', $id);
-            abort_unless($event, 403, 'Anda tidak memiliki akses ke event tersebut.');
+            $event = $events->firstWhere('id', (int) $id);
+            if ($event) {
+                session(['owner_active_event_id' => $event->id]);
+                view()->share('currentOwnerEvent', $event);
+                view()->share('ownerEventsList', $events);
 
-            return $event;
+                return $event;
+            }
         }
 
-        return $events->first();
+        $event = $events->first();
+        session(['owner_active_event_id' => $event->id]);
+        view()->share('currentOwnerEvent', $event);
+        view()->share('ownerEventsList', $events);
+
+        return $event;
     }
 
     protected function ownerEvents(Request $request)

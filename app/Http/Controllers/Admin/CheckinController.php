@@ -13,9 +13,7 @@ use Illuminate\Routing\Controller;
 
 class CheckinController extends Controller
 {
-    public function __construct(protected CheckinService $checkins)
-    {
-    }
+    public function __construct(protected CheckinService $checkins) {}
 
     public function index(Request $request)
     {
@@ -32,10 +30,10 @@ class CheckinController extends Controller
         $checkins = $query->latest('checked_in_at')->paginate(20)->withQueryString();
 
         $stats = [
-            'total' => Checkin::when($request->integer('event_id'), fn ($q, $id) => $q->where('event_id', $id))->count(),
-            'today' => Checkin::whereDate('checked_in_at', today())->count(),
-            'qr' => Checkin::where('method', 'qr')->count(),
-            'manual' => Checkin::where('method', 'manual')->count(),
+            'total' => Checkin::when($eventId, fn ($q, $id) => $q->where('event_id', $id))->count(),
+            'today' => Checkin::when($eventId, fn ($q, $id) => $q->where('event_id', $id))->whereDate('checked_in_at', today())->count(),
+            'qr' => Checkin::when($eventId, fn ($q, $id) => $q->where('event_id', $id))->where('method', 'qr')->count(),
+            'manual' => Checkin::when($eventId, fn ($q, $id) => $q->where('event_id', $id))->where('method', 'manual')->count(),
         ];
 
         $guests = Guest::with('event')

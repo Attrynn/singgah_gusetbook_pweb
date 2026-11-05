@@ -2,18 +2,19 @@
 
 namespace App\Services;
 
+use App\Enums\GuestStatus;
 use App\Models\Guest;
 use App\Models\Poll;
 use App\Models\PollOption;
 use App\Models\PollResponse;
+use Illuminate\Database\QueryException;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class PollService
 {
-    public function __construct(protected AuditService $audit)
-    {
-    }
+    public function __construct(protected AuditService $audit) {}
 
     public function vote(Poll $poll, Guest $guest, int $optionId): PollResponse
     {
@@ -21,6 +22,14 @@ class PollService
 
         if ($poll->event_id !== $guest->event_id) {
             throw ValidationException::withMessages(['poll' => 'Polling bukan milik acara Anda.']);
+        }
+
+        if (! $poll->event->allowsGuestActions()) {
+            throw ValidationException::withMessages(['poll' => 'Polling belum dibuka atau sudah ditutup.']);
+        }
+
+        if ($guest->status !== GuestStatus::Active) {
+            throw ValidationException::withMessages(['poll' => 'Status undangan Anda tidak aktif.']);
         }
 
         if (! $poll->isOpen()) {
@@ -37,17 +46,24 @@ class PollService
             throw ValidationException::withMessages(['poll' => 'Anda sudah memberikan suara pada polling ini.']);
         }
 
-        return DB::transaction(function () use ($poll, $guest, $option) {
-            $response = PollResponse::create([
-                'poll_id' => $poll->id,
-                'poll_option_id' => $option->id,
-                'guest_id' => $guest->id,
-            ]);
+        try {
+            return DB::transaction(function () use ($poll, $guest, $option) {
+                $response = PollResponse::create([
+                    'poll_id' => $poll->id,
+                    'poll_option_id' => $option->id,
+                    'guest_id' => $guest->id,
+                ]);
 
-            $this->audit->guestAction($poll->event, $guest, 'poll.voted', "{$guest->name} memilih \"{$option->label}\"", ['poll_id' => $poll->id]);
+                $this->audit->guestAction($poll->event, $guest, 'poll.voted', "{$guest->name} memilih \"{$option->label}\"", ['poll_id' => $poll->id]);
 
-            return $response;
-        });
+                return $response;
+            });
+        } catch (UniqueConstraintViolationException|QueryException $e) {
+            if (str_contains($e->getMessage(), 'Duplicate entry') || str_contains($e->getMessage(), 'UNIQUE')) {
+                throw ValidationException::withMessages(['poll' => 'Anda sudah memberikan suara pada polling ini.']);
+            }
+            throw $e;
+        }
     }
 
     /**

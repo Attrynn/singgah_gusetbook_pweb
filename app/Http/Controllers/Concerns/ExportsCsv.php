@@ -6,14 +6,32 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 trait ExportsCsv
 {
-    protected function csvResponse(array $rows, string $filename): StreamedResponse
+    protected function csvResponse(iterable|callable $rows, string $filename): StreamedResponse
     {
         return response()->streamDownload(function () use ($rows) {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF");
 
-            foreach ($rows as $row) {
-                fputcsv($out, $row);
+            $writeRow = function (array $row) use ($out) {
+                $sanitized = array_map(function ($val) {
+                    if (is_string($val) && strlen($val) > 0) {
+                        $first = $val[0];
+                        if (in_array($first, ['=', '+', '-', '@', "\t", "\r"], true)) {
+                            return "'".$val;
+                        }
+                    }
+
+                    return $val;
+                }, $row);
+                fputcsv($out, $sanitized);
+            };
+
+            if (is_callable($rows)) {
+                $rows($writeRow);
+            } else {
+                foreach ($rows as $row) {
+                    $writeRow($row);
+                }
             }
 
             fclose($out);

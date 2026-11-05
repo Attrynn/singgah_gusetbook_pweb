@@ -15,9 +15,7 @@ use Illuminate\Validation\ValidationException;
 
 class SeatingController extends Controller
 {
-    public function __construct(protected SeatingService $seating)
-    {
-    }
+    public function __construct(protected SeatingService $seating) {}
 
     public function index(Request $request)
     {
@@ -67,6 +65,12 @@ class SeatingController extends Controller
 
     public function updateTable(SeatingTableRequest $request, SeatingTable $table)
     {
+        if ($request->has('event_id') && $request->integer('event_id') !== $table->event_id && $table->assignments()->exists()) {
+            throw ValidationException::withMessages([
+                'event_id' => 'Meja tidak dapat dipindahkan ke acara lain karena sudah memiliki tamu terdaftar.',
+            ]);
+        }
+
         $occupied = $table->assignments()->count();
 
         if ($request->integer('capacity') < $occupied) {

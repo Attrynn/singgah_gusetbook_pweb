@@ -11,6 +11,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(DemoSeeder::class);
+        if (app()->environment('local', 'testing')) {
+            $this->call(DemoSeeder::class);
+        } else {
+            $this->command?->warn('Production environment detected: Demo accounts skipped. Run php artisan db:seed --class=DemoSeeder explicitly if needed.');
+        }
     }
 }

@@ -11,13 +11,11 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class MediaService
 {
-    public function __construct(protected AuditService $audit)
-    {
-    }
+    public function __construct(protected AuditService $audit) {}
 
     public function storeGuestUpload(Guest $guest, UploadedFile $file, ?string $caption = null): MediaAsset
     {
@@ -44,6 +42,12 @@ class MediaService
 
     public function storeEventUpload(Event $event, UploadedFile $file, User $actor, ?MediaAlbum $album = null, bool $approved = true): MediaAsset
     {
+        if ($album && $album->event_id !== $event->id) {
+            throw ValidationException::withMessages([
+                'media_album_id' => 'Album yang dipilih tidak termasuk dalam acara ini.',
+            ]);
+        }
+
         $path = $file->store("events/{$event->id}/gallery", 'public');
 
         $asset = MediaAsset::create([
@@ -135,7 +139,9 @@ class MediaService
     public function attachToAlbum(MediaAlbum $album, MediaAsset $asset): void
     {
         if ($asset->event_id !== $album->event_id) {
-            return;
+            throw ValidationException::withMessages([
+                'media_asset_id' => 'Foto dan album berasal dari acara yang berbeda.',
+            ]);
         }
 
         $album->items()->firstOrCreate(
