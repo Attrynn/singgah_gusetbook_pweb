@@ -174,13 +174,19 @@ overhead. PHP's `upload_max_filesize` and `post_max_size` must match.
 
 ## 6. Database
 
-Create a dedicated user with only the privileges it needs:
+Create a dedicated user with least-privilege access. For highest security in production environments, separate the migration runner user from the runtime application user:
 
 ```sql
 CREATE DATABASE vowspace CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'vowspace'@'127.0.0.1' IDENTIFIED BY '<strong-password>';
-GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES, DROP
-  ON vowspace.* TO 'vowspace'@'127.0.0.1';
+
+-- Runtime user (DML only):
+CREATE USER 'vowspace_app'@'127.0.0.1' IDENTIFIED BY '<strong-app-password>';
+GRANT SELECT, INSERT, UPDATE, DELETE ON vowspace.* TO 'vowspace_app'@'127.0.0.1';
+
+-- Migration / Deployment runner user (DDL + DML):
+CREATE USER 'vowspace_deploy'@'127.0.0.1' IDENTIFIED BY '<strong-deploy-password>';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES, DROP ON vowspace.* TO 'vowspace_deploy'@'127.0.0.1';
+
 FLUSH PRIVILEGES;
 ```
 
@@ -225,7 +231,7 @@ The service layer uses `Storage::disk(config('filesystems.default'))`-style acce
 - [ ] `php artisan storage:link` present; no directory listing on `/storage`
 - [ ] Rate limiters active: `guest-actions`, `guestbook`, `guest-uploads`, `guest-poll`, plus the
       5-attempt login throttle in `LoginController`
-- [ ] Rotate demo accounts or run `php artisan migrate:fresh --seed` only on staging
+- [ ] Rotate demo accounts or rely on default `DatabaseSeeder` which automatically skips demo credentials in production environments (`DemoSeeder` only runs in `local`/`testing`).
 - [ ] Backups for database **and** media verified by a restore drill
 
 ---

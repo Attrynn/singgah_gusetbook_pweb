@@ -80,7 +80,7 @@ Owners never see guest contact details, token hashes, or moderation controls. Ad
 4. **Wishes** (`POST /invite/{token}/guestbook`) — public messages enter moderation as `pending`;
    private messages are visible only to the couple and admins.
 5. **Photos** (`POST /invite/{token}/gallery`) — validated image, stored as `pending` for moderation.
-6. **Digital pass** (`/invite/{token}/pass`) — QR code plus a downloadable PDF for the door.
+6. **Digital pass** (`/invite/{token}/pass`) — QR code pass viewable in mobile browser, with one-click PNG download (`/invite/{token}/pass/download`) and native mobile sharing/link copying for admission at the door.
 7. **Gifts** (`/invite/{token}/gifts`) — bank accounts, QRIS image and gift address when enabled.
 8. **Interactions** — song requests, poll voting (one vote per guest per poll) and a scored quiz
    (one attempt per guest per game).

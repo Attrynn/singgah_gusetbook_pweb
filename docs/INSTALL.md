@@ -127,7 +127,9 @@ php artisan storage:link
 npm run build
 ```
 
-`migrate --seed` runs `DatabaseSeeder`, which runs `DemoSeeder`:
+`migrate --seed` runs `DatabaseSeeder`, which automatically invokes `DemoSeeder` in `local` or `testing` environments:
+
+> **Security Note:** In `production` (`APP_ENV=production`), `DatabaseSeeder` refuses to seed demo accounts unless explicitly run via `php artisan db:seed --class=DemoSeeder`.
 
 - 4 users — 1 superadmin, 3 owners
 - 2 events (`Raka & Alya` live, `Dimas & Nadia` in another state)
