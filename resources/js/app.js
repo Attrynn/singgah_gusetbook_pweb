@@ -6,6 +6,41 @@ import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import { Html5Qrcode } from 'html5-qrcode';
 
+// Global Theme Management (Midnight Slate & Champagne)
+const Theme = {
+    get() {
+        return localStorage.getItem('vowspace_theme') || 'system';
+    },
+    set(theme) {
+        localStorage.setItem('vowspace_theme', theme);
+        this.apply(theme);
+    },
+    apply(theme) {
+        const isDark =
+            theme === 'dark' ||
+            (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+        if (isDark) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme, isDark } }));
+    },
+    init() {
+        this.apply(this.get());
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (this.get() === 'system') {
+                this.apply('system');
+            }
+        });
+    },
+};
+
+Theme.init();
+
+window.Theme = Theme;
 window.Alpine = Alpine;
 window.Swal = Swal;
 window.Chart = Chart;
@@ -58,13 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             Swal.fire({
                 title: form.dataset.confirmTitle || 'Konfirmasi',
-                text: form.dataset.confirm,
-                icon: 'warning',
+                text: form.dataset.confirmText || 'Apakah Anda yakin ingin melanjutkan tindakan ini?',
+                icon: form.dataset.confirmIcon || 'warning',
                 showCancelButton: true,
-                confirmButtonText: form.dataset.confirmButton || 'Ya, lanjutkan',
+                confirmButtonText: form.dataset.confirmButton || 'Ya, Lanjutkan',
                 cancelButtonText: 'Batal',
-                confirmButtonColor: '#8EB4D3',
-                cancelButtonColor: '#94A3B8',
                 reverseButtons: true,
             }).then((result) => {
                 if (result.isConfirmed) {
@@ -73,29 +106,5 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
-    });
-
-    document.querySelectorAll('[data-copy]').forEach((button) => {
-        button.addEventListener('click', async () => {
-            const value = button.dataset.copy;
-
-            try {
-                await navigator.clipboard.writeText(value);
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'success',
-                    title: 'Disalin ke clipboard',
-                    showConfirmButton: false,
-                    timer: 1800,
-                });
-            } catch (error) {
-                Swal.fire('Gagal menyalin', 'Salin manual: ' + value, 'info');
-            }
-        });
-    });
-
-    document.querySelectorAll('[data-auto-dismiss]').forEach((element) => {
-        setTimeout(() => element.remove(), Number(element.dataset.autoDismiss) || 5000);
     });
 });

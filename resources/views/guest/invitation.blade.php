@@ -148,92 +148,111 @@
     @endif
 
     <!-- RSVP -->
-    @if (!$preview && $rsvpEnabled && $rsvpOpen && $guest->rsvp_status === 'pending')
-        <div class="card p-6 mb-10" id="rsvp">
-            <p class="section-kicker mb-4">RSVP Anda</p>
-            <form method="POST" action="{{ route('guest.rsvp.store', $token) }}" class="space-y-4" x-data="{ status: '{{ old('status', $guest->rsvp_status?->value ?? 'confirmed') }}' }">
+    @if (!$preview && $rsvpEnabled && $rsvpOpen)
+        <div class="card p-6 mb-10" id="rsvp" x-data="{
+            status: '{{ old('status', $guest->rsvp_status?->value === 'pending' ? 'confirmed' : ($guest->rsvp_status?->value ?? 'confirmed')) }}',
+            showForm: {{ $guest->rsvp_status?->value === 'pending' ? 'true' : 'false' }}
+        }">
+            <div class="flex items-center justify-between mb-4">
+                <p class="section-kicker">Konfirmasi Kehadiran</p>
+                <span class="{{ $guest->rsvp_status?->badge() ?? 'badge-neutral' }} text-xs">
+                    {{ $guest->rsvp_status?->label() }}
+                </span>
+            </div>
+
+            @if ($guest->rsvp_status?->value !== 'pending')
+                <div x-show="!showForm" class="rounded-2xl border border-line/70 bg-surface-2/40 p-4 mb-4">
+                    <p class="text-sm font-semibold text-ink">Kehadiran: {{ $guest->rsvp_status?->label() }}</p>
+                    @if ($guest->rsvp?->attendance_count)
+                        <p class="text-xs text-muted mt-1">Jumlah: {{ $guest->rsvp->attendance_count }} orang</p>
+                    @endif
+                    @if ($guest->rsvp?->companion_names)
+                        <p class="text-xs text-muted mt-0.5">Pendamping: {{ $guest->rsvp->companion_names }}</p>
+                    @endif
+                    @if ($guest->rsvp?->dietary_preference)
+                        <p class="text-xs text-muted mt-0.5">Kebutuhan Makanan: {{ $guest->rsvp->dietary_preference }}</p>
+                    @endif
+                    @if ($guest->rsvp?->notes)
+                        <p class="text-xs text-faint italic mt-1.5">"{{ $guest->rsvp->notes }}"</p>
+                    @endif
+                    <div class="mt-4 pt-3 border-t border-line/60">
+                        <button type="button" @click="showForm = true" class="btn btn-secondary btn-sm w-full">
+                            <x-ui.icon name="edit" class="h-3.5 w-3.5 mr-1.5" /> Ubah Konfirmasi RSVP
+                        </button>
+                    </div>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('guest.rsvp.store', $token) }}" class="space-y-4" x-show="showForm">
                 @csrf
-                <div class="flex items-start gap-3">
-                    <div class="flex flex-col items-start gap-2">
-                        <p class="text-[10px] font-semibold text-faint uppercase">Status Kehadiran</p>
+                <div>
+                    <label class="label">Pilihan Kehadiran</label>
+                    <div class="grid grid-cols-3 gap-2">
                         @foreach ([['confirmed','Hadir'],['maybe','Mungkin'],['declined','Tidak Hadir']] as [$value, $label])
-                            <label class="flex flex-col items-center gap-2 rounded-2xl border border-line bg-surface px-3 py-3 text-sm font-medium text-muted cursor-pointer transition peer peer-checked:bg-blue-soft peer-checked:border-accent peer-checked:text-ink peer-checked:shadow-[inset_...]">
-                                <input type="radio" name="status" value="{{ $value }}" class="peer sr-only" {{ $status === $value ? 'checked' : '' }} required>
-                                <span class="text-[10px] font-semibold uppercase tracking-wider">{{ $label }}</span>
+                            <label class="flex flex-col items-center justify-center rounded-2xl border border-line p-3 text-center cursor-pointer transition"
+                                   :class="status === '{{ $value }}' ? 'bg-accent/15 border-accent text-ink font-semibold' : 'bg-surface text-muted hover:bg-surface-2/60'">
+                                <input type="radio" name="status" value="{{ $value }}" class="sr-only" x-model="status" required>
+                                <span class="text-xs">{{ $label }}</span>
                             </label>
                         @endforeach
                     </div>
                 </div>
 
-                <div class="flex items-start gap-3">
-                    <div class="flex flex-col items-start gap-2">
-                        <p class="text-[10px] font-semibold text-faint uppercase">Jumlah Tamu</p>
-                        <input type="number" name="attendance_count" value="{{ old('attendance_count', $guest->rsvp?->attendance_count ?? 1) }}" class="input" min="0" max="{{ max(1, (int) $guest->max_attendees) }}" x-model="status" />
-                    </div>
+                <div x-show="status !== 'declined'">
+                    <label class="label">Jumlah Tamu</label>
+                    <input type="number" name="attendance_count" value="{{ old('attendance_count', $guest->rsvp?->attendance_count ?? 1) }}" class="input" min="1" max="{{ max(1, (int) $guest->max_attendees) }}" />
+                    <p class="hint">Maksimal {{ $guest->max_attendees }} orang sesuai undangan.</p>
                 </div>
 
-                <div class="flex items-start gap-3">
-                    <div class="flex flex-col items-start gap-2">
-                        <p class="text-[10px] font-semibold text-faint uppercase">Nama Teman</p>
-                        <input type="text" name="companion_names" value="{{ old('companion_names', $guest->rsvp?->companion_names ?? '') }}" class="input" placeholder="Nama teman (pisahkan dengan koma)" />
-                    </div>
+                <div x-show="status !== 'declined'">
+                    <label class="label">Nama Pendamping (Opsional)</label>
+                    <input type="text" name="companion_names" value="{{ old('companion_names', $guest->rsvp?->companion_names ?? '') }}" class="input" placeholder="Nama pendamping (pisahkan dengan koma)" />
                 </div>
 
-                <div class="flex items-start gap-3">
-                    <div class="flex flex-col items-start gap-2">
-                        <p class="text-[10px] font-semibold text-faint uppercase">Keterkahan Makanan</p>
-                        <input type="text" name="dietary_preference" value="{{ old('dietary_preference', $guest->rsvp?->dietary_preference ?? '') }}" class="input" placeholder="Contoh: Vegetarian" />
-                    </div>
+                <div x-show="status !== 'declined'">
+                    <label class="label">Preferensi Makanan (Opsional)</label>
+                    <input type="text" name="dietary_preference" value="{{ old('dietary_preference', $guest->rsvp?->dietary_preference ?? '') }}" class="input" placeholder="Contoh: Halal, Vegetarian, Alergi kacang" />
                 </div>
 
-                <div class="flex items-start gap-3">
-                    <div class="flex flex-col items-start gap-2">
-                        <p class="text-[10px] font-semibold text-faint uppercase">Catatan</p>
-                        <textarea name="notes" class="input" rows="2" placeholder="Catatan khusus">{{ old('notes', $guest->rsvp?->notes ?? '') }}</textarea>
-                    </div>
+                <div>
+                    <label class="label">Pesan / Catatan Khusus</label>
+                    <textarea name="notes" class="input" rows="2" placeholder="Catatan untuk kedua mempelai">{{ old('notes', $guest->rsvp?->notes ?? '') }}</textarea>
                 </div>
 
-                <div class="flex items-start gap-3">
-                    <p class="text-[10px] font-semibold text-faint uppercase">Status Kehadiran Anda</p>
-                    <span class="{{ $guest->rsvp_status?->badge() ?? 'badge-neutral' }}">{{ $guest->rsvp_status?->label() }}</span>
-                </div>
-
-                <div class="flex items-center justify-between">
-                    <button type="submit" class="btn-primary">Simpan RSVP</button>
-                    <a href="{{ route('guest.invitation', $token) }}" class="btn-ghost text-sm">Kembali ke Undangan</a>
+                <div class="flex items-center gap-2 pt-2">
+                    <button type="submit" class="btn btn-primary flex-1">Kirim Konfirmasi</button>
+                    @if ($guest->rsvp_status?->value !== 'pending')
+                        <button type="button" @click="showForm = false" class="btn btn-secondary">Batal</button>
+                    @endif
                 </div>
             </form>
         </div>
     @endif
 
     <!-- Guestbook -->
-    @if (!$preview && $guestbookEnabled && $guestbookEnabled)
-        <div class="card p-6 mb-10" id="guestbook">
-            <p class="section-kicker mb-4">Catatan Tamu</p>
-            <form method="POST" action="{{ route('guest.guestbook.store', $token) }}" class="space-y-4" x-data="{ message: '', visibility: 'public', emoji: '' }">
+    @if (!$preview && $guestbookEnabled)
+        <div class="card p-6 mb-10" id="guestbook" x-data="{ message: '', emoji: '' }">
+            <p class="section-kicker mb-4">Ucapan & Doa Restu</p>
+            <form method="POST" action="{{ route('guest.guestbook.store', $token) }}" class="space-y-4">
                 @csrf
-                <div class="flex items-start gap-3">
-                    <input type="text" name="message" placeholder="Tulis pesan..." class="input" x-model="message" required>
-                    <input type="hidden" name="visibility" :value="visibility" />
+                <div>
+                    <label class="label">Pesan Ucapan</label>
+                    <textarea name="message" placeholder="Tuliskan ucapan dan doa hangat untuk kedua mempelai..." class="input" rows="3" x-model="message" required></textarea>
                 </div>
-                <div class="flex items-start gap-3">
-                    <input type="hidden" name="emoji" :value="emoji" />
-                    <div class="flex gap-2">
-                        <button type="button" class="btn-ghost" x-on:click="emoji='❤️'">❤️</button>
-                        <button type="button" class="btn-ghost" x-on:click="emoji='✨'">✨</button>
-                        <button type="button" class="btn-ghost" x-on:click="emoji='😊'">😊</button>
-                        <button type="button" class="btn-ghost" x-on:click="emoji='🎉'">🎉</button>
-                        <button type="button" class="btn-ghost" x-on:click="emoji='🥂'">🥂</button>
-                        <button type="button" class="btn-ghost" x-on:click="emoji='💍'">💍</button>
-                        <button type="button" class="btn-ghost" x-on:click="emoji='🕊️'">🕊️</button>
-                        <button type="button" class="btn-ghost" x-on:click="emoji='🌸'">🌸</button>
+                <div>
+                    <label class="label">Sertakan Emoji</label>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach (['❤️', '✨', '😊', '🎉', '🥂', '💍', '🕊️', '🌸'] as $em)
+                            <button type="button" class="btn btn-secondary btn-sm text-base h-9 w-9 p-0 rounded-xl"
+                                    :class="emoji === '{{ $em }}' ? 'border-accent bg-accent/20' : ''"
+                                    @click="emoji = emoji === '{{ $em }}' ? '' : '{{ $em }}'">
+                                {{ $em }}
+                            </button>
+                        @endforeach
                     </div>
-                </div>
-                <div class="flex items-start gap-3">
-                    <input type="hidden" name="message" :value="message" />
                     <input type="hidden" name="emoji" :value="emoji" />
                 </div>
-                <button type="submit" class="btn-primary">Kirim Pesan</button>
+                <button type="submit" class="btn btn-primary w-full">Kirim Ucapan</button>
             </form>
 
             <p class="section-kicker mt-6">Pesan Terkini</p>

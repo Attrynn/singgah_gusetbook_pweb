@@ -82,16 +82,15 @@
         <p class="section-kicker mb-4">Aksi</p>
         <div class="flex flex-col gap-3">
             <a href="{{ route('guest.pass.download', $token) }}" class="btn-primary text-center">
-                <x-ui.icon name="download" class="h-5 w-5 mr-2" /> Unduh Pass
+                <x-ui.icon name="download" class="h-5 w-5 mr-2" /> Unduh Pass (PNG)
             </a>
-            <button type="button" class="btn-secondary" onclick="window.alert('Tambahkan ke layar utama (PWA) akan tersedia segera.')">
-                <x-ui.icon name="plus" class="h-5 w-5 mr-2" /> Tambahkan ke Layar Utama
+            <button type="button" class="btn-secondary" x-data="{ copied: false }" @click="if (navigator.share) { navigator.share({ title: 'Wedding Pass {{ $event->coupleNames() }}', url: window.location.href }); } else { navigator.clipboard.writeText(window.location.href); copied = true; setTimeout(() => copied = false, 2500); }">
+                <x-ui.icon name="share" class="h-5 w-5 mr-2" />
+                <span x-text="copied ? 'Tautan Pass Tersalin!' : 'Bagikan / Simpan Tautan Pass'"></span>
             </button>
         </div>
     </div>
 
     <p class="text-center text-[11px] text-faint">Dibuat dengan tenang oleh <span class="font-semibold text-ink">VOWSPACE</span></p>
 </div>
-</section>
-</body>
-</html>
+@endsection

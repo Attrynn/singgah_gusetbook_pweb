@@ -86,6 +86,4 @@
 
     <p class="text-center text-[11px] text-faint mt-10">Dibuat dengan tenang oleh <span class="font-semibold text-ink">VOWSPACE</span></p>
 </div>
-</section>
-</body>
-</html>
+@endsection

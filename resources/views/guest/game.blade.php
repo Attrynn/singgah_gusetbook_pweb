@@ -69,7 +69,7 @@
                         <div class="space-y-3">
                             <template x-for="option in question.options" :key="option.id">
                                 <label class="flex items-center gap-3 rounded-xl border border-line bg-surface p-3 cursor-pointer transition hover:bg-surface-2/60">
-                                    <input type="radio" name="answers[{{ question.id }}]" :value="option.id" class="peer sr-only" required>
+                                    <input type="radio" :name="'answers[' + question.id + ']'" :value="option.id" x-model="answers[question.id]" class="peer sr-only" required>
                                     <span class="text-sm text-muted peer-checked:text-ink" x-text="option.label"></span>
                                 </label>
                             </template>
@@ -90,6 +90,7 @@
                 return {
                     questions: questions,
                     currentIndex: 0,
+                    answers: {},
                     nextQuestion() {
                         if (this.currentIndex < this.questions.length - 1) {
                             this.currentIndex++;
@@ -114,6 +115,4 @@
 
     <p class="text-center text-[11px] text-faint mt-10">Dibuat dengan tenang oleh <span class="font-semibold text-ink">VOWSPACE</span></p>
 </div>
-</section>
-</body>
-</html>
+@endsection
