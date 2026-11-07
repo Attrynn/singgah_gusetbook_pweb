@@ -7,14 +7,14 @@ use App\Http\Requests\ProfileRequest;
 use App\Services\AuditService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ProfileController extends Controller
 {
-    public function __construct(protected AuditService $audit)
-    {
-    }
+    public function __construct(protected AuditService $audit) {}
 
     public function edit(Request $request)
     {
@@ -41,8 +41,18 @@ class ProfileController extends Controller
 
     public function password(PasswordRequest $request)
     {
-        $request->user()->update(['password' => Hash::make($request->password)]);
-        $this->audit->record('profile.password', 'Password diperbarui', null, $request->user());
+        $user = $request->user();
+        $user->forceFill([
+            'password' => Hash::make($request->password),
+            'remember_token' => Str::random(60),
+        ])->save();
+
+        if (Auth::check()) {
+            Auth::logoutOtherDevices($request->password);
+        }
+        $request->session()->regenerate();
+
+        $this->audit->record('profile.password', 'Password diperbarui dan sesi lain dicabut', null, $user);
 
         return back()->with('status', 'Password berhasil diperbarui.');
     }

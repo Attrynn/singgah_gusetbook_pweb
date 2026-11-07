@@ -39,6 +39,13 @@ class MediaDerivativeService
 
             $width = imagesx($image);
             $height = imagesy($image);
+            $maxPixels = (int) config('media.max_pixels', 36_000_000);
+            if (($width * $height) > $maxPixels) {
+                imagedestroy($image);
+
+                return ['thumbnail_path' => $asset->thumbnail_path, 'medium_path' => $asset->medium_path];
+            }
+
             $base = pathinfo($asset->path, PATHINFO_FILENAME);
             $directory = dirname($asset->path);
 
@@ -51,18 +58,20 @@ class MediaDerivativeService
                 $target = "{$directory}/{$name}/{$base}.jpg";
 
                 if (max($width, $height) <= $max) {
-                    // Keep the original for small images; it is already bounded.
-                    $updates[$name === 'thumb' ? 'thumbnail_path' : 'medium_path'] = $asset->path;
+                    $newWidth = $width;
+                    $newHeight = $height;
+                    $resized = imagecreatetruecolor($newWidth, $newHeight);
+                    if ($resized !== false) {
+                        imagecopy($resized, $image, 0, 0, 0, 0, $newWidth, $newHeight);
+                    }
+                } else {
+                    $ratio = min($max / max($width, 1), $max / max($height, 1));
+                    $newWidth = max(1, (int) round($width * $ratio));
+                    $newHeight = max(1, (int) round($height * $ratio));
 
-                    continue;
+                    $resized = imagescale($image, $newWidth, $newHeight, IMG_BICUBIC)
+                        ?: imagescale($image, $newWidth, $newHeight, IMG_BILINEAR_FIXED);
                 }
-
-                $ratio = min($max / max($width, 1), $max / max($height, 1));
-                $newWidth = max(1, (int) round($width * $ratio));
-                $newHeight = max(1, (int) round($height * $ratio));
-
-                $resized = imagescale($image, $newWidth, $newHeight, IMG_BICUBIC)
-                    ?: imagescale($image, $newWidth, $newHeight, IMG_BILINEAR_FIXED);
 
                 if ($resized === false) {
                     continue;

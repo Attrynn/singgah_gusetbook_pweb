@@ -60,6 +60,10 @@ class CheckinService
             return $this->result('blocked', 'Tamu ini diblokir.', $guest);
         }
 
+        if ($guest->status !== GuestStatus::Active) {
+            return $this->result('inactive', 'Tamu berstatus non-aktif dan tidak dapat melakukan check-in.', $guest);
+        }
+
         if ($guest->rsvp_status === RsvpStatus::Declined) {
             return $this->result('declined', 'Tamu telah menyatakan tidak hadir.', $guest);
         }
@@ -69,8 +73,41 @@ class CheckinService
             : 'Tamu belum mengonfirmasi kehadiran. Check-in tetap dicatat.';
 
         try {
-            return DB::transaction(function () use ($guest, $event, $officer, $token, $warning) {
+            return DB::transaction(function () use ($guest, $event, $officer, $token, $warning, $expectedEvent) {
+                $lockedEvent = Event::whereKey($event->id)->lockForUpdate()->first();
                 $lockedGuest = Guest::whereKey($guest->id)->lockForUpdate()->first();
+
+                if (! $lockedEvent || ! $lockedEvent->allowsGuestActions()) {
+                    return $this->result('inactive', 'Acara belum aktif atau sudah selesai.', $guest);
+                }
+
+                if ($expectedEvent && $lockedEvent->id !== $expectedEvent->id) {
+                    return $this->result('wrong_event', 'QR ini milik acara lain ('.$lockedEvent->name.').', $guest);
+                }
+
+                if (! $lockedGuest || $lockedGuest->trashed()) {
+                    return $this->result('invalid', 'Data tamu tidak ditemukan atau telah dihapus.', $guest);
+                }
+
+                if ($lockedGuest->status === GuestStatus::Blocked) {
+                    return $this->result('blocked', 'Tamu ini diblokir.', $lockedGuest);
+                }
+
+                if ($lockedGuest->status !== GuestStatus::Active) {
+                    return $this->result('inactive', 'Tamu berstatus non-aktif dan tidak dapat melakukan check-in.', $lockedGuest);
+                }
+
+                if ($lockedGuest->event_id !== $lockedEvent->id) {
+                    return $this->result('invalid', 'Data tamu tidak cocok dengan acara ini.', $lockedGuest);
+                }
+
+                $freshToken = $token->fresh();
+                if (! $freshToken || $freshToken->isRevoked()) {
+                    return $this->result('revoked', 'QR ini telah dicabut dan tidak dapat digunakan.');
+                }
+                if ($freshToken->isExpired()) {
+                    return $this->result('expired', 'QR sudah kedaluwarsa.');
+                }
 
                 if ($lockedGuest->checked_in_at !== null || Checkin::where('guest_id', $lockedGuest->id)->exists()) {
                     return $this->result(
@@ -82,7 +119,7 @@ class CheckinService
                 }
 
                 $checkin = Checkin::create([
-                    'event_id' => $event->id,
+                    'event_id' => $lockedEvent->id,
                     'guest_id' => $lockedGuest->id,
                     'checked_in_by' => $officer->id,
                     'method' => CheckinMethod::Qr,
@@ -91,17 +128,17 @@ class CheckinService
                 ]);
 
                 $lockedGuest->forceFill(['checked_in_at' => now()])->save();
-                $token->markUsed();
+                $freshToken->markUsed();
 
                 $this->audit->record(
                     'checkin.qr',
                     "Check-in QR: {$lockedGuest->name}",
-                    $event,
+                    $lockedEvent,
                     $officer,
                     $checkin,
                     ['guest_id' => $lockedGuest->id]
                 );
-                $this->audit->activity($event, 'checkin', "{$lockedGuest->name} check-in via QR", $lockedGuest, $officer);
+                $this->audit->activity($lockedEvent, 'checkin', "{$lockedGuest->name} check-in via QR", $lockedGuest, $officer);
 
                 return $this->result('success', 'Check-in berhasil.', $lockedGuest, $checkin, $warning);
             });
@@ -119,7 +156,7 @@ class CheckinService
         $guest->loadMissing('event');
         $event = $guest->event;
 
-        if (! $event->allowsGuestActions()) {
+        if (! $event || ! $event->allowsGuestActions()) {
             return $this->result('inactive', 'Acara belum aktif atau sudah selesai.', $guest);
         }
 
@@ -127,16 +164,41 @@ class CheckinService
             return $this->result('blocked', 'Tamu ini diblokir.', $guest);
         }
 
+        if ($guest->status !== GuestStatus::Active) {
+            return $this->result('inactive', 'Tamu berstatus non-aktif dan tidak dapat melakukan check-in.', $guest);
+        }
+
         try {
             return DB::transaction(function () use ($guest, $event, $officer, $notes) {
+                $lockedEvent = Event::whereKey($event->id)->lockForUpdate()->first();
                 $lockedGuest = Guest::whereKey($guest->id)->lockForUpdate()->first();
+
+                if (! $lockedEvent || ! $lockedEvent->allowsGuestActions()) {
+                    return $this->result('inactive', 'Acara belum aktif atau sudah selesai.', $guest);
+                }
+
+                if (! $lockedGuest || $lockedGuest->trashed()) {
+                    return $this->result('invalid', 'Data tamu tidak ditemukan atau telah dihapus.', $guest);
+                }
+
+                if ($lockedGuest->status === GuestStatus::Blocked) {
+                    return $this->result('blocked', 'Tamu ini diblokir.', $lockedGuest);
+                }
+
+                if ($lockedGuest->status !== GuestStatus::Active) {
+                    return $this->result('inactive', 'Tamu berstatus non-aktif dan tidak dapat melakukan check-in.', $lockedGuest);
+                }
+
+                if ($lockedGuest->event_id !== $lockedEvent->id) {
+                    return $this->result('invalid', 'Data tamu tidak cocok dengan acara ini.', $lockedGuest);
+                }
 
                 if ($lockedGuest->checked_in_at !== null || Checkin::where('guest_id', $lockedGuest->id)->exists()) {
                     return $this->result('duplicate', 'Tamu ini sudah check-in.', $lockedGuest, $lockedGuest->checkin);
                 }
 
                 $checkin = Checkin::create([
-                    'event_id' => $event->id,
+                    'event_id' => $lockedEvent->id,
                     'guest_id' => $lockedGuest->id,
                     'checked_in_by' => $officer->id,
                     'method' => CheckinMethod::Manual,
@@ -150,12 +212,12 @@ class CheckinService
                 $this->audit->record(
                     'checkin.manual',
                     "Check-in manual: {$lockedGuest->name}",
-                    $event,
+                    $lockedEvent,
                     $officer,
                     $checkin,
                     ['guest_id' => $lockedGuest->id]
                 );
-                $this->audit->activity($event, 'checkin', "{$lockedGuest->name} check-in manual", $lockedGuest, $officer);
+                $this->audit->activity($lockedEvent, 'checkin', "{$lockedGuest->name} check-in manual", $lockedGuest, $officer);
 
                 return $this->result('success', 'Check-in manual berhasil.', $lockedGuest, $checkin);
             });

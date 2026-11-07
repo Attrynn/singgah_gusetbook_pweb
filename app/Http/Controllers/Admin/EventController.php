@@ -3,20 +3,21 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\EventStatus;
+use App\Enums\UserRole;
 use App\Http\Requests\EventRequest;
 use App\Models\Event;
 use App\Models\Guest;
 use App\Models\User;
 use App\Services\EventService;
+use App\Services\ReportService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class EventController extends Controller
 {
-    public function __construct(protected EventService $events)
-    {
-    }
+    public function __construct(protected EventService $events) {}
 
     public function index(Request $request)
     {
@@ -66,7 +67,7 @@ class EventController extends Controller
         $event->load(['owners', 'primaryVenue', 'schedules', 'giftAccounts'])
             ->loadCount(['guests', 'rsvps', 'checkins', 'messages', 'mediaAssets', 'seatingTables']);
 
-        $stats = app(\App\Services\ReportService::class)->eventStats($event);
+        $stats = app(ReportService::class)->eventStats($event);
 
         return view('admin.events.show', compact('event', 'stats'));
     }
@@ -125,14 +126,27 @@ class EventController extends Controller
 
     protected function syncOwners(Event $event, Request $request): void
     {
-        $ids = collect($request->input('owner_ids', []))->filter()->unique();
+        $submitted = $request->input('owner_ids', []);
+        $ids = collect(is_array($submitted) ? $submitted : [$submitted])->filter()->unique()->values();
         $roles = $request->input('owner_roles', []);
 
         if ($ids->isEmpty()) {
+            $event->owners()->sync([]);
+
             return;
         }
 
-        $sync = $ids->mapWithKeys(fn ($id) => [
+        $validOwnerIds = User::whereIn('id', $ids)
+            ->where('role', UserRole::Owner)
+            ->pluck('id');
+
+        if ($validOwnerIds->count() !== $ids->count()) {
+            throw ValidationException::withMessages([
+                'owner_ids' => 'Semua pemilik yang dipilih harus memiliki peran Owner yang valid.',
+            ]);
+        }
+
+        $sync = $validOwnerIds->mapWithKeys(fn ($id) => [
             $id => ['role_label' => $roles[$id] ?? 'partner'],
         ])->all();
 

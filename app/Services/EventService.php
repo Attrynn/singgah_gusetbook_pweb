@@ -202,7 +202,8 @@ class EventService
 
     protected function syncSchedules(Event $event, array $schedules): void
     {
-        $event->schedules()->delete();
+        $existing = $event->schedules()->get()->keyBy('id');
+        $keptIds = [];
         $order = 0;
 
         foreach ($schedules as $schedule) {
@@ -210,7 +211,8 @@ class EventService
                 continue;
             }
 
-            EventSchedule::create([
+            $scheduleId = $schedule['id'] ?? null;
+            $payload = [
                 'event_id' => $event->id,
                 'title' => $schedule['title'],
                 'description' => $schedule['description'] ?? null,
@@ -218,8 +220,23 @@ class EventService
                 'end_time' => $this->toUtc($schedule['end_time'] ?? null, $event->timezoneName()),
                 'status' => $schedule['status'] ?? 'planned',
                 'sort_order' => $order++,
-            ]);
+            ];
+
+            if ($scheduleId && $existing->has($scheduleId)) {
+                $record = $existing->get($scheduleId);
+                $record->update($payload);
+                $keptIds[] = $record->id;
+            } else {
+                $created = EventSchedule::create($payload);
+                $keptIds[] = $created->id;
+            }
         }
+
+        $query = $event->schedules();
+        if (! empty($keptIds)) {
+            $query->whereNotIn('id', $keptIds);
+        }
+        $query->delete();
     }
 
     public function seedDefaultTaxonomies(Event $event): void

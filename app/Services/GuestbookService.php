@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\GuestStatus;
 use App\Enums\MessageStatus;
+use App\Models\AppSetting;
 use App\Models\Guest;
 use App\Models\GuestbookMessage;
 use App\Models\User;
@@ -36,6 +37,8 @@ class GuestbookService
             ]);
         }
 
+        $autoApprove = (string) AppSetting::get('guestbook_auto_approve', '0') === '1';
+
         $message = GuestbookMessage::create([
             'event_id' => $guest->event_id,
             'guest_id' => $guest->id,
@@ -43,7 +46,8 @@ class GuestbookService
             'message' => trim($data['message']),
             'emoji' => $data['emoji'] ?? null,
             'visibility' => $data['visibility'] ?? 'public',
-            'status' => MessageStatus::Pending,
+            'status' => $autoApprove ? MessageStatus::Approved : MessageStatus::Pending,
+            'reviewed_at' => $autoApprove ? now() : null,
             'ip_address' => request()?->ip(),
         ]);
 
@@ -51,8 +55,11 @@ class GuestbookService
             $guest->event,
             $guest,
             'guestbook.submitted',
-            "Ucapan baru dari {$guest->name}",
-            ['visibility' => $message->visibility->value]
+            "Ucapan baru dari {$guest->name}".($autoApprove ? ' (otomatis disetujui)' : ''),
+            [
+                'visibility' => $message->visibility->value,
+                'auto_approved' => $autoApprove,
+            ]
         );
 
         return $message;

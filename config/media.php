@@ -32,4 +32,10 @@ return [
     | 50 MB total matches max_files (10) * max_kb (5120).
     */
     'max_total_kb' => (int) env('MEDIA_MAX_TOTAL_KB', 51200),
+
+    /*
+    | Maximum decoded pixel budget for media processing (prevents memory exhaustion).
+    | Default: 36 megapixels (e.g. 6000 x 6000).
+    */
+    'max_pixels' => (int) env('MEDIA_MAX_PIXELS', 36000000),
 ];
