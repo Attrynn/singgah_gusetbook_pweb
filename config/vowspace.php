@@ -16,8 +16,14 @@ return [
     ],
 
     'tokens' => [
-        'invitation_ttl_days' => 365,
-        'qr_ttl_days' => null,
+        'invitation_ttl_days' => (int) env('INVITATION_TTL_DAYS', 365),
+        /*
+        | QR passes are temporary. The effective expiry is the earlier of the
+        | rollover TTL below and the event end time plus the grace period.
+        */
+        'qr_ttl_days' => (int) env('QR_TOKEN_TTL_DAYS', 30),
+        'qr_grace_days' => (int) env('QR_TOKEN_GRACE_DAYS', 3),
+        'email_change_ttl_minutes' => (int) env('EMAIL_CHANGE_TTL_MINUTES', 60),
     ],
 
     'pagination' => [
@@ -29,6 +35,12 @@ return [
 
     'retention' => [
         'trashed_days' => (int) env('TRASHED_RETENTION_DAYS', 30),
+        /*
+        | Audit rows are kept for accountability, but the network identifiers
+        | attached to them are minimised after this window. Set to 0 to keep
+        | identifiers indefinitely (not recommended).
+        */
+        'audit_log_ip_days' => (int) env('AUDIT_LOG_IP_RETENTION_DAYS', 90),
     ],
 
     'rate_limits' => [

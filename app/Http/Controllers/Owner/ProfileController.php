@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Owner;
 use App\Http\Requests\PasswordRequest;
 use App\Http\Requests\ProfileRequest;
 use App\Services\AuditService;
+use App\Services\EmailChangeService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +15,10 @@ use Illuminate\Support\Str;
 
 class ProfileController extends Controller
 {
-    public function __construct(protected AuditService $audit) {}
+    public function __construct(
+        protected AuditService $audit,
+        protected EmailChangeService $emails,
+    ) {}
 
     public function edit(Request $request)
     {
@@ -27,7 +31,8 @@ class ProfileController extends Controller
     public function update(ProfileRequest $request)
     {
         $user = $request->user();
-        $data = $request->safe()->only(['name', 'email', 'phone']);
+        $data = $request->safe()->only(['name', 'phone']);
+        $submittedEmail = (string) $request->input('email');
 
         if ($request->hasFile('avatar')) {
             if ($user->avatar_path) {
@@ -37,9 +42,17 @@ class ProfileController extends Controller
         }
 
         $user->update($data);
+
+        $status = 'Profil diperbarui.';
+
+        if (strtolower(trim($submittedEmail)) !== strtolower((string) $user->email)) {
+            $this->emails->request($user, $submittedEmail);
+            $status = 'Profil diperbarui. Tautan verifikasi dikirim ke email baru; email login belum berubah.';
+        }
+
         $this->audit->record('profile.updated', 'Profil owner diperbarui', null, $user);
 
-        return back()->with('status', 'Profil diperbarui.');
+        return back()->with('status', $status);
     }
 
     public function password(PasswordRequest $request)

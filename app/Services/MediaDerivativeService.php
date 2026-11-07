@@ -4,13 +4,16 @@ namespace App\Services;
 
 use App\Models\MediaAsset;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 use Throwable;
 
 /**
  * Generates bounded image derivatives for approved media.
  *
- * Pending media is never published, so no public derivative is created until
- * an asset has been approved and moved to the public disk.
+ * Derivatives live on the same private disk as the original. Writes are
+ * checked: a rendition that cannot be persisted is never recorded in the
+ * database, so the UI cannot claim a successful publication that did not
+ * happen.
  */
 class MediaDerivativeService
 {
@@ -19,40 +22,52 @@ class MediaDerivativeService
      */
     public function generate(MediaAsset $asset): array
     {
-        $publicDisk = config('media.public_disk', 'public');
+        $current = ['thumbnail_path' => $asset->thumbnail_path, 'medium_path' => $asset->medium_path];
 
-        if ($asset->storageDisk() !== $publicDisk || ! $asset->isApproved()) {
-            return ['thumbnail_path' => $asset->thumbnail_path, 'medium_path' => $asset->medium_path];
+        if (! $asset->isApproved()) {
+            return $current;
         }
 
+        $disk = $asset->storageDisk();
+
         if (! function_exists('imagecreatefromstring')) {
-            return ['thumbnail_path' => $asset->thumbnail_path, 'medium_path' => $asset->medium_path];
+            return $current;
         }
 
         try {
-            $contents = Storage::disk($publicDisk)->get($asset->path);
+            if (! Storage::disk($disk)->exists($asset->path)) {
+                return $current;
+            }
+
+            $contents = Storage::disk($disk)->get($asset->path);
+
+            // Pre-decode guard: inspect the header (format + dimensions)
+            // before allocating a GD canvas. A file that claims an
+            // oversized or unsupported canvas is skipped without ever
+            // being decoded, so it cannot exhaust process memory.
+            $header = getimagesizefromstring($contents);
+            if ($header === false || ! in_array($header['mime'] ?? null, config('media.derivative_mimes', ['image/jpeg', 'image/png', 'image/webp']), true)) {
+                return $current;
+            }
+
+            $maxPixels = (int) config('media.max_pixels', 36_000_000);
+            if (($header[0] * $header[1]) > $maxPixels) {
+                return $current;
+            }
+
             $image = @imagecreatefromstring($contents);
 
             if ($image === false) {
-                return ['thumbnail_path' => $asset->thumbnail_path, 'medium_path' => $asset->medium_path];
+                return $current;
             }
 
             $width = imagesx($image);
             $height = imagesy($image);
-            $maxPixels = (int) config('media.max_pixels', 36_000_000);
-            if (($width * $height) > $maxPixels) {
-                imagedestroy($image);
-
-                return ['thumbnail_path' => $asset->thumbnail_path, 'medium_path' => $asset->medium_path];
-            }
 
             $base = pathinfo($asset->path, PATHINFO_FILENAME);
             $directory = dirname($asset->path);
 
-            $updates = [
-                'thumbnail_path' => $asset->thumbnail_path,
-                'medium_path' => $asset->medium_path,
-            ];
+            $updates = $current;
 
             foreach (['thumb' => 480, 'medium' => 1280] as $name => $max) {
                 $target = "{$directory}/{$name}/{$base}.jpg";
@@ -82,7 +97,12 @@ class MediaDerivativeService
                 $data = (string) ob_get_clean();
                 imagedestroy($resized);
 
-                Storage::disk($publicDisk)->put($target, $data);
+                if (! Storage::disk($disk)->put($target, $data)) {
+                    report(new RuntimeException("Failed to write media derivative {$target} on disk {$disk}."));
+
+                    continue;
+                }
+
                 $updates[$name === 'thumb' ? 'thumbnail_path' : 'medium_path'] = $target;
             }
 
@@ -94,7 +114,7 @@ class MediaDerivativeService
         } catch (Throwable $exception) {
             report($exception);
 
-            return ['thumbnail_path' => $asset->thumbnail_path, 'medium_path' => $asset->medium_path];
+            return $current;
         }
     }
 }

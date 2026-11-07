@@ -75,7 +75,7 @@ class MediaUploadTest extends TestCase
         $this->assertDatabaseCount('media_assets', 0);
     }
 
-    public function test_admin_upload_is_auto_approved_on_public_disk(): void
+    public function test_admin_upload_is_auto_approved_on_private_disk(): void
     {
         $admin = User::factory()->superadmin()->create();
         $event = $this->makeEvent();
@@ -90,11 +90,12 @@ class MediaUploadTest extends TestCase
         $asset = MediaAsset::firstOrFail();
 
         $this->assertSame('approved', $asset->status->value);
-        $this->assertSame('public', $asset->disk);
-        Storage::disk('public')->assertExists($asset->path);
+        $this->assertSame('local', $asset->disk);
+        Storage::disk('local')->assertExists($asset->path);
+        Storage::disk('public')->assertMissing($asset->path);
     }
 
-    public function test_approving_a_guest_upload_publishes_it_to_public_disk(): void
+    public function test_approving_a_guest_upload_keeps_the_file_private(): void
     {
         $admin = User::factory()->superadmin()->create();
         $event = $this->makeEvent();
@@ -117,8 +118,9 @@ class MediaUploadTest extends TestCase
         $asset->refresh();
 
         $this->assertSame('approved', $asset->status->value);
-        $this->assertSame('public', $asset->disk);
-        Storage::disk('public')->assertExists($asset->path);
+        $this->assertSame('local', $asset->disk);
+        Storage::disk('local')->assertExists($asset->path);
+        Storage::disk('public')->assertMissing($asset->path);
     }
 
     public function test_rejecting_a_guest_upload_deletes_the_staged_file(): void
@@ -160,8 +162,9 @@ class MediaUploadTest extends TestCase
 
         $this->assertNotNull($asset->thumbnail_path);
         $this->assertNotNull($asset->medium_path);
-        Storage::disk('public')->assertExists($asset->thumbnail_path);
-        Storage::disk('public')->assertExists($asset->medium_path);
+        Storage::disk('local')->assertExists($asset->thumbnail_path);
+        Storage::disk('local')->assertExists($asset->medium_path);
+        Storage::disk('public')->assertMissing($asset->thumbnail_path);
     }
 
     public function test_pending_media_preview_requires_a_superadmin(): void

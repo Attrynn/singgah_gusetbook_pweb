@@ -10,7 +10,7 @@ use App\Http\Controllers\Owner\TimelineController;
 use App\Http\Controllers\Owner\WishController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('owner')->name('owner.')->middleware(['auth', 'active', 'role:owner'])->group(function () {
+Route::prefix('owner')->name('owner.')->middleware(['auth', 'auth.session', 'active', 'role:owner'])->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
 
     Route::get('wishes', [WishController::class, 'index'])->name('wishes.index');

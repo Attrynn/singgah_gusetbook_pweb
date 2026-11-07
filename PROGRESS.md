@@ -11,19 +11,19 @@ Status: **Delivered & verified end-to-end.**
 | Area | Target | Delivered | Status |
 | --- | --- | --- | --- |
 | Architecture & tenancy | Single-codebase, 3 roles, row-level event scoping | `events` as tenancy anchor, `ResolveGuestToken`, `ResolvesOwnerEvent`, role middleware | Complete |
-| Database | Schema, migrations, factories, seeders | 12 migrations, 32 domain tables, 4 factories, rich `DemoSeeder` (2 events, 38 guests, all relations) | Complete |
+| Database | Schema, migrations, factories, seeders | 18 migrations, 32 domain tables, 4 factories, rich `DemoSeeder` (2 events, 38 guests, all relations) | Complete |
 | Backend domain | Models, enums, services, form requests | 33 models, 13 enums, 13 domain services, 22 Form Requests, 4 policies | Complete |
 | Security | Hashed tokens, authorization, rate limiters, duplicate guards, audit | SHA-256 + ciphertext tokens, `EnsureRole`, `EnsureActiveUser`, unique check-in constraint, `audit_logs` | Complete |
-| Views & UI | 3 distinct role shells, cold-minimalist neumorphic design | 77 Blade views, 5 layouts, 12 `x-ui` components, Tailwind v4 `@utility` system, Vite assets | Complete |
-| Routes | Superadmin, Owner, Guest, Public | 142 registered routes across `admin.php`, `owner.php`, `guest.php`, `web.php` | Complete |
-| Automated verification | Feature tests, Blade lint, real HTTP smoke | 54 feature tests (144 assertions, all passing), `bin/blade_lint.php` (77 views clean), `./bin/smoke.sh` (real server, all roles passing) | Complete |
+| Views & UI | 3 distinct role shells, cold-minimalist neumorphic design | 84 Blade views, 5 layouts, 12 `x-ui` components, Tailwind v4 `@utility` system, Vite assets | Complete |
+| Routes | Superadmin, Owner, Guest, Public | 145 registered routes across `admin.php`, `owner.php`, `guest.php`, `web.php` | Complete |
+| Automated verification | Feature tests, Blade lint, real HTTP smoke | 106 tests (325 assertions, all passing), `bin/blade_lint.php` (84 views clean), `./bin/smoke.sh` (real server, all roles passing) | Complete |
 | Documentation | ERD, schema, roles, journeys, install, deploy, demo, testing | `README.md`, `PROGRESS.md`, and 8 full guides in `docs/` | Complete |
 
 ---
 
 ## 2. Component inventory
 
-### Schema & persistence (12 migrations, 32 domain tables)
+### Schema & persistence (18 migrations, 32 domain tables)
 - `events`, `event_user`, `event_settings`, `event_venues`, `event_schedules`, `gift_accounts`
 - `guest_categories`, `guest_groups`, `guests`, `guest_tokens`, `invitations`
 - `rsvps`, `checkins`
@@ -45,10 +45,11 @@ Status: **Delivered & verified end-to-end.**
 `CheckinMethod`, `EventStatus`, `GuestStatus`, `InvitationStatus`, `MediaStatus`, `MessageStatus`,
 `MessageVisibility`, `OwnerRole`, `RsvpStatus`, `SongStatus`, `TokenType`, `UserRole`, `GameType`.
 
-### Domain services (13)
-`AuditService`, `CheckinService`, `EventService`, `GameService`, `GuestService`, `GuestbookService`,
-`InvitationService`, `MediaService`, `PollService`, `QrService` (SVG + GD PNG), `ReportService`,
-`RsvpService`, `SeatingService`.
+### Domain services (17)
+`AuditService`, `CheckinService`, `EmailChangeService`, `EventLifecycleService`, `EventService`,
+`GameService`, `GuestCapabilityResolver`, `GuestService`, `GuestbookService`, `InvitationService`,
+`MediaDerivativeService`, `MediaService`, `PollService`, `QrService` (SVG + GD PNG),
+`ReportService`, `RsvpService`, `SeatingService`.
 
 ### Policies (4)
 `EventPolicy`, `GuestPolicy`, `GuestbookMessagePolicy`, `MediaAssetPolicy`.
@@ -57,7 +58,7 @@ Status: **Delivered & verified end-to-end.**
 `EnsureRole` (role gate with 403), `EnsureActiveUser` (invalidates inactive sessions),
 `ResolveGuestToken` (hashes token, scopes guest + event, shares view variables, 404 for invalid).
 
-### Views (77)
+### Views (84)
 - 36 admin views (CRUD for events, guests, categories, groups, invitations, rsvps, checkins,
   guestbook, media, seating, polls, games, songs, reports, settings, audit logs, profile)
 - 12 owner views (dashboard, wishes, attendance, memories, timeline, interactions, story, profile)
@@ -69,10 +70,13 @@ Status: **Delivered & verified end-to-end.**
 - 12 shared `x-ui` components (`button`, `card`, `stat-card`, `badge`, `page-header`, `empty-state`,
   `avatar`, `icon`, `modal`, `tabs`, `dropdown`, `input`)
 
-### Tests (54 tests, 144 assertions, PHPUnit 12)
+### Tests (106 tests, 325 assertions, PHPUnit 12)
 `AuthenticationTest` (6), `AuthorizationTest` (7), `GuestInvitationTest` (7), `RsvpTest` (5),
-`CheckinTest` (5), `GuestbookTest` (5), `InteractionTest` (5), `MediaUploadTest` (5),
-`AdminCrudTest` (7), `ExampleTest` (Feature 1, Unit 1).
+`CheckinTest` (5), `GuestbookTest` (5), `InteractionTest` (5), `MediaUploadTest` (8),
+`AdminCrudTest` (8), `EventLifecycleTest` (4), `GuestCapabilityTest` (4), `CsvImportTest` (7),
+`LiveWallCursorTest` (2), `EventTimezoneTest` (3), `ReportPerformanceTest` (2),
+`MasterSecurityRemediationTest` (11), `ProductionHardeningTest` (17),
+`ExampleTest` (Feature 1, Unit 1).
 
 ### Verification scripts (`bin/`)
 - `bin/blade_lint.php` — view compiler + PHP syntax linter (77 views clean)

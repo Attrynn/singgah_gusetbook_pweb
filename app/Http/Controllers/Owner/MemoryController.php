@@ -5,14 +5,16 @@ namespace App\Http\Controllers\Owner;
 use App\Http\Controllers\Owner\Concerns\ResolvesOwnerEvent;
 use App\Models\MediaAlbum;
 use App\Models\MediaAsset;
+use App\Services\MediaService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\ValidationException;
 
 class MemoryController extends Controller
 {
     use ResolvesOwnerEvent;
+
+    public function __construct(protected MediaService $media) {}
 
     public function index(Request $request)
     {
@@ -52,9 +54,11 @@ class MemoryController extends Controller
     {
         $event = $this->ownerEvent($request);
         abort_unless($asset->event_id === $event->id && $asset->isApproved(), 403);
-        abort_unless(Storage::disk('public')->exists($asset->path), 404);
 
-        return Storage::disk('public')->download($asset->path, $asset->original_name);
+        $disk = $asset->storageDisk();
+        abort_unless(Storage::disk($disk)->exists($asset->path), 404);
+
+        return Storage::disk($disk)->download($asset->path, $asset->original_name);
     }
 
     public function storeAlbum(Request $request)
@@ -71,8 +75,9 @@ class MemoryController extends Controller
     {
         $event = $this->ownerEvent($request);
         abort_unless($album->event_id === $event->id, 403);
-        $album->delete();
 
-        return back()->with('status', 'Album dihapus.');
+        $this->media->deleteAlbum($album, $request->user());
+
+        return back()->with('status', 'Album dihapus. Foto tetap tersimpan di galeri.');
     }
 }

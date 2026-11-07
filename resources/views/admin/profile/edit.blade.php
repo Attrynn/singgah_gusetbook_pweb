@@ -20,7 +20,12 @@
                 <div class="grid gap-5 sm:grid-cols-2">
                     <x-ui.input name="name" label="Nama lengkap" :value="$user->name" required />
 
-                    <x-ui.input name="email" type="email" label="Email" :value="$user->email" required />
+                    <div>
+                        <x-ui.input name="email" type="email" label="Email" :value="$user->email" required />
+                        @if ($user->pending_email)
+                            <p class="hint">Menunggu verifikasi: <span class="font-semibold text-ink">{{ $user->pending_email }}</span></p>
+                        @endif
+                    </div>
 
                     <x-ui.input name="phone" label="Telepon" :value="$user->phone" hint="Opsional, maksimal 30 karakter." />
 

@@ -22,7 +22,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SongController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'role:superadmin'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'auth.session', 'active', 'role:superadmin'])->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
 
     Route::get('events/{event}/preview', [EventController::class, 'preview'])->name('events.preview');

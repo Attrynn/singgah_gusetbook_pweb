@@ -2,13 +2,16 @@
 
 namespace App\Console\Commands;
 
+use App\Models\AuditLog;
 use App\Models\Event;
 use App\Models\Guest;
 use App\Models\GuestbookMessage;
+use App\Models\MediaAlbum;
 use App\Models\MediaAsset;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class PurgeTrashedRecords extends Command
 {
@@ -17,7 +20,7 @@ class PurgeTrashedRecords extends Command
                             {--dry-run : Report what would be purged without deleting}
                             {--include-events : Also permanently delete trashed events}';
 
-    protected $description = 'Permanently purge soft-deleted records past the retention window, including media files';
+    protected $description = 'Permanently purge soft-deleted records past the retention window, including every media object';
 
     public function handle(): int
     {
@@ -46,23 +49,14 @@ class PurgeTrashedRecords extends Command
             return self::SUCCESS;
         }
 
-        $publicDisk = config('media.public_disk', 'public');
-        $stagingDisk = config('media.staging_disk', 'local');
+        $failures = 0;
 
-        (clone $media)->chunkById(100, function ($assets) use ($publicDisk, $stagingDisk): void {
+        (clone $media)->chunkById(100, function ($assets) use (&$failures): void {
             foreach ($assets as $asset) {
-                // Delete original from recorded disk and staging
-                Storage::disk($asset->storageDisk())->delete($asset->path);
-                if (Storage::disk($stagingDisk)->exists($asset->path)) {
-                    Storage::disk($stagingDisk)->delete($asset->path);
-                }
+                if (! $this->purgeMediaAsset($asset)) {
+                    $failures++;
 
-                // Delete public derivatives
-                if ($asset->thumbnail_path && $asset->thumbnail_path !== $asset->path) {
-                    Storage::disk($publicDisk)->delete($asset->thumbnail_path);
-                }
-                if ($asset->medium_path && $asset->medium_path !== $asset->path) {
-                    Storage::disk($publicDisk)->delete($asset->medium_path);
+                    continue;
                 }
 
                 $asset->forceDelete();
@@ -83,30 +77,164 @@ class PurgeTrashedRecords extends Command
         });
 
         if ($this->option('include-events')) {
-            (clone $events)->with('giftAccounts')->chunkById(50, function ($events): void {
+            (clone $events)->chunkById(50, function ($events) use (&$failures): void {
                 foreach ($events as $event) {
-                    if ($event->cover_image_path) {
-                        Storage::disk('public')->delete($event->cover_image_path);
+                    if (! $this->purgeEvent($event)) {
+                        $failures++;
+
+                        continue;
                     }
-                    foreach ($event->giftAccounts as $gift) {
-                        if ($gift->qris_image_path) {
-                            Storage::disk('public')->delete($gift->qris_image_path);
-                        }
-                    }
+
                     $event->forceDelete();
                 }
             });
         }
+
+        $anonymised = $this->anonymiseAuditIdentifiers();
 
         Log::info('vowspace:purge-trashed completed', [
             'media' => $mediaCount,
             'guests' => $guestCount,
             'messages' => $messageCount,
             'events' => $this->option('include-events') ? $eventCount : 0,
+            'audit_identifiers_anonymised' => $anonymised,
+            'storage_failures' => $failures,
         ]);
+
+        if ($failures > 0) {
+            $this->error("Purge finished with {$failures} storage failure(s). The affected records were kept for retry.");
+
+            return self::FAILURE;
+        }
 
         $this->info('Purge complete.');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Remove every object an asset may own (original, thumbnail, medium and
+     * legacy public/staging copies). Returns false when a file still exists,
+     * so the database row is preserved for a later retry.
+     */
+    protected function purgeMediaAsset(MediaAsset $asset): bool
+    {
+        $paths = array_values(array_unique(array_filter([
+            $asset->path, $asset->thumbnail_path, $asset->medium_path,
+        ])));
+
+        if ($paths === []) {
+            return true;
+        }
+
+        foreach ($this->mediaDisks($asset) as $disk) {
+            try {
+                Storage::disk($disk)->delete($paths);
+            } catch (Throwable $e) {
+                report($e);
+                Log::error('Media purge failed', ['asset_id' => $asset->id, 'disk' => $disk]);
+
+                return false;
+            }
+
+            foreach ($paths as $path) {
+                if (Storage::disk($disk)->exists($path)) {
+                    Log::error('Media object still present after purge', [
+                        'asset_id' => $asset->id,
+                        'disk' => $disk,
+                        'path' => $path,
+                    ]);
+
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    protected function mediaDisks(MediaAsset $asset): array
+    {
+        return array_values(array_unique(array_filter([
+            $asset->storageDisk(),
+            config('media.private_disk', 'local'),
+            config('media.staging_disk', 'local'),
+            config('media.public_disk', 'public'),
+        ])));
+    }
+
+    /**
+     * Purge every file owned by the event before the row is removed. If any
+     * object cannot be deleted, the event is kept so the operation is
+     * idempotent and retryable.
+     */
+    protected function purgeEvent(Event $event): bool
+    {
+        $failures = 0;
+
+        foreach ($event->mediaAssets()->withTrashed()->get() as $asset) {
+            if (! $this->purgeMediaAsset($asset)) {
+                $failures++;
+            }
+        }
+
+        if ($failures > 0) {
+            Log::error('Event purge aborted: media objects remain', ['event_id' => $event->id, 'failures' => $failures]);
+
+            return false;
+        }
+
+        // Composite cover constraint is restrictive, so detach covers first.
+        MediaAlbum::where('event_id', $event->id)->update(['cover_media_asset_id' => null]);
+
+        $publicDisk = config('media.public_disk', 'public');
+        $paths = array_filter([$event->cover_image]);
+
+        foreach ($event->giftAccounts()->get() as $gift) {
+            $paths[] = $gift->qris_image_path;
+        }
+
+        $paths = array_values(array_filter($paths));
+
+        if ($paths !== []) {
+            try {
+                Storage::disk($publicDisk)->delete($paths);
+            } catch (Throwable $e) {
+                report($e);
+                Log::error('Event asset purge failed', ['event_id' => $event->id]);
+
+                return false;
+            }
+
+            foreach ($paths as $path) {
+                if (Storage::disk($publicDisk)->exists($path)) {
+                    Log::error('Event asset still present after purge', ['event_id' => $event->id, 'path' => $path]);
+
+                    return false;
+                }
+            }
+        }
+
+        return $failures === 0;
+    }
+
+    /**
+     * Audit rows stay for accountability; network identifiers are removed
+     * after the configured window. Returns the number of rows minimised.
+     */
+    protected function anonymiseAuditIdentifiers(): int
+    {
+        $days = (int) config('vowspace.retention.audit_log_ip_days', 90);
+
+        if ($days <= 0) {
+            return 0;
+        }
+
+        return AuditLog::where('created_at', '<', now()->subDays($days))
+            ->where(fn ($query) => $query->whereNotNull('ip_address')->orWhereNotNull('user_agent'))
+            ->update(['ip_address' => null, 'user_agent' => null]);
     }
 }

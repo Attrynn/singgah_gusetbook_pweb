@@ -35,7 +35,7 @@ class MediaAlbum extends Model
 
     public function coverUrl(): ?string
     {
-        if ($this->cover) {
+        if ($this->cover && $this->cover->isApproved()) {
             return $this->cover->url();
         }
 

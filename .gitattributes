@@ -1,11 +1,22 @@
-* text=auto eol=lf
+# Release archives (git archive) must never contain runtime secrets or state.
+/.env export-ignore
+/.env.local export-ignore
+/.env.production export-ignore
+/.env.backup export-ignore
+/.env.testing export-ignore
+/.gitignore export-ignore
+/.gitattributes export-ignore
+/phpunit.xml export-ignore
+/tests export-ignore
+/storage export-ignore
+/bootstrap/cache export-ignore
+/database/database.sqlite export-ignore
+/node_modules export-ignore
+/vendor export-ignore
 
-*.blade.php diff=html
-*.css diff=css
-*.html diff=html
-*.md diff=markdown
-*.php diff=php
-
-/.github export-ignore
-CHANGELOG.md export-ignore
-.styleci.yml export-ignore
+# Never normalise line endings inside binary assets.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.pdf binary

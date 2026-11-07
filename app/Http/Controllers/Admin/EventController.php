@@ -138,11 +138,12 @@ class EventController extends Controller
 
         $validOwnerIds = User::whereIn('id', $ids)
             ->where('role', UserRole::Owner)
+            ->where('is_active', true)
             ->pluck('id');
 
         if ($validOwnerIds->count() !== $ids->count()) {
             throw ValidationException::withMessages([
-                'owner_ids' => 'Semua pemilik yang dipilih harus memiliki peran Owner yang valid.',
+                'owner_ids' => 'Semua pemilik yang dipilih harus memiliki peran Owner dan akun yang aktif.',
             ]);
         }
 

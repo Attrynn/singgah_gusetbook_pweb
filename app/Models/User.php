@@ -28,12 +28,14 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'email_change_token_hash',
     ];
 
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
+            'email_change_expires_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
             'is_active' => 'boolean',

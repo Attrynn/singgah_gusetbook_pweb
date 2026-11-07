@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 class MediaAsset extends Model
 {
@@ -67,47 +67,48 @@ class MediaAsset extends Model
     }
 
     /**
-     * Disk that physically holds the file.
+     * Disk that physically holds the file. Guest media is stored on the
+     * private disk; the public disk is only used for staff artefacts.
      */
     public function storageDisk(): string
     {
-        return $this->disk ?: config('media.public_disk', 'public');
-    }
-
-    public function isPublished(): bool
-    {
-        return $this->isApproved() && $this->storageDisk() === config('media.public_disk', 'public');
+        return $this->disk ?: config('media.private_disk', 'local');
     }
 
     /**
-     * Public URL for approved media. Pending/rejected media must be served
-     * through an authorised preview endpoint instead.
+     * Approval makes an asset eligible for delivery to the event audience.
+     * It never makes the physical object publicly addressable.
      */
-    public function url(): string
+    public function isPublished(): bool
     {
-        if ($this->isPublished()) {
-            return Storage::disk($this->storageDisk())->url($this->path);
+        return $this->isApproved();
+    }
+
+    /**
+     * Signed, short-lived delivery URL. Non-approved assets are only reachable
+     * through the superadmin preview endpoint.
+     */
+    public function url(?string $variant = null): string
+    {
+        if (! $this->isApproved()) {
+            return route('admin.media.preview', $this);
         }
 
-        return route('admin.media.preview', $this);
+        return URL::temporarySignedRoute(
+            'media.show',
+            now()->addMinutes(max(1, (int) config('media.delivery_ttl_minutes', 60))),
+            array_filter(['asset' => $this->getKey(), 'variant' => $variant])
+        );
     }
 
     public function thumbnailUrl(): string
     {
-        if ($this->isPublished() && $this->thumbnail_path) {
-            return Storage::disk($this->storageDisk())->url($this->thumbnail_path);
-        }
-
-        return $this->url();
+        return $this->url($this->thumbnail_path ? 'thumb' : null);
     }
 
     public function mediumUrl(): string
     {
-        if ($this->isPublished() && $this->medium_path) {
-            return Storage::disk($this->storageDisk())->url($this->medium_path);
-        }
-
-        return $this->url();
+        return $this->url($this->medium_path ? 'medium' : null);
     }
 
     public function isApproved(): bool

@@ -130,7 +130,7 @@ class CheckinService
                 $lockedGuest->forceFill(['checked_in_at' => now()])->save();
                 $freshToken->markUsed();
 
-                $this->audit->record(
+                $this->audit->recordCritical(
                     'checkin.qr',
                     "Check-in QR: {$lockedGuest->name}",
                     $lockedEvent,
@@ -209,7 +209,7 @@ class CheckinService
 
                 $lockedGuest->forceFill(['checked_in_at' => now()])->save();
 
-                $this->audit->record(
+                $this->audit->recordCritical(
                     'checkin.manual',
                     "Check-in manual: {$lockedGuest->name}",
                     $lockedEvent,

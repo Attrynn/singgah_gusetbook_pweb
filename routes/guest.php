@@ -9,9 +9,17 @@ use App\Http\Controllers\Guest\GuestInvitationController;
 use App\Http\Controllers\Guest\GuestPassController;
 use App\Http\Controllers\Guest\GuestRsvpController;
 use App\Http\Controllers\Guest\LiveWallController;
+use App\Http\Controllers\MediaDeliveryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/e/{slug}', [GuestInvitationController::class, 'landing'])->name('guest.landing');
+
+// Signed delivery for private event media. The controller re-checks the
+// asset and event access policy on every request, so withdrawing approval,
+// archiving the event or deleting it denies access even for an issued URL.
+Route::get('/media/{asset}', MediaDeliveryController::class)
+    ->middleware('signed')
+    ->name('media.show');
 Route::get('/wall/{slug}', [LiveWallController::class, 'show'])->name('live-wall.show');
 Route::get('/wall/{slug}/messages', [LiveWallController::class, 'messages'])->name('live-wall.messages');
 

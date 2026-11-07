@@ -28,6 +28,9 @@
 
         <x-ui.input name="name" label="Nama lengkap" required placeholder="Contoh: Budi Santoso" />
         <x-ui.input name="email" label="Email" required placeholder="you@example.com" />
+        @if ($user->pending_email)
+            <p class="hint">Menunggu verifikasi: <span class="font-semibold text-ink">{{ $user->pending_email }}</span></p>
+        @endif
         <x-ui.input name="phone" label="No telepon" placeholder="+62 812-345-6789" />
 
         <div class="pt-3 mt-3 border-t border-line/60">

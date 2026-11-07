@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use RuntimeException;
 use Throwable;
 
 class MediaService
@@ -23,20 +24,20 @@ class MediaService
     ) {}
 
     /**
-     * Guest uploads are staged on a private disk until a moderator approves
-     * them. Nothing is publicly reachable before approval.
+     * Guest uploads are stored on the private disk. They are never publicly
+     * reachable, whether pending, approved or rejected.
      */
     public function storeGuestUpload(Guest $guest, UploadedFile $file, ?string $caption = null): MediaAsset
     {
         $guest->loadMissing('event');
         $event = $guest->event;
 
-        $stagingDisk = config('media.staging_disk', 'local');
+        $disk = $this->privateDisk();
         $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'jpg');
         $stagedPath = $file->storeAs(
             "events/{$event->id}/pending",
             Str::uuid()->toString().'.'.$extension,
-            $stagingDisk
+            $disk
         );
 
         if ($stagedPath === false) {
@@ -46,7 +47,7 @@ class MediaService
         try {
             $asset = DB::transaction(fn (): MediaAsset => MediaAsset::create([
                 'event_id' => $event->id,
-                'disk' => $stagingDisk,
+                'disk' => $disk,
                 'guest_id' => $guest->id,
                 'path' => $stagedPath,
                 'thumbnail_path' => null,
@@ -57,7 +58,7 @@ class MediaService
                 'status' => MediaStatus::Pending,
             ]));
         } catch (Throwable $e) {
-            Storage::disk($stagingDisk)->delete($stagedPath);
+            Storage::disk($disk)->delete($stagedPath);
 
             throw $e;
         }
@@ -68,7 +69,8 @@ class MediaService
     }
 
     /**
-     * Superadmin uploads go straight to the public disk.
+     * Superadmin uploads are stored privately as well; staff see them through
+     * the same signed delivery endpoint as guests.
      */
     public function storeEventUpload(Event $event, UploadedFile $file, User $actor, ?MediaAlbum $album = null, bool $approved = true): MediaAsset
     {
@@ -78,8 +80,8 @@ class MediaService
             ]);
         }
 
-        $publicDisk = config('media.public_disk', 'public');
-        $path = $file->store("events/{$event->id}/gallery", $publicDisk);
+        $disk = $this->privateDisk();
+        $path = $file->store("events/{$event->id}/gallery", $disk);
 
         if ($path === false) {
             throw ValidationException::withMessages(['files' => 'Foto gagal disimpan. Silakan coba lagi.']);
@@ -88,7 +90,7 @@ class MediaService
         try {
             $asset = DB::transaction(fn (): MediaAsset => MediaAsset::create([
                 'event_id' => $event->id,
-                'disk' => $publicDisk,
+                'disk' => $disk,
                 'media_album_id' => $album?->id,
                 'uploaded_by' => $actor->id,
                 'path' => $path,
@@ -102,7 +104,7 @@ class MediaService
                 'reviewed_at' => $approved ? now() : null,
             ]));
         } catch (Throwable $e) {
-            Storage::disk($publicDisk)->delete($path);
+            Storage::disk($disk)->delete($path);
 
             throw $e;
         }
@@ -115,8 +117,10 @@ class MediaService
     }
 
     /**
-     * Approving a staged guest upload moves it from the private staging disk
-     * to the public disk. Rejecting deletes the staged file.
+     * Approval changes the access policy only; the object stays private.
+     * Rejection and demotion revoke access immediately. Physical cleanup is
+     * attempted after the access state is committed and is replayed by the
+     * purge command if storage deletion fails.
      */
     public function moderate(MediaAsset $asset, string $action, User $actor): MediaAsset
     {
@@ -126,86 +130,44 @@ class MediaService
             default => MediaStatus::Pending,
         };
 
-        $originalDisk = $asset->storageDisk();
-        $originalPath = $asset->path;
-        $published = null;
+        $disk = $asset->storageDisk();
 
-        if ($status === MediaStatus::Approved && ! $asset->isPublished()) {
-            $published = $this->publishStagedFile($asset);
-        }
-
-        try {
-            DB::transaction(function () use ($asset, $status, $actor, $published): void {
-                $asset->update([
-                    'status' => $status,
-                    'reviewed_by' => $actor->id,
-                    'reviewed_at' => now(),
-                    ...($published ?? []),
-                ]);
-            });
-        } catch (Throwable $e) {
-            if ($published) {
-                Storage::disk($published['disk'])->delete($published['path']);
-            }
-
-            throw $e;
-        }
-
-        if ($status === MediaStatus::Rejected) {
-            $this->deleteFiles($asset->fresh(), [$originalDisk], [$originalPath]);
-        }
-
-        if ($status === MediaStatus::Approved) {
-            $this->derivatives->generate($asset->fresh());
-        }
-
-        $this->audit->recordCritical(
-            'media.'.$action,
-            "Foto {$asset->original_name} di-{$action}",
-            $asset->event,
-            $actor,
-            $asset,
-            ['status' => $status->value]
-        );
-
-        return $asset->fresh();
-    }
-
-    /**
-     * Copy the staged file to the public disk and return the new attributes.
-     *
-     * @return array{disk: string, path: string}
-     */
-    protected function publishStagedFile(MediaAsset $asset): array
-    {
-        $publicDisk = config('media.public_disk', 'public');
-        $sourceDisk = $asset->storageDisk();
-
-        if (! Storage::disk($sourceDisk)->exists($asset->path)) {
+        if ($status === MediaStatus::Approved && ! Storage::disk($disk)->exists($asset->path)) {
             throw ValidationException::withMessages([
-                'asset' => 'Berkas foto tidak ditemukan pada penyimpanan sementara.',
+                'asset' => 'Berkas foto tidak ditemukan pada penyimpanan. Persetujuan dibatalkan.',
             ]);
         }
 
-        $targetPath = "events/{$asset->event_id}/gallery/".basename($asset->path);
+        DB::transaction(function () use ($asset, $status, $actor, $action): void {
+            $asset->update([
+                'status' => $status,
+                'reviewed_by' => $actor->id,
+                'reviewed_at' => now(),
+            ]);
 
-        if (! Storage::disk($publicDisk)->exists($targetPath)) {
-            $stream = Storage::disk($sourceDisk)->readStream($asset->path);
+            $this->audit->recordCritical(
+                'media.'.$action,
+                "Foto {$asset->original_name} di-{$action}",
+                $asset->event,
+                $actor,
+                $asset,
+                ['status' => $status->value]
+            );
+        });
 
-            if ($stream === null) {
-                throw ValidationException::withMessages([
-                    'asset' => 'Berkas foto tidak dapat dibaca dari penyimpanan sementara.',
-                ]);
-            }
+        $fresh = $asset->fresh();
 
-            Storage::disk($publicDisk)->writeStream($targetPath, $stream);
+        if ($status === MediaStatus::Approved) {
+            $this->derivatives->generate($fresh);
+        } else {
+            $this->withdrawDerivatives($fresh);
 
-            if (is_resource($stream)) {
-                fclose($stream);
+            if ($status === MediaStatus::Rejected) {
+                $this->attemptCleanup($fresh, [$fresh->path, $fresh->thumbnail_path, $fresh->medium_path]);
             }
         }
 
-        return ['disk' => $publicDisk, 'path' => $targetPath];
+        return $fresh->fresh();
     }
 
     public function toggleFeatured(MediaAsset $asset, User $actor): MediaAsset
@@ -216,28 +178,86 @@ class MediaService
         return $asset->fresh();
     }
 
+    /**
+     * Deletion is physical-then-database: files are removed first so a storage
+     * failure aborts the operation instead of leaving an untracked object.
+     */
     public function delete(MediaAsset $asset, User $actor): void
     {
-        $disk = $asset->storageDisk();
-        $paths = array_filter([$asset->path, $asset->thumbnail_path]);
+        $paths = array_values(array_unique(array_filter([
+            $asset->path, $asset->thumbnail_path, $asset->medium_path,
+        ])));
 
-        DB::transaction(function () use ($asset, $actor, $disk, $paths): void {
+        $this->deleteFiles($asset, $paths);
+
+        DB::transaction(function () use ($asset, $actor): void {
+            MediaAlbum::where('cover_media_asset_id', $asset->id)->update(['cover_media_asset_id' => null]);
+
             $this->audit->record('media.deleted', "Foto dihapus: {$asset->original_name}", $asset->event, $actor, $asset);
             $asset->delete();
-
-            $this->deleteFiles($asset, [$disk], $paths);
         });
     }
 
     /**
-     * @param  array<int,string>  $disks
-     * @param  array<int,string>  $paths
+     * @param  array<int,string|null>  $paths
      */
-    protected function deleteFiles(MediaAsset $asset, array $disks, array $paths): void
+    protected function deleteFiles(MediaAsset $asset, array $paths): void
     {
-        foreach (array_unique($disks) as $disk) {
-            Storage::disk($disk)->delete($paths);
+        $paths = array_values(array_filter($paths));
+
+        if ($paths === []) {
+            return;
         }
+
+        foreach ($this->storageDisks($asset) as $disk) {
+            if (! Storage::disk($disk)->delete($paths)) {
+                throw new RuntimeException("Gagal menghapus berkas media pada disk {$disk}.");
+            }
+        }
+    }
+
+    /**
+     * Best-effort cleanup used after an access-state change has committed.
+     * Failures are reported and remain recoverable through the purge command.
+     *
+     * @param  array<int,string|null>  $paths
+     */
+    protected function attemptCleanup(MediaAsset $asset, array $paths): void
+    {
+        try {
+            $this->deleteFiles($asset, $paths);
+        } catch (Throwable $e) {
+            report($e);
+        }
+    }
+
+    protected function withdrawDerivatives(MediaAsset $asset): void
+    {
+        $this->attemptCleanup($asset, [$asset->thumbnail_path, $asset->medium_path]);
+
+        if ($asset->thumbnail_path || $asset->medium_path) {
+            $asset->forceFill(['thumbnail_path' => null, 'medium_path' => null])->save();
+        }
+    }
+
+    /**
+     * Every disk an asset's objects may exist on, including legacy public
+     * copies left behind by the pre-private storage model.
+     *
+     * @return array<int,string>
+     */
+    protected function storageDisks(MediaAsset $asset): array
+    {
+        return array_values(array_unique(array_filter([
+            $asset->storageDisk(),
+            $this->privateDisk(),
+            config('media.public_disk', 'public'),
+        ])));
+    }
+
+    protected function privateDisk(): string
+    {
+        return (string) config('media.private_disk', 'local');
     }
 
     public function createAlbum(Event $event, array $data, User $actor): MediaAlbum
@@ -254,11 +274,19 @@ class MediaService
         return $album;
     }
 
+    /**
+     * Deleting an album detaches its media instead of cascading, clears the
+     * cover reference and records the change durably.
+     */
     public function deleteAlbum(MediaAlbum $album, User $actor): void
     {
         DB::transaction(function () use ($album, $actor): void {
             MediaAsset::where('media_album_id', $album->id)->update(['media_album_id' => null]);
-            $this->audit->record('album.deleted', "Album dihapus: {$album->name}", $album->event, $actor, $album);
+
+            $album->forceFill(['cover_media_asset_id' => null])->save();
+
+            $this->audit->recordCritical('album.deleted', "Album dihapus: {$album->name}", $album->event, $actor, $album);
+
             $album->delete();
         });
     }

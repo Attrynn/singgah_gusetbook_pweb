@@ -9,6 +9,7 @@ use App\Models\Guest;
 use App\Models\GuestToken;
 use App\Models\Invitation;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -47,9 +48,6 @@ class InvitationService
     protected function createToken(Guest $guest, TokenType $type): GuestToken
     {
         $raw = Str::random(64);
-        $ttl = $type === TokenType::Invitation
-            ? config('vowspace.tokens.invitation_ttl_days')
-            : config('vowspace.tokens.qr_ttl_days');
 
         return GuestToken::create([
             'guest_id' => $guest->id,
@@ -58,8 +56,41 @@ class InvitationService
             'token_hash' => GuestToken::hashToken($raw),
             'token_ciphertext' => Crypt::encryptString($raw),
             'token_prefix' => substr($raw, 0, 8),
-            'expires_at' => $ttl ? now()->addDays((int) $ttl) : null,
+            'expires_at' => $type === TokenType::Qr
+                ? $this->qrExpiresAt($guest)
+                : $this->invitationExpiresAt(),
         ]);
+    }
+
+    protected function invitationExpiresAt(): ?Carbon
+    {
+        $ttl = config('vowspace.tokens.invitation_ttl_days');
+
+        return $ttl ? now()->addDays((int) $ttl) : null;
+    }
+
+    /**
+     * A QR pass is valid for the shorter of the configured rollover TTL and
+     * the event end plus a grace period. Event lifecycle therefore bounds the
+     * token, and a past event cannot mint a permanently valid pass.
+     */
+    public function qrExpiresAt(Guest $guest): ?Carbon
+    {
+        $guest->loadMissing('event');
+
+        $ttl = config('vowspace.tokens.qr_ttl_days');
+        $expiresAt = $ttl ? now()->addDays((int) $ttl) : null;
+
+        $eventEnd = $guest->event?->endsAtUtc();
+
+        if ($eventEnd) {
+            $limit = Carbon::instance($eventEnd)
+                ->addDays((int) config('vowspace.tokens.qr_grace_days', 3));
+
+            $expiresAt = $expiresAt && $expiresAt->lessThan($limit) ? $expiresAt : $limit;
+        }
+
+        return $expiresAt;
     }
 
     public function rawToken(Guest $guest, TokenType $type = TokenType::Invitation): ?string
@@ -153,6 +184,10 @@ class InvitationService
         }
 
         if (! $token->guest || ! $token->event) {
+            return null;
+        }
+
+        if ($token->event->trashed()) {
             return null;
         }
 

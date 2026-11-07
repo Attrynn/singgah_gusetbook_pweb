@@ -211,8 +211,9 @@ class MasterSecurityRemediationTest extends TestCase
         $this->assertNotSame($schedule1->id, $schedules[1]->id);
     }
 
-    public function test_media_derivatives_strip_exif_and_generate_public_renditions(): void
+    public function test_media_derivatives_strip_exif_and_generate_private_renditions(): void
     {
+        Storage::fake('local');
         Storage::fake('public');
         $event = $this->makeEvent();
         $user = User::factory()->superadmin()->create();
@@ -227,11 +228,11 @@ class MasterSecurityRemediationTest extends TestCase
         imagedestroy($image);
 
         $path = "events/{$event->id}/gallery/test.jpg";
-        Storage::disk('public')->put($path, $content);
+        Storage::disk('local')->put($path, $content);
 
         $asset = MediaAsset::create([
             'event_id' => $event->id,
-            'disk' => 'public',
+            'disk' => 'local',
             'uploaded_by' => $user->id,
             'path' => $path,
             'original_name' => 'test.jpg',
@@ -245,8 +246,48 @@ class MasterSecurityRemediationTest extends TestCase
 
         $this->assertNotNull($updates['thumbnail_path']);
         $this->assertNotNull($updates['medium_path']);
-        Storage::disk('public')->assertExists($updates['thumbnail_path']);
-        Storage::disk('public')->assertExists($updates['medium_path']);
+        Storage::disk('local')->assertExists($updates['thumbnail_path']);
+        Storage::disk('local')->assertExists($updates['medium_path']);
+        Storage::disk('public')->assertMissing($updates['thumbnail_path']);
+    }
+
+    public function test_derivative_generation_applies_predecode_pixel_guard(): void
+    {
+        Storage::fake('local');
+        Storage::fake('public');
+        $event = $this->makeEvent();
+        $user = User::factory()->superadmin()->create();
+
+        // A PNG header declaring 8000 x 8000 (64 megapixels > 36 megapixel budget)
+        // must be skipped before allocating a GD canvas.
+        $width = 8000;
+        $height = 8000;
+        $ihdrData = pack('NN', $width, $height).pack('NN', 8, 2).pack('CCC', 0, 0, 0);
+        $oversized = "\x89PNG\r\n\x1a\n"
+            .pack('N', 13).'IHDR'.$ihdrData.pack('N', crc32('IHDR'.$ihdrData))
+            .pack('N', 0).'IEND'.pack('N', crc32('IEND'));
+
+        $this->assertSame([8000, 8000], array_slice(getimagesizefromstring($oversized), 0, 2));
+
+        $path = "events/{$event->id}/gallery/oversized.png";
+        Storage::disk('local')->put($path, $oversized);
+
+        $asset = MediaAsset::create([
+            'event_id' => $event->id,
+            'disk' => 'local',
+            'uploaded_by' => $user->id,
+            'path' => $path,
+            'original_name' => 'oversized.png',
+            'mime_type' => 'image/png',
+            'size_bytes' => strlen($oversized),
+            'status' => 'approved',
+        ]);
+
+        $updates = app(MediaDerivativeService::class)->generate($asset);
+
+        $this->assertNull($updates['thumbnail_path']);
+        $this->assertNull($updates['medium_path']);
+        $this->assertNull($asset->fresh()->thumbnail_path);
     }
 
     public function test_purge_command_removes_trashed_records_and_files(): void

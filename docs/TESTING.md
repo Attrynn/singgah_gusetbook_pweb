@@ -19,7 +19,7 @@ php artisan test --compact          # one-line summary
 php artisan test --filter=Checkin   # a single file
 ```
 
-Current state: **80 tests, 227 assertions, all passing.**
+Current state: **106 tests, 325 assertions, all passing.**
 
 Environment: `phpunit.xml` forces `APP_ENV=testing`, `DB_CONNECTION=sqlite`,
 `DB_DATABASE=:memory:`, `CACHE_STORE=array`, `MAIL_MAILER=array`, `QUEUE_CONNECTION=sync`,
@@ -40,8 +40,16 @@ server is required.
 | `CheckinTest` | 5 | QR check-in, duplicate prevention, wrong-event detection, invitation token rejected as QR, manual check-in |
 | `GuestbookTest` | 5 | wish submission, minimum length, disabled guestbook, admin approval, live wall filtering |
 | `InteractionTest` | 5 | song request, single poll vote, closed poll rejection, quiz scoring + single attempt, draft-event block |
-| `MediaUploadTest` | 5 | guest upload pending, non-image rejected, gallery-disabled block, admin auto-approve, moderation |
-| `AdminCrudTest` | 7 | event create with schedules, guest create issues tokens, guest CSV export, report CSV, status change, settings, owner denied |
+| `MediaUploadTest` | 8 | private staging, non-image rejected, gallery-disabled block, admin private upload, approval keeps file private, rejection cleanup, derivatives, pending preview authorization |
+| `AdminCrudTest` | 8 | event create with schedules, guest create issues tokens, guest CSV export, report CSV, status change, settings, owner denied |
+| `EventLifecycleTest` | 4 | allowed/denied lifecycle transitions and timestamp integrity |
+| `GuestCapabilityTest` | 4 | capability resolver matches HTTP enforcement |
+| `CsvImportTest` | 7 | CSV import limits, formula-injection sanitisation, validation |
+| `LiveWallCursorTest` | 2 | cursor-based live wall polling |
+| `EventTimezoneTest` | 3 | event-local input, UTC persistence, local display |
+| `ReportPerformanceTest` | 2 | report aggregation query bounds |
+| `MasterSecurityRemediationTest` | 11 | owner sync, password revocation, guestbook setting, check-in denial, stable schedules, private derivatives, pre-decode pixel guard, purge |
+| `ProductionHardeningTest` | 17 | signed media delivery, demotion/archive revocation, album cover tenancy, album detach, QR expiry, durable check-in audit, pending email verification, session revocation, purge anonymisation, event purge, legacy media migration |
 | `ExampleTest` (Feature) | 1 | home page renders |
 | `ExampleTest` (Unit) | 1 | framework sanity check |
 
@@ -71,7 +79,7 @@ Stated honestly:
   toggles, Chart.js rendering — is verified manually and by the HTTP smoke test, not automatically.
 - No test asserts PDF *content*; only that CSV endpoints stream and that the PDF route responds.
 - No load/performance tests.
-- No mail-sending tests, because no mail is sent by the application.
+- Mail delivery is not asserted end-to-end; email-change tests use `Notification::fake()` and assert the notification payload, not the transport.
 - Seating, reports and audit-log screens have route-level smoke coverage but no dedicated feature
   assertions.
 
@@ -81,7 +89,7 @@ Stated honestly:
 
 ```bash
 php bin/blade_lint.php
-# ALL 77 VIEWS CLEAN
+# ALL 84 VIEWS CLEAN
 ```
 
 The script clears the view cache, compiles every `resources/views/**/*.blade.php`, resolves the
