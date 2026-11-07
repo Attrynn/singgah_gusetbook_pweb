@@ -24,8 +24,8 @@
 
                 <x-ui.textarea name="description" label="Deskripsi" rows="3" :value="$game->description" />
 
-                <label class="flex items-center gap-3 rounded-2xl border border-line bg-surface-2/40 px-4 py-3">
-                    <input type="checkbox" name="is_active" value="1" class="h-4 w-4 rounded border-line text-accent focus:ring-accent" @checked(old('is_active', $game->is_active))>
+                <label for="is_active" class="flex items-center gap-3 rounded-2xl border border-line bg-surface-2/40 px-4 py-3">
+                    <input id="is_active" type="checkbox" name="is_active" value="1" class="h-4 w-4 rounded border-line text-accent focus:ring-accent" @checked(old('is_active', $game->is_active))>
                     <span>
                         <span class="block text-sm font-medium text-ink">Game aktif</span>
                         <span class="block text-xs text-muted">Hanya game aktif yang bisa dimainkan tamu.</span>
@@ -42,7 +42,7 @@
             <div class="card border-danger/20 p-5">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h2 class="section-title text-[#8f4f58]">Hapus game</h2>
+                        <h2 class="section-title text-danger">Hapus game</h2>
                         <p class="mt-1 text-xs text-muted">Menghapus game juga menghapus pertanyaan dan percobaan tamu.</p>
                     </div>
                     <form method="POST" action="{{ route('admin.interactions.games.destroy', $game) }}" data-confirm="Hapus game ini beserta seluruh pertanyaannya?" data-confirm-title="Hapus Game">
@@ -82,14 +82,14 @@
                                     <form method="POST" action="{{ route('admin.interactions.games.questions.destroy', [$game, $question]) }}" data-confirm="Hapus pertanyaan ini?" data-confirm-title="Hapus Pertanyaan">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="icon-btn h-8 w-8 text-[#a35b64]" title="Hapus pertanyaan">
+                                        <button type="submit" class="icon-btn h-8 w-8 text-danger" title="Hapus pertanyaan" aria-label="Hapus pertanyaan">
                                             <x-ui.icon name="trash" class="h-3.5 w-3.5" />
                                         </button>
                                     </form>
                                 </div>
                                 <ul class="mt-3 space-y-1.5">
                                     @foreach ($question->options as $option)
-                                        <li class="flex items-center gap-2 text-xs {{ $option->is_correct ? 'font-semibold text-[#3f8069]' : 'text-muted' }}">
+                                        <li class="flex items-center gap-2 text-xs {{ $option->is_correct ? 'font-semibold text-success' : 'text-muted' }}">
                                             <x-ui.icon :name="$option->is_correct ? 'check' : 'chevron-right'" class="h-3.5 w-3.5" />
                                             {{ $option->label }}
                                             @if ($option->is_correct)
@@ -114,18 +114,18 @@
             <form method="POST" action="{{ route('admin.interactions.games.questions.store', $game) }}" class="mt-4 space-y-4">
                 @csrf
                 <div>
-                    <label class="label">Pertanyaan <span class="text-[#b76a73]">*</span></label>
-                    <input name="question" type="text" class="input" value="{{ old('question') }}" required placeholder="Contoh: Di mana kami pertama bertemu?">
-                    @error('question')<p class="error-text">{{ $message }}</p>@enderror
+                    <label for="question" class="label">Pertanyaan <span class="text-danger">*</span></label>
+                    <input id="question" name="question" type="text" class="input" value="{{ old('question') }}" required placeholder="Contoh: Di mana kami pertama bertemu?" aria-invalid="true" aria-describedby="question-error">
+                    @error('question')<p id="question-error" class="error-text">{{ $message }}</p>@enderror
                 </div>
 
-                <div class="space-y-2">
+                <div class="space-y-2" role="radiogroup" aria-label="Pilihan jawaban">
                     <p class="label">Pilihan jawaban</p>
                     <template x-for="(option, index) in options" :key="index">
                         <div class="flex items-center gap-2">
-                            <input type="radio" name="correct_index" :value="index" :checked="index === 0" class="h-4 w-4 border-line text-accent focus:ring-accent" title="Tandai jawaban benar">
+                            <input type="radio" name="correct_index" :value="index" :checked="index === 0" class="h-4 w-4 border-line text-accent focus:ring-accent" title="Tandai jawaban benar" aria-label="Tandai jawaban benar">
                             <input type="text" :name="'options[' + index + ']'" x-model="options[index]" class="input" required :placeholder="'Pilihan ' + (index + 1)">
-                            <button type="button" class="icon-btn h-8 w-8 shrink-0 text-[#a35b64]" x-show="options.length > 2" x-on:click="remove(index)" title="Hapus pilihan">
+                            <button type="button" class="icon-btn h-8 w-8 shrink-0 text-danger" x-show="options.length > 2" x-on:click="remove(index)" title="Hapus pilihan" aria-label="Hapus pilihan">
                                 <x-ui.icon name="close" class="h-3.5 w-3.5" />
                             </button>
                         </div>

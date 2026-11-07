@@ -3,7 +3,6 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#1F2A34">
     <title>{{ $event->coupleNames() }} · Live Wall · VOWSPACE</title>
     <script>
         (function() {
@@ -30,20 +29,22 @@
             <div>
                 <p class="section-kicker">Tembok Ucapan Langsung</p>
                 <h1 class="font-serif text-3xl font-bold tracking-tight text-ink md:text-4xl">
-                    {{ $event->groom_name }} & {{ $event->bride_name }}
+                    {{ $event->groom_name }} &amp; {{ $event->bride_name }}
                 </h1>
                 <p class="mt-1 text-xs text-muted">
-                    {{ $event->event_date?->translatedFormat('l, d F Y') }} · {{ $event->venue?->name ?? 'Wedding Celebration' }}
+                    {{ $event->event_date?->translatedFormat('l, d F Y') }} · {{ $event->venue?->name ?? 'Perayaan pernikahan' }}
                 </p>
             </div>
             <div class="flex items-center gap-3">
-                <span class="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-xs font-semibold text-ink shadow-sm">
-                    <span class="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-500"></span>
-                    <span>Live Updates</span>
+                <span class="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-xs font-semibold text-ink shadow-sm"
+                      role="status" aria-live="polite">
+                    <span class="inline-block h-2.5 w-2.5 rounded-full"
+                          :class="status === 'offline' ? 'bg-danger animate-pulse' : (status === 'live' ? 'bg-success' : 'bg-warning animate-pulse')"></span>
+                    <span x-text="status === 'offline' ? 'Terputus · mencoba lagi' : (status === 'live' ? 'Terhubung' : 'Menghubungkan...')">Menghubungkan...</span>
                 </span>
-                <button type="button" @click="fetchNewMessages()" class="btn btn-secondary btn-sm" :disabled="loading">
+                <button type="button" @click="fetchNewMessages()" class="btn btn-secondary btn-sm" :disabled="loading" aria-label="Muat ulang ucapan">
                     <x-ui.icon name="refresh" class="h-4 w-4" />
-                    <span x-text="loading ? 'Memuat...' : 'Segarkan'"></span>
+                    <span x-text="loading ? 'Memuat...' : 'Segarkan'">Segarkan</span>
                 </button>
             </div>
         </header>
@@ -51,17 +52,16 @@
         <!-- Messages Grid -->
         <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
             <template x-for="msg in messages" :key="msg.id">
-                <div class="card p-5 transition duration-300 hover:shadow-soft animate-float-in">
-                    <div class="flex items-center justify-between gap-3 mb-3">
-                        <div class="flex items-center gap-2.5 min-w-0">
-                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-accent/15 text-accent text-sm font-bold"
-                                  x-text="(msg.sender || '?').slice(0, 1).toUpperCase()">
-                            </span>
-                            <span class="truncate font-semibold text-ink text-sm" x-text="msg.sender"></span>
+                <div class="card animate-float-in p-5 transition duration-300 hover:shadow-soft">
+                    <div class="mb-3 flex items-center justify-between gap-3">
+                        <div class="flex min-w-0 items-center gap-2.5">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-accent/15 text-sm font-bold text-accent"
+                                  x-text="(msg.sender || '?').slice(0, 1).toUpperCase()"></span>
+                            <span class="truncate text-sm font-semibold text-ink" x-text="msg.sender"></span>
                         </div>
                         <span class="shrink-0 text-[10px] text-faint" x-text="msg.time"></span>
                     </div>
-                    <p class="text-sm leading-relaxed text-muted break-words" x-text="msg.message"></p>
+                    <p class="break-words text-sm leading-relaxed text-muted" x-text="msg.message"></p>
                     <template x-if="msg.emoji">
                         <div class="mt-3 text-2xl" x-text="msg.emoji"></div>
                     </template>
@@ -90,39 +90,70 @@
     <script>
         function liveWall(initialMessages, endpoint) {
             return {
-                messages: initialMessages || [],
+                messages: (initialMessages || []).slice().sort((a, b) => a.id - b.id),
                 endpoint: endpoint,
                 loading: false,
                 sinceId: 0,
                 seenIds: new Set(),
+                status: 'connecting',
                 pollInterval: null,
+                retryTimeout: null,
+                retryDelay: 10000,
                 initWall() {
-                    this.messages.forEach(m => this.seenIds.add(m.id));
+                    this.messages.forEach((m) => this.seenIds.add(m.id));
+                    // Cursor starts at the newest id we already have.
                     this.sinceId = this.messages.reduce((max, m) => Math.max(max, m.id), 0);
+                    this.status = 'connecting';
+                    this.fetchNewMessages();
                     this.pollInterval = setInterval(() => this.fetchNewMessages(), 10000);
                 },
+                destroy() {
+                    if (this.pollInterval) { clearInterval(this.pollInterval); }
+                    if (this.retryTimeout) { clearTimeout(this.retryTimeout); }
+                },
                 fetchNewMessages() {
-                    if (this.loading) return;
+                    if (this.loading) { return; }
                     this.loading = true;
-                    fetch(`${this.endpoint}?since_id=${this.sinceId}`)
-                        .then(r => r.json())
-                        .then(data => {
-                            if (data.messages && data.messages.length > 0) {
-                                const newOnes = data.messages.filter(m => !this.seenIds.has(m.id));
-                                newOnes.forEach(m => {
-                                    this.seenIds.add(m.id);
-                                    this.messages.unshift({
-                                        id: m.id,
-                                        sender: m.sender,
-                                        message: m.message,
-                                        emoji: m.emoji || null,
-                                        time: 'Baru saja'
-                                    });
-                                    this.sinceId = Math.max(this.sinceId, m.id);
-                                });
-                            }
+
+                    fetch(`${this.endpoint}?since_id=${this.sinceId}`, { headers: { Accept: 'application/json' } })
+                        .then((response) => {
+                            if (! response.ok) { throw new Error('HTTP ' + response.status); }
+                            return response.json();
                         })
-                        .catch(() => {})
+                        .then((data) => {
+                            const batch = Array.isArray(data.messages) ? data.messages : [];
+                            // Work in ascending id order so we never skip messages,
+                            // even if the endpoint ever returns a descending batch.
+                            const ascending = batch.slice().sort((a, b) => a.id - b.id);
+
+                            ascending.forEach((m) => {
+                                if (this.seenIds.has(m.id)) { return; }
+                                this.seenIds.add(m.id);
+                                this.messages.push({
+                                    id: m.id,
+                                    sender: m.sender,
+                                    message: m.message,
+                                    emoji: m.emoji || null,
+                                    time: 'Baru saja',
+                                });
+                            });
+
+                            // Advance the cursor only to the last processed id.
+                            if (ascending.length) {
+                                this.sinceId = Math.max(this.sinceId, ascending[ascending.length - 1].id);
+                            }
+
+                            this.status = 'live';
+                            this.retryDelay = 10000;
+                            if (this.retryTimeout) { clearTimeout(this.retryTimeout); this.retryTimeout = null; }
+                        })
+                        .catch(() => {
+                            // Keep the cursor untouched so nothing is skipped, then retry with backoff.
+                            this.status = 'offline';
+                            if (this.retryTimeout) { clearTimeout(this.retryTimeout); }
+                            this.retryTimeout = setTimeout(() => this.fetchNewMessages(), this.retryDelay);
+                            this.retryDelay = Math.min(this.retryDelay * 2, 60000);
+                        })
                         .finally(() => {
                             this.loading = false;
                         });

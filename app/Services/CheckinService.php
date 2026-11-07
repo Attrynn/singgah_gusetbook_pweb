@@ -12,6 +12,7 @@ use App\Models\Guest;
 use App\Models\GuestToken;
 use App\Models\User;
 use Illuminate\Database\QueryException;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 class CheckinService
@@ -19,8 +20,7 @@ class CheckinService
     public function __construct(
         protected InvitationService $invitations,
         protected AuditService $audit,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{status:string,message:string,guest:?Guest,checkin:?Checkin,warning:?string}
@@ -170,8 +170,7 @@ class CheckinService
 
     protected function isDuplicate(QueryException $e): bool
     {
-        return str_contains($e->getMessage(), 'Duplicate')
-            || str_contains($e->getMessage(), 'UNIQUE')
+        return $e instanceof UniqueConstraintViolationException
             || (int) $e->getCode() === 23000;
     }
 

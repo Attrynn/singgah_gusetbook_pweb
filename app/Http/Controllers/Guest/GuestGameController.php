@@ -7,6 +7,7 @@ use App\Http\Requests\Guest\GuestGameRequest;
 use App\Models\Game;
 use App\Models\GameAttempt;
 use App\Services\GameService;
+use App\Services\GuestCapabilityResolver;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -18,10 +19,13 @@ class GuestGameController extends Controller
 
     public function show(Request $request, string $token, Game $game)
     {
+        abort_unless($this->can($request, 'interactions'), 403, 'Interaksi tamu tidak tersedia untuk acara ini.');
+
         $guest = $this->guest($request);
         $event = $this->event($request);
 
         abort_unless($game->event_id === $event->id, 404);
+        abort_unless(app(GuestCapabilityResolver::class)->gameOpen($game), 404);
 
         $attempt = GameAttempt::where('game_id', $game->id)->where('guest_id', $guest->id)->first();
         $game->load(['questions.options' => fn ($q) => $q->orderBy('sort_order')]);
@@ -37,10 +41,13 @@ class GuestGameController extends Controller
 
     public function submit(GuestGameRequest $request, string $token, Game $game)
     {
+        abort_unless($this->can($request, 'interactions'), 403, 'Interaksi tamu tidak tersedia untuk acara ini.');
+
         $guest = $this->guest($request);
         $event = $this->event($request);
 
         abort_unless($game->event_id === $event->id, 404);
+        abort_unless(app(GuestCapabilityResolver::class)->gameOpen($game), 404);
 
         $answers = collect($request->input('answers', []))
             ->mapWithKeys(fn ($value, $key) => [(int) $key => (int) $value])

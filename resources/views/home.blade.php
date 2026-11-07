@@ -5,12 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="VOWSPACE — Beyond the Guestbook. A Complete Wedding Experience.">
     <title>VOWSPACE · Beyond the Guestbook</title>
+    <script>
+        (function() {
+            const theme = localStorage.getItem('vowspace_theme') || 'system';
+            const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (isDark) { document.documentElement.classList.add('dark'); }
+        })();
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-dvh bg-canvas">
     <header class="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-6 sm:px-8">
         <a href="{{ route('home') }}" class="flex items-center gap-3">
-            <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent text-sm font-bold text-white shadow-raised">V</span>
+            <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent text-sm font-bold text-[var(--color-accent-text)] shadow-raised">V</span>
             <span class="text-sm font-semibold tracking-[0.2em] text-ink">VOWSPACE</span>
         </a>
 
@@ -56,7 +63,7 @@
                 ['icon' => 'archive', 'title' => 'Wedding Archive', 'copy' => 'Galeri, timeline, statistik kehadiran, dan cerita pernikahan yang tersimpan.'],
             ] as $feature)
                 <article class="card p-6">
-                    <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-soft text-[#5c86a8]">
+                    <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-soft text-ink">
                         <x-ui.icon :name="$feature['icon']" class="h-5 w-5" />
                     </span>
                     <h2 class="mt-4 text-sm font-semibold text-ink">{{ $feature['title'] }}</h2>
@@ -82,7 +89,7 @@
                                     <img src="{{ $event->coverUrl() }}" alt="{{ $event->coupleNames() }}" class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]">
                                 @else
                                     <div class="flex h-full items-center justify-center bg-gradient-to-br from-blue-soft via-surface to-teal-soft">
-                                        <x-ui.icon name="heart" class="h-8 w-8 text-[#8eb4d3]" />
+                                        <x-ui.icon name="heart" class="h-8 w-8 text-accent" />
                                     </div>
                                 @endif
                             </div>

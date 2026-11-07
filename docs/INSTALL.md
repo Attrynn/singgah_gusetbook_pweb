@@ -46,7 +46,9 @@ npm install
 
 ## 2. Create the database
 
-### Option A — system MariaDB/MySQL
+### Option A — system MariaDB/MySQL (local development only)
+
+> **Security Note:** `GRANT ALL PRIVILEGES` is strictly for local development. For production deployments, follow the least-privilege model in [DEPLOY.md](DEPLOY.md) with separated runtime (DML) and deploy (DDL) users.
 
 ```sql
 CREATE DATABASE vowspace CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -55,7 +57,7 @@ GRANT ALL PRIVILEGES ON vowspace.* TO 'vowspace'@'127.0.0.1';
 FLUSH PRIVILEGES;
 ```
 
-### Option B — user-space MariaDB (no sudo)
+### Option B — user-space MariaDB (local development / sandbox)
 
 Useful in sandboxes. Data and socket live under your home directory.
 
@@ -121,24 +123,25 @@ setup. Change it for a standard install.
 
 ## 4. Migrate, seed, link storage, build assets
 
+For local development or testing:
+
 ```bash
-php artisan migrate --seed
+php artisan migrate --seed       # Local only: seeds demo accounts
 php artisan storage:link
 npm run build
 ```
 
-`migrate --seed` runs `DatabaseSeeder`, which automatically invokes `DemoSeeder` in `local` or `testing` environments:
+For production deployment:
 
-> **Security Note:** In `production` (`APP_ENV=production`), `DatabaseSeeder` refuses to seed demo accounts unless explicitly run via `php artisan db:seed --class=DemoSeeder`.
+```bash
+php artisan migrate --force      # Production: runs migrations without demo seed
+php artisan storage:link
+npm run build
+```
 
-- 4 users — 1 superadmin, 3 owners
-- 2 events (`Raka & Alya` live, `Dimas & Nadia` in another state)
-- 38 guests with invitation + QR tokens, categories and groups
-- RSVPs, check-ins, guestbook messages, media rows, seating tables and assignments
-- polls, a quiz with questions/options, attempts and song requests
-- app settings and audit log entries
+> **Security Note:** In `production` (`APP_ENV=production`), `DatabaseSeeder` refuses to seed demo accounts. `DemoSeeder` (all passwords `password`) is **strictly for local development and demos**, and must never be run in production.
 
-Demo credentials — **all passwords are `password`**:
+Demo credentials (local / demo only) — **all passwords are `password`**:
 
 | Role | Email |
 | --- | --- |

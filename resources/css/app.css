@@ -12,17 +12,23 @@
     --color-surface-3: #C8CEC8;
     --color-line: #CCD1CD;
     --color-ink: #283640;
-    --color-muted: #53616A;
-    --color-faint: #75838D;
-    --color-accent: #796044;
+    /* Text tokens are tuned so every one clears WCAG AA (4.5:1)
+       against all three light surfaces (surface / canvas / surface-2). */
+    --color-muted: #48545C;
+    --color-faint: #55606A;
+    --color-accent: #725A40;
     --color-accent-hover: #675139;
     --color-accent-text: #F1EEE7;
     --color-accent-soft: #E5DFD4;
     --color-blue-soft: #D7E2EB;
     --color-teal-soft: #D5E5E2;
-    --color-success: #3F8069;
-    --color-warning: #8F6B2F;
-    --color-danger: #A35B64;
+    --color-success: #336956;
+    --color-warning: #785A28;
+    --color-danger: #8B4D55;
+
+    /* Fixed colours for photo overlays so text stays legible in both themes. */
+    --color-scrim: #1B2530;
+    --color-on-scrim: #F5F2EB;
 
     --shadow-raised: 0 1px 3px rgba(40, 54, 64, 0.05), 0 4px 14px rgba(40, 54, 64, 0.04);
     --shadow-soft: 0 12px 32px -8px rgba(40, 54, 64, 0.10);
@@ -38,16 +44,18 @@
     --color-line: #384654;
     --color-ink: #E9E5DC;
     --color-muted: #BDC5C9;
-    --color-faint: #81919C;
+    /* Text tokens are tuned so every one clears WCAG AA (4.5:1)
+       against all three dark surfaces (surface / canvas / surface-2). */
+    --color-faint: #96A6B0;
     --color-accent: #C3A477;
-    --color-accent-hover: #B29161;
+    --color-accent-hover: #BC9F75;
     --color-accent-text: #1F2A34;
     --color-accent-soft: #38352F;
     --color-blue-soft: #273744;
     --color-teal-soft: #243936;
-    --color-success: #5DAD91;
+    --color-success: #66B297;
     --color-warning: #D5AD70;
-    --color-danger: #D88C96;
+    --color-danger: #D98F98;
 
     --shadow-raised: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.22);
     --shadow-soft: 0 16px 40px -10px rgba(0, 0, 0, 0.45);
@@ -76,10 +84,39 @@
     --color-success: var(--color-success);
     --color-warning: var(--color-warning);
     --color-danger: var(--color-danger);
+    --color-scrim: var(--color-scrim);
+    --color-on-scrim: var(--color-on-scrim);
 
     --shadow-raised: var(--shadow-raised);
     --shadow-soft: var(--shadow-soft);
     --shadow-pressed: var(--shadow-pressed);
+
+    --animate-float-in: float-in 0.45s ease-out both;
+    --animate-rise: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes float-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @layer base {
@@ -90,6 +127,17 @@
 
     body {
         @apply bg-canvas font-sans text-ink antialiased transition-colors duration-150;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .animate-float-in,
+        .animate-rise {
+            animation: none;
+        }
     }
 
     ::selection {
@@ -248,9 +296,11 @@
         @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-accent;
     }
 
-    /* Guest mobile-first container with elegant desktop centering */
+    /* Guest mobile-first container: full-bleed on phones, an elegant
+       two-column-capable canvas from md/lg upward. `overflow-x: clip`
+       contains decorative shapes without breaking the sticky header. */
     .mobile-shell {
-        @apply relative mx-auto min-h-dvh w-full max-w-xl bg-canvas border-x border-line/40 shadow-soft;
+        @apply relative mx-auto min-h-dvh w-full max-w-3xl overflow-x-clip border-x border-line/40 bg-canvas shadow-soft lg:max-w-5xl;
     }
 
     .mobile-card {
@@ -258,7 +308,16 @@
     }
 
     .bottom-nav {
-        @apply fixed bottom-0 left-1/2 z-40 w-full max-w-xl -translate-x-1/2 border-t border-line/80 bg-surface/95 px-3 pt-2 backdrop-blur;
+        @apply fixed bottom-0 left-1/2 z-40 w-full max-w-3xl -translate-x-1/2 border-t border-line/80 bg-surface/95 px-3 pt-2 backdrop-blur lg:max-w-5xl;
+    }
+
+    /* Consistent vertical rhythm for invitation sections. */
+    .guest-section {
+        @apply scroll-mt-24;
+    }
+
+    .guest-eyebrow {
+        @apply text-[10px] font-semibold uppercase tracking-[0.18em] text-faint;
     }
 
     .bottom-nav-item {

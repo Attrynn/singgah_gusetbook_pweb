@@ -13,64 +13,64 @@
     <div class="mt-6">
         <form method="PUT" action="{{ route('admin.owners.update', $owner) }}" class="space-y-6">
             <div>
-                <label class="label">
-                    Name <span class="text-[#b76a73]">*</span>
+                <label for="name" class="label">
+                    Name <span class="text-danger">*</span>
                 </label>
-                <input type="text" name="name" value="{{ old('name', $owner->name) }}" class="input" required>
+                <input id="name" type="text" name="name" value="{{ old('name', $owner->name) }}" class="input" required aria-invalid="true" aria-describedby="name-error">
                 @error('name')
-                    <p class="error-text">{{ $message }}</p>
+                    <p id="name-error" class="error-text">{{ $message }}</p>
                 @enderror
             </div>
 
             <div>
-                <label class="label">
-                    Email <span class="text-[#b76a73]">*</span>
+                <label for="email" class="label">
+                    Email <span class="text-danger">*</span>
                 </label>
-                <input type="email" name="email" value="{{ old('email', $owner->email) }}" class="input" required>
+                <input id="email" type="email" name="email" value="{{ old('email', $owner->email) }}" class="input" required aria-invalid="true" aria-describedby="email-error">
                 @error('email')
-                    <p class="error-text">{{ $message }}</p>
+                    <p id="email-error" class="error-text">{{ $message }}</p>
                 @enderror
             </div>
 
             <div>
-                <label class="label">
+                <label for="phone" class="label">
                     Phone
                 </label>
-                <input type="text" name="phone" value="{{ old('phone', $owner->phone) }}" class="input">
+                <input id="phone" type="text" name="phone" value="{{ old('phone', $owner->phone) }}" class="input">
             </div>
 
             <div>
-                <label class="label">
+                <label for="password" class="label">
                     Password (opsional)
                 </label>
-                <input type="password" name="password" class="input">
+                <input id="password" type="password" name="password" class="input">
                 <p class="hint">Kosongkan jika tidak ingin mengubah password</p>
             </div>
 
             <div>
-                <label class="label">
+                <label for="password_confirmation" class="label">
                     Password Confirmation
                 </label>
-                <input type="password" name="password_confirmation" class="input">
+                <input id="password_confirmation" type="password" name="password_confirmation" class="input">
             </div>
 
             <div>
-                <label class="label">
+                <label for="is_active" class="label">
                     Is Active
                 </label>
-                <input type="checkbox" name="is_active" value="1" {{ old('is_active', $owner->is_active) ? 'checked' : '' }}>
+                <input id="is_active" type="checkbox" name="is_active" value="1" {{ old('is_active', $owner->is_active) ? 'checked' : '' }}>
             </div>
 
             <div>
-                <label class="label">
+                <p class="label">
                     Event Assignment
-                </label>
+                </p>
                 <div class="flex flex-col space-y-2">
                     @forelse ($events as $event)
                         <div class="flex items-center gap-2">
-                            <input type="checkbox" name="event_ids[]" value="{{ $event->id }}" {{ in_array($event->id, old('event_ids', $owner->eventIds())) ? 'checked' : '' }}>
-                            <label class="flex-1">{{ $event->name }}</label>
-                            <select name="role_labels[{{ $event->id }}]" class="input w-48">
+                            <input id="owner-event-{{ $event->id }}" type="checkbox" name="event_ids[]" value="{{ $event->id }}" {{ in_array($event->id, old('event_ids', $owner->eventIds())) ? 'checked' : '' }}>
+                            <label for="owner-event-{{ $event->id }}" class="flex-1">{{ $event->name }}</label>
+                            <select name="role_labels[{{ $event->id }}]" class="input w-48" aria-label="Role {{ $event->name }}">
                                 <option value="">Pilih role</option>
                                 <option value="groom" {{ old("role_labels.{$event->id}", $owner->events->firstWhere('id', $event->id)->pivot->role_label ?? '') == 'groom' ? 'selected' : '' }}>Groom</option>
                                 <option value="bride" {{ old("role_labels.{$event->id}", $owner->events->firstWhere('id', $event->id)->pivot->role_label ?? '') == 'bride' ? 'selected' : '' }}>Bride</option>

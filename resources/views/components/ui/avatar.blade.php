@@ -13,7 +13,7 @@
 @if ($src)
     <img src="{{ $src }}" alt="{{ $name }}" {{ $attributes->merge(['class' => 'rounded-2xl object-cover '.$sizeClass]) }}>
 @else
-    <span {{ $attributes->merge(['class' => 'inline-flex items-center justify-center rounded-2xl bg-blue-soft font-semibold text-[#4f7592] '.$sizeClass]) }}>
+    <span {{ $attributes->merge(['class' => 'inline-flex items-center justify-center rounded-2xl bg-blue-soft font-semibold text-ink '.$sizeClass]) }}>
         {{ $initials ?: 'V' }}
     </span>
 @endif

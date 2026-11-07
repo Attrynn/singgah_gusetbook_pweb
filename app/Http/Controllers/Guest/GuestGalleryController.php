@@ -12,12 +12,12 @@ class GuestGalleryController extends Controller
 {
     use ResolvesGuest;
 
-    public function __construct(protected MediaService $media)
-    {
-    }
+    public function __construct(protected MediaService $media) {}
 
     public function index(Request $request)
     {
+        abort_unless($this->can($request, 'gallery'), 403, 'Galeri tidak tersedia untuk acara ini.');
+
         $event = $this->event($request);
 
         $assets = $event->mediaAssets()
@@ -35,9 +35,9 @@ class GuestGalleryController extends Controller
 
     public function store(GuestPhotoRequest $request)
     {
-        $event = $this->event($request);
+        abort_unless($this->can($request, 'gallery_upload'), 403, 'Galeri foto sedang tidak menerima unggahan.');
 
-        abort_unless($event->gallery_enabled && $event->allowsGuestActions(), 403, 'Galeri foto sedang tidak menerima unggahan.');
+        $event = $this->event($request);
 
         $this->media->storeGuestUpload(
             $this->guest($request),

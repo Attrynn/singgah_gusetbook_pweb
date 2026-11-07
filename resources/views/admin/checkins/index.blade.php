@@ -37,7 +37,7 @@
                             <p class="mt-0.5 text-xs text-faint">Tamu: {{ $scanResult['guest_name'] }}</p>
                         @endif
                         @if ($scanResult['warning'])
-                            <p class="mt-1 text-xs text-[#8f6b2f]">{{ $scanResult['warning'] }}</p>
+                            <p class="mt-1 text-xs text-warning">{{ $scanResult['warning'] }}</p>
                         @endif
                     </div>
                 </div>
@@ -58,7 +58,7 @@
 
                     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         <div>
-                            <label for="guest_id" class="label">Pilih tamu <span class="text-[#b76a73]">*</span></label>
+                            <label for="guest_id" class="label">Pilih tamu <span class="text-danger">*</span></label>
                             <select id="guest_id" name="guest_id" class="input appearance-none" required>
                                 <option value="">Cari atau pilih tamu…</option>
                                 @foreach ($guests as $guest)
@@ -113,11 +113,11 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Tamu</th>
-                                <th>Event</th>
-                                <th>Metode</th>
-                                <th>Officer</th>
-                                <th class="whitespace-nowrap">Waktu</th>
+                                <th scope="col">Tamu</th>
+                                <th scope="col">Event</th>
+                                <th scope="col">Metode</th>
+                                <th scope="col">Officer</th>
+                                <th scope="col" class="whitespace-nowrap">Waktu</th>
                             </tr>
                         </thead>
                         <tbody>

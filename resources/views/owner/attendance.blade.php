@@ -116,20 +116,29 @@
     @push('scripts')
         @if (!empty($timelineLabels))
             <script>
+                document.addEventListener('DOMContentLoaded', async () => {
+                const Chart = await window.loadChart();
+                const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+                const cssRgba = (name, alpha) => {
+                    const hex = css(name).replace('#', '');
+                    const full = hex.length === 3 ? hex.split('').map((c) => c + c).join('') : hex;
+                    const value = parseInt(full, 16);
+                    return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
+                };
                 const ctx = document.getElementById('checkinChart');
                 if (ctx) {
-                    new window.Chart(ctx.getContext('2d'), {
+                    new Chart(ctx.getContext('2d'), {
                         type: 'line',
                         data: {
                             labels: @json($timelineLabels),
                             datasets: [{
                                 label: 'Check-in per jam',
                                 data: @json($timelineCounts),
-                                borderColor: 'var(--color-accent)',
-                                backgroundColor: 'rgba(142, 180, 211, 0.12)',
+                                borderColor: css('--color-accent'),
+                                backgroundColor: cssRgba('--color-accent', 0.12),
                                 borderWidth: 2,
                                 pointRadius: 4,
-                                pointBackgroundColor: 'var(--color-accent)',
+                                pointBackgroundColor: css('--color-accent'),
                                 fill: true,
                                 tension: 0.35
                             }]
@@ -139,12 +148,13 @@
                             maintainAspectRatio: false,
                             plugins: { legend: { display: false } },
                             scales: {
-                                x: { grid: { display: false }, ticks: { color: 'var(--color-faint)', font: { size: 11 } } },
-                                y: { grid: { color: 'var(--color-line)' }, beginAtZero: true, ticks: { color: 'var(--color-faint)', font: { size: 11 }, stepSize: 1 } }
+                                x: { grid: { display: false }, ticks: { color: css('--color-faint'), font: { size: 11 } } },
+                                y: { grid: { color: css('--color-line') }, beginAtZero: true, ticks: { color: css('--color-faint'), font: { size: 11 }, stepSize: 1 } }
                             }
                         }
                     });
                 }
+                });
             </script>
         @endif
     @endpush

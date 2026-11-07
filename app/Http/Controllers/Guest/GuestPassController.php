@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Guest;
 
-use App\Enums\TokenType;
 use App\Http\Controllers\Guest\Concerns\ResolvesGuest;
 use App\Services\InvitationService;
 use App\Services\QrService;
@@ -17,15 +16,14 @@ class GuestPassController extends Controller
     public function __construct(
         protected InvitationService $invitations,
         protected QrService $qr,
-    ) {
-    }
+    ) {}
 
     public function show(Request $request)
     {
+        abort_unless($this->can($request, 'pass'), 403, 'Wedding pass belum aktif untuk acara ini.');
+
         $guest = $this->guest($request);
         $event = $this->event($request);
-
-        abort_unless($event->allowsGuestActions(), 403, 'Wedding pass belum aktif untuk acara ini.');
 
         $raw = $this->invitations->ensureQrToken($guest);
         $qrSvg = $this->qr->svg($raw, 300);
@@ -35,10 +33,10 @@ class GuestPassController extends Controller
 
     public function download(Request $request)
     {
+        abort_unless($this->can($request, 'pass'), 403);
+
         $guest = $this->guest($request);
         $event = $this->event($request);
-
-        abort_unless($event->allowsGuestActions(), 403);
 
         $raw = $this->invitations->ensureQrToken($guest);
         $dataUri = $this->qr->pngDataUri($raw, 800);

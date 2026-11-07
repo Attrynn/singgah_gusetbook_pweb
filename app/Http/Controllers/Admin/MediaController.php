@@ -11,6 +11,7 @@ use App\Models\MediaAsset;
 use App\Services\MediaService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class MediaController extends Controller
@@ -50,6 +51,25 @@ class MediaController extends Controller
             'stats' => $stats,
             'statuses' => MediaStatus::cases(),
             'filters' => $request->only(['event_id', 'status', 'album_id']),
+        ]);
+    }
+
+    /**
+     * Stream a non-published asset from its private disk. Only superadmins
+     * reach this route (admin middleware group) and the file never becomes
+     * publicly addressable.
+     */
+    public function preview(Request $request, MediaAsset $asset)
+    {
+        abort_unless($request->user()?->isSuperadmin(), 403);
+
+        $disk = $asset->storageDisk();
+
+        abort_unless(Storage::disk($disk)->exists($asset->path), 404);
+
+        return Storage::disk($disk)->response($asset->path, $asset->original_name, [
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
         ]);
     }
 

@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Log;
 
 class AuditService
 {
+    /**
+     * Best-effort audit logging. Non-fatal for regular actions.
+     */
     public function record(
         string $action,
         string $description,
@@ -35,9 +38,45 @@ class AuditService
                 'user_agent' => substr((string) $request?->userAgent(), 0, 255) ?: null,
             ]);
         } catch (\Throwable $e) {
-            Log::warning('Audit log failed: '.$e->getMessage());
+            Log::error('Audit log failed: '.$e->getMessage(), ['action' => $action, 'exception' => $e]);
 
             return null;
+        }
+    }
+
+    /**
+     * Fail-closed audit logging for sensitive actions (status transitions, moderation).
+     * Rethrows if the audit row cannot be persisted so the action never succeeds silently.
+     */
+    public function recordCritical(
+        string $action,
+        string $description,
+        ?Event $event = null,
+        ?User $user = null,
+        ?Model $target = null,
+        array $metadata = [],
+    ): AuditLog {
+        try {
+            $request = request();
+
+            return AuditLog::create([
+                'user_id' => ($user ?? auth()->user())?->id,
+                'event_id' => $event?->id,
+                'action' => $action,
+                'target_type' => $target ? $target::class : null,
+                'target_id' => $target?->getKey(),
+                'description' => $description,
+                'metadata' => $metadata ?: null,
+                'ip_address' => $request?->ip(),
+                'user_agent' => substr((string) $request?->userAgent(), 0, 255) ?: null,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('CRITICAL audit log failed (action aborted): '.$e->getMessage(), [
+                'action' => $action,
+                'exception' => $e,
+            ]);
+
+            throw $e;
         }
     }
 

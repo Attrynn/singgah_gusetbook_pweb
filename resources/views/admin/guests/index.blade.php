@@ -19,9 +19,9 @@
 
     <div class="mt-6">
         <form method="GET" class="flex flex-wrap items-center gap-4">
-            <input type="text" name="event_id" placeholder="Event" class="input w-48" value="{{ request('event_id') }}">
-            <input type="text" name="search" placeholder="Cari tamu..." class="input w-64" value="{{ request('search') }}">
-            <select name="guest_category_id" class="input w-48">
+            <input type="text" name="event_id" placeholder="Event" class="input w-48" value="{{ request('event_id') }}" aria-label="Filter event">
+            <input type="text" name="search" placeholder="Cari tamu..." class="input w-64" value="{{ request('search') }}" aria-label="Cari tamu">
+            <select name="guest_category_id" class="input w-48" aria-label="Filter kategori">
                 <option value="">Semua kategori</option>
                 @foreach ($categories as $category)
                     <option value="{{ $category->id }}" {{ request('guest_category_id') == $category->id ? 'selected' : '' }}>
@@ -29,7 +29,7 @@
                     </option>
                 @endforeach
             </select>
-            <select name="guest_group_id" class="input w-48">
+            <select name="guest_group_id" class="input w-48" aria-label="Filter kelompok">
                 <option value="">Semua kelompok</option>
                 @foreach ($groups as $group)
                     <option value="{{ $group->id }}" {{ request('guest_group_id') == $group->id ? 'selected' : '' }}>
@@ -37,7 +37,7 @@
                     </option>
                 @endforeach
             </select>
-            <select name="rsvp_status" class="input w-48">
+            <select name="rsvp_status" class="input w-48" aria-label="Filter status RSVP">
                 <option value="">Semua RSVP</option>
                 @foreach ($rsvpStatuses as $status)
                     <option value="{{ $status->value }}" {{ request('rsvp_status') == $status->value ? 'selected' : '' }}>
@@ -45,12 +45,12 @@
                     </option>
                 @endforeach
             </select>
-            <select name="attendance" class="input w-48">
+            <select name="attendance" class="input w-48" aria-label="Filter kehadiran">
                 <option value="">Semua kehadiran</option>
                 <option value="checked_in" {{ request('attendance') == 'checked_in' ? 'selected' : '' }}>Checked In</option>
                 <option value="not_checked_in" {{ request('attendance') == 'not_checked_in' ? 'selected' : '' }}>Not Checked In</option>
             </select>
-            <select name="invitation_status" class="input w-48">
+            <select name="invitation_status" class="input w-48" aria-label="Filter status undangan">
                 <option value="">Semua undangan</option>
                 @foreach ($statuses as $status)
                     <option value="{{ $status->value }}" {{ request('invitation_status') == $status->value ? 'selected' : '' }}>
@@ -76,14 +76,14 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th class="text-left">Nama / Kontak</th>
-                                <th class="text-left">Event</th>
-                                <th class="text-left">Category / Group</th>
-                                <th class="text-left">RSVP</th>
-                                <th class="text-left">Attendance</th>
-                                <th class="text-left">Check-in</th>
-                                <th class="text-left">Invitation</th>
-                                <th class="text-left">Actions</th>
+                                <th scope="col" class="text-left">Nama / Kontak</th>
+                                <th scope="col" class="text-left">Event</th>
+                                <th scope="col" class="text-left">Category / Group</th>
+                                <th scope="col" class="text-left">RSVP</th>
+                                <th scope="col" class="text-left">Attendance</th>
+                                <th scope="col" class="text-left">Check-in</th>
+                                <th scope="col" class="text-left">Invitation</th>
+                                <th scope="col" class="text-left">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -118,7 +118,7 @@
                                             <x-ui.icon name="edit" class="h-4 w-4" />
                                         </a>
                                         <form method="POST" action="{{ route('admin.guests.destroy', $guest) }}" class="inline" data-confirm="Yakin ingin menghapus tamu ini?" data-confirm-title="Hapus Tamu">
-                                            <button type="submit" class="text-xs text-[#a35b64]" title="Hapus">
+                                            <button type="submit" class="text-xs text-danger" title="Hapus" aria-label="Hapus">
                                                 <x-ui.icon name="trash" class="h-4 w-4" />
                                             </button>
                                         </form>
@@ -157,8 +157,8 @@
                         showCancelButton: true,
                         confirmButtonText: form.dataset.confirmButton || 'Ya, lanjutkan',
                         cancelButtonText: 'Batal',
-                        confirmButtonColor: '#8EB4D3',
-                        cancelButtonColor: '#94A3B8',
+                        confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim(),
+                        cancelButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--color-muted').trim(),
                         reverseButtons: true,
                     }).then(result => {
                         if (result.isConfirmed) {

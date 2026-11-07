@@ -1,10 +1,30 @@
 import Alpine from 'alpinejs';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
-import Chart from 'chart.js/auto';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
-import { Html5Qrcode } from 'html5-qrcode';
+
+// Heavy, page-specific libraries are loaded on demand so they never weigh down
+// the shared bundle. Each loader memoises its in-flight promise so repeated
+// calls (and multiple charts on one page) share a single download.
+let chartPromise = null;
+let qrScannerPromise = null;
+
+window.loadChart = function loadChart() {
+    if (!chartPromise) {
+        chartPromise = import('chart.js/auto').then((module) => module.default);
+    }
+
+    return chartPromise;
+};
+
+window.loadQrScanner = function loadQrScanner() {
+    if (!qrScannerPromise) {
+        qrScannerPromise = import('html5-qrcode').then((module) => module.Html5Qrcode);
+    }
+
+    return qrScannerPromise;
+};
 
 // Global Theme Management (Midnight Slate & Champagne)
 const Theme = {
@@ -43,9 +63,7 @@ Theme.init();
 window.Theme = Theme;
 window.Alpine = Alpine;
 window.Swal = Swal;
-window.Chart = Chart;
 window.flatpickr = flatpickr;
-window.Html5Qrcode = Html5Qrcode;
 
 Alpine.start();
 
@@ -82,6 +100,33 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
+
+    document.querySelectorAll('[data-copy]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const value = button.dataset.copy;
+
+            if (!value) {
+                return;
+            }
+
+            navigator.clipboard.writeText(value).then(() => {
+                if (window.Swal) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'Disalin ke clipboard',
+                        showConfirmButton: false,
+                        timer: 1600,
+                    });
+                }
+            }).catch(() => {
+                if (window.Swal) {
+                    Swal.fire('Gagal menyalin', 'Salin manual: ' + value, 'error');
+                }
+            });
+        });
+    });
 
     document.querySelectorAll('form[data-confirm]').forEach((form) => {
         form.addEventListener('submit', (event) => {

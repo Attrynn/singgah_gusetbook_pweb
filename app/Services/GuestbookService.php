@@ -7,6 +7,7 @@ use App\Enums\MessageStatus;
 use App\Models\Guest;
 use App\Models\GuestbookMessage;
 use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Validation\ValidationException;
 
 class GuestbookService
@@ -109,8 +110,12 @@ class GuestbookService
             return false;
         }
 
-        $user->guestbookFavorites()->create(['guestbook_message_id' => $message->id]);
+        try {
+            $user->guestbookFavorites()->create(['guestbook_message_id' => $message->id]);
 
-        return true;
+            return true;
+        } catch (UniqueConstraintViolationException) {
+            return true;
+        }
     }
 }

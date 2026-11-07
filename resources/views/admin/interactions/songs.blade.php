@@ -15,7 +15,7 @@
         subtitle="Daftar permintaan lagu dari tamu, status dan aksi."
     >
         <div class="flex items-center gap-2">
-            <select id="event_id" name="event_id" class="input appearance-none">
+            <select id="event_id" name="event_id" class="input appearance-none" aria-label="Filter event">
                 <option value="">Semua event</option>
                 @foreach ($events as $event)
                     <option value="{{ $event->id }}" @selected($eventId === $event->id)>
@@ -23,7 +23,7 @@
                     </option>
                 @endforeach
             </select>
-            <select id="status" name="status" class="input appearance-none">
+            <select id="status" name="status" class="input appearance-none" aria-label="Filter status">
                 <option value="">Semua status</option>
                 @foreach ($statuses as $status)
                     <option value="{{ $status->value }}" @selected($status->value === ($filters['status'] ?? null))>{{ $status->label() }}</option>
@@ -59,13 +59,13 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Lagu</th>
-                            <th>Artist</th>
-                            <th>Tamu</th>
-                            <th>Event</th>
-                            <th>Catatan</th>
-                            <th>Status</th>
-                            <th class="text-right">Aksi</th>
+                            <th scope="col">Lagu</th>
+                            <th scope="col">Artist</th>
+                            <th scope="col">Tamu</th>
+                            <th scope="col">Event</th>
+                            <th scope="col">Catatan</th>
+                            <th scope="col">Status</th>
+                            <th scope="col" class="text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -100,7 +100,7 @@
                                             @method('PUT')
 
                                             <div>
-                                                <label for="status-{{ $song->id }}" class="label">Status <span class="text-[#b76a73]">*</span></label>
+                                                <label for="status-{{ $song->id }}" class="label">Status <span class="text-danger">*</span></label>
                                                 <select id="status-{{ $song->id }}" name="status" class="input appearance-none" required>
                                                     @foreach ($statuses as $s)
                                                         <option value="{{ $s->value }}" @selected($song->status === $s)>{{ $s->label() }}</option>

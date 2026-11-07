@@ -6,7 +6,6 @@ use App\Enums\GuestStatus;
 use App\Models\Game;
 use App\Models\GameAttempt;
 use App\Models\Guest;
-use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -83,11 +82,8 @@ class GameService
 
                 return $attempt->fresh(['answers']);
             });
-        } catch (UniqueConstraintViolationException|QueryException $e) {
-            if (str_contains($e->getMessage(), 'Duplicate entry') || str_contains($e->getMessage(), 'UNIQUE')) {
-                throw ValidationException::withMessages(['game' => 'Anda sudah menyelesaikan permainan ini.']);
-            }
-            throw $e;
+        } catch (UniqueConstraintViolationException) {
+            throw ValidationException::withMessages(['game' => 'Anda sudah menyelesaikan permainan ini.']);
         }
     }
 }

@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\Guest;
 use App\Models\GuestToken;
 use App\Models\Invitation;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -78,7 +79,12 @@ class InvitationService
             return $token->rawToken();
         }
 
-        return $this->createToken($guest, TokenType::Qr)->rawToken();
+        try {
+            return $this->createToken($guest, TokenType::Qr)->rawToken();
+        } catch (UniqueConstraintViolationException) {
+            return $guest->fresh()->activeQrToken()?->rawToken()
+                ?? throw new \RuntimeException('Failed to resolve QR token after race condition.');
+        }
     }
 
     public function invitationUrl(Guest $guest): ?string
@@ -105,9 +111,9 @@ class InvitationService
 
         $event = $guest->event;
         $message = "Kepada {$guest->name},\n\n"
-            ."Dengan penuh kebahagiaan, kami mengundang Anda untuk hadir di pernikahan "
+            .'Dengan penuh kebahagiaan, kami mengundang Anda untuk hadir di pernikahan '
             ."{$event->coupleNames()}.\n\n"
-            ."Hari: ".$event->event_date?->translatedFormat('l, d F Y')."\n"
+            .'Hari: '.$event->event_date?->translatedFormat('l, d F Y')."\n"
             ."Lokasi: {$event->venue_name}\n\n"
             ."Buka undangan personal Anda di sini:\n{$url}\n\n"
             ."Merupakan kebahagiaan bagi kami apabila Anda berkenan hadir.\n\n"

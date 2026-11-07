@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\ExportsCsv;
 use App\Models\Event;
+use App\Models\PollResponse;
 use App\Services\ReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
@@ -76,93 +78,112 @@ class ReportController extends Controller
         return $rows;
     }
 
-    protected function rsvpRows(Event $event): array
+    protected function rsvpRows(Event $event): callable
     {
-        $rows = [['Guest', 'Status', 'Attendance', 'Companions', 'Dietary', 'Responded At']];
+        return function (callable $write) use ($event): void {
+            $write(['Guest', 'Status', 'Attendance', 'Companions', 'Dietary', 'Responded At']);
 
-        foreach ($event->rsvps()->with('guest')->get() as $rsvp) {
-            $rows[] = [
-                $rsvp->guest?->name,
-                $rsvp->status->label(),
-                $rsvp->attendance_count,
-                $rsvp->companion_names,
-                $rsvp->dietary_preference,
-                $rsvp->responded_at?->format('Y-m-d H:i'),
-            ];
-        }
-
-        return $rows;
+            $event->rsvps()->with('guest')->orderBy('id')->chunk(200, function ($rsvps) use ($write): void {
+                foreach ($rsvps as $rsvp) {
+                    $write([
+                        $rsvp->guest?->name,
+                        $rsvp->status->label(),
+                        $rsvp->attendance_count,
+                        $rsvp->companion_names,
+                        $rsvp->dietary_preference,
+                        $rsvp->responded_at?->format('Y-m-d H:i'),
+                    ]);
+                }
+            });
+        };
     }
 
-    protected function attendanceRows(Event $event): array
+    protected function attendanceRows(Event $event): callable
     {
-        $rows = [['Guest', 'Method', 'Checked In At', 'Officer']];
+        return function (callable $write) use ($event): void {
+            $write(['Guest', 'Method', 'Checked In At', 'Officer']);
 
-        foreach ($event->checkins()->with(['guest', 'officer'])->get() as $checkin) {
-            $rows[] = [
-                $checkin->guest?->name,
-                $checkin->method->label(),
-                $checkin->checked_in_at?->format('Y-m-d H:i'),
-                $checkin->officer?->name,
-            ];
-        }
-
-        return $rows;
+            $event->checkins()->with(['guest', 'officer'])->orderBy('id')->chunk(200, function ($checkins) use ($write): void {
+                foreach ($checkins as $checkin) {
+                    $write([
+                        $checkin->guest?->name,
+                        $checkin->method->label(),
+                        $checkin->checked_in_at?->format('Y-m-d H:i'),
+                        $checkin->officer?->name,
+                    ]);
+                }
+            });
+        };
     }
 
-    protected function messageRows(Event $event): array
+    protected function messageRows(Event $event): callable
     {
-        $rows = [['Sender', 'Message', 'Visibility', 'Status', 'Created At']];
+        return function (callable $write) use ($event): void {
+            $write(['Sender', 'Message', 'Visibility', 'Status', 'Created At']);
 
-        foreach ($event->messages()->get() as $message) {
-            $rows[] = [
-                $message->sender_name,
-                $message->message,
-                $message->visibility->label(),
-                $message->status->label(),
-                $message->created_at?->format('Y-m-d H:i'),
-            ];
-        }
-
-        return $rows;
+            $event->messages()->orderBy('id')->chunk(200, function ($messages) use ($write): void {
+                foreach ($messages as $message) {
+                    $write([
+                        $message->sender_name,
+                        $message->message,
+                        $message->visibility->label(),
+                        $message->status->label(),
+                        $message->created_at?->format('Y-m-d H:i'),
+                    ]);
+                }
+            });
+        };
     }
 
-    protected function mediaRows(Event $event): array
+    protected function mediaRows(Event $event): callable
     {
-        $rows = [['File', 'Guest', 'Status', 'Featured', 'Uploaded At']];
+        return function (callable $write) use ($event): void {
+            $write(['File', 'Guest', 'Status', 'Featured', 'Uploaded At']);
 
-        foreach ($event->mediaAssets()->with('guest')->get() as $asset) {
-            $rows[] = [
-                $asset->original_name,
-                $asset->guest?->name,
-                $asset->status->label(),
-                $asset->is_featured ? 'Yes' : 'No',
-                $asset->created_at?->format('Y-m-d H:i'),
-            ];
-        }
-
-        return $rows;
+            $event->mediaAssets()->with('guest')->orderBy('id')->chunk(200, function ($assets) use ($write): void {
+                foreach ($assets as $asset) {
+                    $write([
+                        $asset->original_name,
+                        $asset->guest?->name,
+                        $asset->status->label(),
+                        $asset->is_featured ? 'Yes' : 'No',
+                        $asset->created_at?->format('Y-m-d H:i'),
+                    ]);
+                }
+            });
+        };
     }
 
-    protected function interactionRows(Event $event): array
+    protected function interactionRows(Event $event): callable
     {
-        $rows = [['Type', 'Detail', 'Value', 'Status']];
+        return function (callable $write) use ($event): void {
+            $write(['Type', 'Detail', 'Value', 'Status']);
 
-        foreach ($event->songRequests()->with('guest')->get() as $song) {
-            $rows[] = ['Song', $song->song_title.' - '.$song->artist, $song->guest?->name, $song->status->label()];
-        }
+            $event->songRequests()->with('guest')->orderBy('id')->chunk(200, function ($songs) use ($write): void {
+                foreach ($songs as $song) {
+                    $write(['Song', $song->song_title.' - '.$song->artist, $song->guest?->name, $song->status->label()]);
+                }
+            });
 
-        foreach ($event->polls()->with('options')->get() as $poll) {
-            $counts = $poll->responses()->selectRaw('poll_option_id, count(*) as total')->groupBy('poll_option_id')->pluck('total', 'poll_option_id');
-            foreach ($poll->options as $option) {
-                $rows[] = ['Poll', $poll->question.' / '.$option->label, (int) ($counts[$option->id] ?? 0), $poll->is_active ? 'Active' : 'Closed'];
+            $polls = $event->polls()->with('options')->get();
+            $counts = PollResponse::query()
+                ->whereIn('poll_id', $polls->pluck('id'))
+                ->select('poll_id', 'poll_option_id', DB::raw('count(*) as total'))
+                ->groupBy('poll_id', 'poll_option_id')
+                ->get()
+                ->groupBy('poll_id');
+
+            foreach ($polls as $poll) {
+                $pollCounts = $counts->get($poll->id, collect())->pluck('total', 'poll_option_id');
+
+                foreach ($poll->options as $option) {
+                    $write(['Poll', $poll->question.' / '.$option->label, (int) ($pollCounts[$option->id] ?? 0), $poll->is_active ? 'Active' : 'Closed']);
+                }
             }
-        }
 
-        foreach ($event->games()->withCount('attempts')->get() as $game) {
-            $rows[] = ['Game', $game->title, $game->attempts_count.' attempts', $game->is_active ? 'Active' : 'Closed'];
-        }
-
-        return $rows;
+            $event->games()->withCount('attempts')->get()->each(function ($game) use ($write): void {
+                $write(['Game', $game->title, $game->attempts_count.' attempts', $game->is_active ? 'Active' : 'Closed']);
+            });
+        };
     }
 }

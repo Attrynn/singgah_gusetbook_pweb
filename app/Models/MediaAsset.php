@@ -15,8 +15,8 @@ class MediaAsset extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'event_id', 'media_album_id', 'guest_id', 'uploaded_by', 'path', 'thumbnail_path',
-        'original_name', 'mime_type', 'size_bytes', 'caption', 'status', 'is_featured',
+        'event_id', 'disk', 'media_album_id', 'guest_id', 'uploaded_by', 'path', 'thumbnail_path',
+        'medium_path', 'original_name', 'mime_type', 'size_bytes', 'caption', 'sort_order', 'status', 'is_featured',
         'reviewed_by', 'reviewed_at',
     ];
 
@@ -27,6 +27,7 @@ class MediaAsset extends Model
             'is_featured' => 'boolean',
             'reviewed_at' => 'datetime',
             'size_bytes' => 'integer',
+            'sort_order' => 'integer',
         ];
     }
 
@@ -65,16 +66,48 @@ class MediaAsset extends Model
         return $query->where('status', MediaStatus::Pending->value);
     }
 
+    /**
+     * Disk that physically holds the file.
+     */
+    public function storageDisk(): string
+    {
+        return $this->disk ?: config('media.public_disk', 'public');
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->isApproved() && $this->storageDisk() === config('media.public_disk', 'public');
+    }
+
+    /**
+     * Public URL for approved media. Pending/rejected media must be served
+     * through an authorised preview endpoint instead.
+     */
     public function url(): string
     {
-        return Storage::disk('public')->url($this->path);
+        if ($this->isPublished()) {
+            return Storage::disk($this->storageDisk())->url($this->path);
+        }
+
+        return route('admin.media.preview', $this);
     }
 
     public function thumbnailUrl(): string
     {
-        return $this->thumbnail_path
-            ? Storage::disk('public')->url($this->thumbnail_path)
-            : $this->url();
+        if ($this->isPublished() && $this->thumbnail_path) {
+            return Storage::disk($this->storageDisk())->url($this->thumbnail_path);
+        }
+
+        return $this->url();
+    }
+
+    public function mediumUrl(): string
+    {
+        if ($this->isPublished() && $this->medium_path) {
+            return Storage::disk($this->storageDisk())->url($this->medium_path);
+        }
+
+        return $this->url();
     }
 
     public function isApproved(): bool

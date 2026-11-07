@@ -2,11 +2,11 @@
 
 @php
     $toneClass = match ($tone) {
-        'success' => 'bg-success/10 text-[#3f8069]',
-        'warning' => 'bg-warning/10 text-[#8f6b2f]',
-        'danger' => 'bg-danger/10 text-[#a35b64]',
-        'teal' => 'bg-teal-soft text-[#3f7c74]',
-        default => 'bg-blue-soft text-[#4f7592]',
+        'success' => 'bg-success/10 text-success',
+        'warning' => 'bg-warning/10 text-warning',
+        'danger' => 'bg-danger/10 text-danger',
+        'teal' => 'bg-teal-soft text-ink',
+        default => 'bg-blue-soft text-ink',
     };
 @endphp
 

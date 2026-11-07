@@ -85,7 +85,7 @@
             </div>
 
             <div class="card border-danger/20 p-5">
-                <h2 class="section-title text-[#8f4f58]">Hapus tamu</h2>
+                <h2 class="section-title text-danger">Hapus tamu</h2>
                 <p class="mt-2 text-xs text-muted">Tamu dan seluruh data terkait akan dihapus dari event ini.</p>
                 <form method="POST" action="{{ route('admin.guests.destroy', $guest) }}" class="mt-3" data-confirm="Hapus tamu {{ $guest->name }}? Tindakan ini tidak bisa dibatalkan." data-confirm-title="Hapus Tamu">
                     @csrf

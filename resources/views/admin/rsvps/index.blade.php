@@ -93,14 +93,14 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Tamu</th>
-                                <th>Event</th>
-                                <th>Status</th>
-                                <th class="text-center">Hadir</th>
-                                <th>Pendamping</th>
-                                <th>Diet</th>
-                                <th>Responded</th>
-                                <th class="text-right">Aksi</th>
+                                <th scope="col">Tamu</th>
+                                <th scope="col">Event</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="text-center">Hadir</th>
+                                <th scope="col">Pendamping</th>
+                                <th scope="col">Diet</th>
+                                <th scope="col">Responded</th>
+                                <th scope="col" class="text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -152,7 +152,7 @@
                                                     @method('PUT')
 
                                                     <div>
-                                                        <label for="status-{{ $rsvp->id }}" class="label">Status kehadiran <span class="text-[#b76a73]">*</span></label>
+                                                        <label for="status-{{ $rsvp->id }}" class="label">Status kehadiran <span class="text-danger">*</span></label>
                                                         <select id="status-{{ $rsvp->id }}" name="status" class="input appearance-none" required>
                                                             @foreach ($statuses as $status)
                                                                 @continue($status === \App\Enums\RsvpStatus::Pending)

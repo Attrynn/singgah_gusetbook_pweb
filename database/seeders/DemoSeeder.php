@@ -38,7 +38,6 @@ use App\Services\InvitationService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class DemoSeeder extends Seeder
 {
@@ -474,14 +473,11 @@ class DemoSeeder extends Seeder
                 'size_bytes' => Storage::disk('public')->size($path),
                 'caption' => $label.' — momen Raka & Alya',
                 'status' => $status,
+                'sort_order' => $i < 8 ? $i : 0,
                 'is_featured' => $i < 3,
                 'reviewed_by' => $status !== MediaStatus::Pending ? $admin->id : null,
                 'reviewed_at' => $status !== MediaStatus::Pending ? now()->subDays(2) : null,
             ]);
-
-            if ($i < 8) {
-                $album->items()->create(['media_asset_id' => $asset->id, 'sort_order' => $i]);
-            }
         }
 
         $album->update(['cover_media_asset_id' => $album->assets()->first()?->id]);
@@ -513,12 +509,11 @@ class DemoSeeder extends Seeder
                 'size_bytes' => Storage::disk('public')->size($path),
                 'caption' => 'Arsip pernikahan Dimas & Nadia',
                 'status' => MediaStatus::Approved,
+                'sort_order' => $i,
                 'is_featured' => $i < 2,
                 'reviewed_by' => $admin->id,
                 'reviewed_at' => now()->subDays(40),
             ]);
-
-            $archiveAlbum->items()->create(['media_asset_id' => $asset->id, 'sort_order' => $i]);
         }
 
         $archiveAlbum->update(['cover_media_asset_id' => $archiveAlbum->assets()->first()?->id]);

@@ -95,10 +95,22 @@ class AdminCrudTest extends TestCase
         $event = $this->makeEvent(['status' => 'draft']);
 
         $this->actingAs($admin)
-            ->post(route('admin.events.status', $event), ['status' => 'live'])
+            ->post(route('admin.events.status', $event), ['status' => 'published'])
             ->assertSessionHasNoErrors();
 
-        $this->assertSame('live', $event->fresh()->status->value);
+        $this->assertSame('published', $event->fresh()->status->value);
+    }
+
+    public function test_invalid_event_status_transition_is_rejected(): void
+    {
+        $admin = User::factory()->superadmin()->create();
+        $event = $this->makeEvent(['status' => 'draft']);
+
+        $this->actingAs($admin)
+            ->post(route('admin.events.status', $event), ['status' => 'live'])
+            ->assertSessionHasErrors('status');
+
+        $this->assertSame('draft', $event->fresh()->status->value);
     }
 
     public function test_settings_can_be_updated(): void

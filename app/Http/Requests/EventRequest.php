@@ -25,7 +25,7 @@ class EventRequest extends FormRequest
             'groom_profile' => ['nullable', 'string', 'max:2000'],
             'bride_profile' => ['nullable', 'string', 'max:2000'],
             'couple_description' => ['nullable', 'string', 'max:5000'],
-            'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(int) config('media.max_kb', 5120)],
             'event_date' => ['required', 'date'],
             'start_time' => ['nullable', 'date_format:H:i'],
             'end_time' => ['nullable', 'date_format:H:i', 'after:start_time'],

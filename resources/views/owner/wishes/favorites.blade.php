@@ -22,7 +22,7 @@
                     <div class="flex flex-col items-end gap-2">
                         <form action="{{ route('owner.wishes.favorite', $message) }}" method="POST" class="inline" data-confirm data-confirm-title="Hapus favorit?" data-confirm="Hapus ucapan ini dari daftar favorit?">
                             @csrf
-                            <button type="submit" class="icon-btn h-9 w-9 bg-blue-soft text-[#4f7592]">
+                            <button type="submit" class="icon-btn h-9 w-9 bg-blue-soft text-ink" aria-label="Favoritkan">
                                 <x-ui.icon name="heart" class="h-4 w-4" />
                             </button>
                         </form>

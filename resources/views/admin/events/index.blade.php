@@ -12,8 +12,8 @@
 
     <div class="mt-6">
         <form method="GET" class="flex items-center gap-4">
-            <input type="text" name="search" placeholder="Cari event..." class="input w-64" value="{{ request('search') }}">
-            <select name="status" class="input w-32">
+            <input type="text" name="search" placeholder="Cari event..." class="input w-64" value="{{ request('search') }}" aria-label="Cari acara">
+            <select name="status" class="input w-32" aria-label="Filter status">
                 <option value="">Semua status</option>
                 @foreach (\App\Enums\EventStatus::cases() as $status)
                     <option value="{{ $status->value }}" {{ request('status') == $status->value ? 'selected' : '' }}>
@@ -39,14 +39,14 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th class="text-left">Nama / Couple</th>
-                                <th class="text-left">Date</th>
-                                <th class="text-left">Venue</th>
-                                <th class="text-left">Status</th>
-                                <th class="text-left">Guests</th>
-                                <th class="text-left">RSVP</th>
-                                <th class="text-left">Check-ins</th>
-                                <th class="text-left">Actions</th>
+                                <th scope="col" class="text-left">Nama / Couple</th>
+                                <th scope="col" class="text-left">Date</th>
+                                <th scope="col" class="text-left">Venue</th>
+                                <th scope="col" class="text-left">Status</th>
+                                <th scope="col" class="text-left">Guests</th>
+                                <th scope="col" class="text-left">RSVP</th>
+                                <th scope="col" class="text-left">Check-ins</th>
+                                <th scope="col" class="text-left">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -75,7 +75,7 @@
                                             <x-ui.icon name="edit" class="h-4 w-4" />
                                         </a>
                                         <form method="POST" action="{{ route('admin.events.destroy', $event) }}" class="inline" onsubmit="return confirm('Yakin ingin menghapus event ini?');">
-                                            <button type="submit" class="text-xs text-[#a35b64]" title="Hapus">
+                                            <button type="submit" class="text-xs text-danger" title="Hapus" aria-label="Hapus">
                                                 <x-ui.icon name="trash" class="h-4 w-4" />
                                             </button>
                                         </form>
@@ -114,8 +114,8 @@
                         showCancelButton: true,
                         confirmButtonText: form.dataset.confirmButton || 'Ya, lanjutkan',
                         cancelButtonText: 'Batal',
-                        confirmButtonColor: '#8EB4D3',
-                        cancelButtonColor: '#94A3B8',
+                        confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim(),
+                        cancelButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--color-muted').trim(),
                         reverseButtons: true,
                     }).then(result => {
                         if (result.isConfirmed) {

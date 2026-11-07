@@ -63,15 +63,15 @@
             <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">Tamu undangan</p>
         </div>
         <div class="card p-4 text-center">
-            <p class="text-2xl font-semibold text-[#3f8069]">{{ $stats['confirmed'] ?? 0 }}</p>
+            <p class="text-2xl font-semibold text-success">{{ $stats['confirmed'] ?? 0 }}</p>
             <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">Konfirmasi</p>
         </div>
         <div class="card p-4 text-center">
-            <p class="text-2xl font-semibold text-[#4f7592]">{{ $stats['checked_in'] ?? 0 }}</p>
+            <p class="text-2xl font-semibold text-ink">{{ $stats['checked_in'] ?? 0 }}</p>
             <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">Check-in</p>
         </div>
         <div class="card p-4 text-center">
-            <p class="text-2xl font-semibold text-[#8f6b2f]">{{ $stats['total_messages'] ?? 0 }}</p>
+            <p class="text-2xl font-semibold text-warning">{{ $stats['total_messages'] ?? 0 }}</p>
             <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">Ucapan tamu</p>
         </div>
     </div>
@@ -169,7 +169,7 @@
             <div class="space-y-3">
                 @foreach ($activities as $activity)
                     <div class="card p-4 flex items-start gap-3">
-                        <span class="shrink-0 flex h-8 w-8 items-center justify-center rounded-xl bg-blue-soft text-[#4f7592]">
+                        <span class="shrink-0 flex h-8 w-8 items-center justify-center rounded-xl bg-blue-soft text-ink">
                             <x-ui.icon name="sparkles" class="h-4 w-4" />
                         </span>
                         <div class="flex-1 min-w-0">
@@ -189,12 +189,12 @@
     {{-- Quick Links --}}
     <div class="grid grid-cols-2 gap-3 animate-float-in" style="animation-delay: 0.35s">
         <a href="{{ route('owner.story') }}" class="card p-5 text-center hover:bg-surface-2/40 transition">
-            <x-ui.icon name="archive" class="mx-auto h-7 w-7 text-[#4f7592]" />
+            <x-ui.icon name="archive" class="mx-auto h-7 w-7 text-ink" />
             <p class="mt-2 font-semibold text-ink">Cerita kita</p>
             <p class="mt-1 text-[11px] text-muted">Arsip pernikahan lengkap</p>
         </a>
         <a href="{{ route('owner.attendance') }}" class="card p-5 text-center hover:bg-surface-2/40 transition">
-            <x-ui.icon name="users" class="mx-auto h-7 w-7 text-[#3f8069]" />
+            <x-ui.icon name="users" class="mx-auto h-7 w-7 text-success" />
             <p class="mt-2 font-semibold text-ink">Kehadiran</p>
             <p class="mt-1 text-[11px] text-muted">RSVP & check-in tamu</p>
         </a>

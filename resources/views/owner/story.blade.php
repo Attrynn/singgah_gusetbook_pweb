@@ -10,7 +10,7 @@
             <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/20 to-transparent"></div>
         @else
             <div class="w-full h-48 bg-gradient-to-br from-blue-soft to-teal-soft flex items-center justify-center">
-                <span class="text-6xl font-serif text-[#4f7592]">
+                <span class="text-6xl font-serif text-ink">
                     @php
                         $g = mb_substr($event->groom_name ?? '', 0, 1);
                         $b = mb_substr($event->bride_name ?? '', 0, 1);
@@ -19,9 +19,9 @@
                 </span>
             </div>
         @endif>
-        <div class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-white">
+        <div class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-[var(--color-accent-text)]">
             <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-soft/90">Cerita kami</p>
-            <h1 class="mt-1 font-serif text-3xl font-bold text-white leading-tight">{{ $event->coupleNames() }}</h1>
+            <h1 class="mt-1 font-serif text-3xl font-bold text-[var(--color-accent-text)] leading-tight">{{ $event->coupleNames() }}</h1>
             <p class="mt-1 text-sm text-blue-soft/90">{{ $event->event_date?->translatedFormat('d M Y') }} · {{ $event->venue_name ?? '-' }}</p>
         </div>
     </div>

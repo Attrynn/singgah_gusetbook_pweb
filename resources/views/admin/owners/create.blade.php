@@ -13,69 +13,69 @@
     <div class="mt-6">
         <form method="POST" action="{{ route('admin.owners.store') }}" class="space-y-6">
             <div>
-                <label class="label">
-                    Name <span class="text-[#b76a73]">*</span>
+                <label for="name" class="label">
+                    Name <span class="text-danger">*</span>
                 </label>
-                <input type="text" name="name" value="{{ old('name') }}" class="input" required>
+                <input id="name" type="text" name="name" value="{{ old('name') }}" class="input" required aria-invalid="true" aria-describedby="name-error">
                 @error('name')
-                    <p class="error-text">{{ $message }}</p>
+                    <p id="name-error" class="error-text">{{ $message }}</p>
                 @enderror
             </div>
 
             <div>
-                <label class="label">
-                    Email <span class="text-[#b76a73]">*</span>
+                <label for="email" class="label">
+                    Email <span class="text-danger">*</span>
                 </label>
-                <input type="email" name="email" value="{{ old('email') }}" class="input" required>
+                <input id="email" type="email" name="email" value="{{ old('email') }}" class="input" required aria-invalid="true" aria-describedby="email-error">
                 @error('email')
-                    <p class="error-text">{{ $message }}</p>
+                    <p id="email-error" class="error-text">{{ $message }}</p>
                 @enderror
             </div>
 
             <div>
-                <label class="label">
+                <label for="phone" class="label">
                     Phone
                 </label>
-                <input type="text" name="phone" value="{{ old('phone') }}" class="input">
+                <input id="phone" type="text" name="phone" value="{{ old('phone') }}" class="input">
             </div>
 
             <div>
-                <label class="label">
-                    Password <span class="text-[#b76a73]">*</span>
+                <label for="password" class="label">
+                    Password <span class="text-danger">*</span>
                 </label>
-                <input type="password" name="password" class="input" required>
+                <input id="password" type="password" name="password" class="input" required aria-invalid="true" aria-describedby="password-error">
                 @error('password')
-                    <p class="error-text">{{ $message }}</p>
+                    <p id="password-error" class="error-text">{{ $message }}</p>
                 @enderror
             </div>
 
             <div>
-                <label class="label">
-                    Password Confirmation <span class="text-[#b76a73]">*</span>
+                <label for="password_confirmation" class="label">
+                    Password Confirmation <span class="text-danger">*</span>
                 </label>
-                <input type="password" name="password_confirmation" class="input" required>
+                <input id="password_confirmation" type="password" name="password_confirmation" class="input" required aria-invalid="true" aria-describedby="password_confirmation-error">
                 @error('password_confirmation')
-                    <p class="error-text">{{ $message }}</p>
+                    <p id="password_confirmation-error" class="error-text">{{ $message }}</p>
                 @enderror
             </div>
 
             <div>
-                <label class="label">
+                <label for="is_active" class="label">
                     Is Active
                 </label>
-                <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
+                <input id="is_active" type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
             </div>
 
             <div>
-                <label class="label">
+                <p class="label">
                     Event Assignment
-                </label>
+                </p>
                 <div class="flex flex-col space-y-2">
                     @forelse ($events as $event)
                         <div class="flex items-center gap-2">
-                            <input type="checkbox" name="event_ids[]" value="{{ $event->id }}" {{ in_array($event->id, old('event_ids', [])) ? 'checked' : '' }}>
-                            <label class="flex-1">{{ $event->name }}</label>
-                            <select name="role_labels[{{ $event->id }}]" class="input w-48">
+                            <input id="owner-event-{{ $event->id }}" type="checkbox" name="event_ids[]" value="{{ $event->id }}" {{ in_array($event->id, old('event_ids', [])) ? 'checked' : '' }}>
+                            <label for="owner-event-{{ $event->id }}" class="flex-1">{{ $event->name }}</label>
+                            <select name="role_labels[{{ $event->id }}]" class="input w-48" aria-label="Role {{ $event->name }}">
                                 <option value="">Pilih role</option>
                                 <option value="groom" {{ old("role_labels.{$event->id}", '') == 'groom' ? 'selected' : '' }}>Groom</option>
                                 <option value="bride" {{ old("role_labels.{$event->id}", '') == 'bride' ? 'selected' : '' }}>Bride</option>

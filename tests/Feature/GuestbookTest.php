@@ -62,7 +62,7 @@ class GuestbookTest extends TestCase
                 'message' => 'Pesan yang seharusnya ditolak',
                 'visibility' => 'public',
             ])
-            ->assertSessionHasErrors('message');
+            ->assertForbidden();
     }
 
     public function test_admin_can_approve_a_message(): void

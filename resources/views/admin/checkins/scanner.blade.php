@@ -28,7 +28,7 @@
                             <p class="mt-0.5 text-xs text-faint">Scan QR tamu untuk check-in.</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <select id="event_id" name="event_id" class="input appearance-none" x-model="selectedEventId">
+                            <select id="event_id" name="event_id" class="input appearance-none" x-model="selectedEventId" aria-label="Filter event">
                                 <option value="">Semua event</option>
                                 @foreach ($events as $event)
                                     <option value="{{ $event->id }}" @selected($selectedEventId === $event->id)>
@@ -58,7 +58,7 @@
                         </div>
 
                         <div class="mt-4 flex items-center gap-3">
-                            <input type="text" id="manualToken" placeholder="Tempel token QR…" class="input flex-1" x-model="manualToken" @keydown.enter="pasteToken">
+                            <input type="text" id="manualToken" placeholder="Tempel token QR…" class="input flex-1" x-model="manualToken" @keydown.enter="pasteToken" aria-label="Token QR manual">
                             <button type="button" class="btn-secondary" x-on:click="pasteToken">
                                 <x-ui.icon name="send" class="h-4 w-4" /> Kirim
                             </button>
@@ -90,7 +90,7 @@
                                         <p class="text-[10px] text-faint">Event: {{ $selectedEventId }}</p>
                                     @endif
                                 </div>
-                                <span class="text-[10px] font-semibold" :class="scan.status === 'success' ? 'text-[#3f8069]' : 'text-[#a35b64]'" x-text="scan.status"></span>
+                                <span class="text-[10px] font-semibold" :class="scan.status === 'success' ? 'text-success' : 'text-danger'" x-text="scan.status"></span>
                             </div>
                         </template>
                         <div x-show="scans.length === 0" class="p-4 text-center text-xs text-faint">Belum ada pemindaian.</div>
@@ -115,12 +115,12 @@
 
                         <div x-show="lastResult" class="space-y-3 animate-float-in">
                             <div class="flex items-start gap-3">
-                                <x-ui.icon name="alert" class="mt-0.5 h-4 w-4 shrink-0" x-bind:class="lastResult.status === 'success' ? 'text-[#3f8069]' : 'text-[#a35b64]'" />
+                                <x-ui.icon name="alert" class="mt-0.5 h-4 w-4 shrink-0" x-bind:class="lastResult.status === 'success' ? 'text-success' : 'text-danger'" />
                                 <div class="min-w-0 flex-1">
                                     <p class="font-semibold text-ink" x-text="lastResult.message"></p>
                                     <p class="mt-0.5 text-xs text-faint" x-text="lastResult.status"></p>
                                     <template x-if="lastResult.warning">
-                                        <p class="mt-1 text-xs text-[#8f6b2f]" x-text="lastResult.warning"></p>
+                                        <p class="mt-1 text-xs text-warning" x-text="lastResult.warning"></p>
                                     </template>
                                 </div>
                             </div>
@@ -129,7 +129,7 @@
                                 <div class="pt-3 border-t border-line/60">
                                     <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">Tamu</p>
                                     <div class="flex items-center gap-3 mt-1">
-                                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-blue-soft text-xs font-semibold text-[#4f7592]" x-text="(lastResult.guest.name || '?').charAt(0).toUpperCase()"></span>
+                                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-blue-soft text-xs font-semibold text-ink" x-text="(lastResult.guest.name || '?').charAt(0).toUpperCase()"></span>
                                         <div class="min-w-0">
                                             <p class="font-semibold text-ink" x-text="lastResult.guest.name"></p>
                                             <p class="text-[11px] text-faint" x-text="lastResult.guest.rsvp"></p>
@@ -192,6 +192,7 @@
                     async startCamera() {
                         if (this.isScanning) return;
                         try {
+                            const Html5Qrcode = await window.loadQrScanner();
                             this.scanner = new Html5Qrcode('reader');
                             await this.scanner.start(
                                 { facingMode: 'environment' },

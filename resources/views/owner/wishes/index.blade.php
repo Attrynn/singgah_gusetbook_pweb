@@ -17,17 +17,21 @@
     </x-ui.page-header>
 
     {{-- Stats Strip --}}
-    <div class="grid grid-cols-3 gap-3 mb-5">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         <div class="card p-4 text-center">
             <p class="text-2xl font-semibold text-ink">{{ $stats['total'] ?? 0 }}</p>
             <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">Total</p>
         </div>
         <div class="card p-4 text-center">
-            <p class="text-2xl font-semibold text-[#3f8069]">{{ $stats['approved'] ?? 0 }}</p>
+            <p class="text-2xl font-semibold text-success">{{ $stats['approved'] ?? 0 }}</p>
             <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">Disetujui</p>
         </div>
         <div class="card p-4 text-center">
-            <p class="text-2xl font-semibold text-[#8f6b2f]">{{ $stats['favorites'] ?? 0 }}</p>
+            <p class="text-2xl font-semibold text-warning">{{ $stats['pending'] ?? 0 }}</p>
+            <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">Pending</p>
+        </div>
+        <div class="card p-4 text-center">
+            <p class="text-2xl font-semibold text-accent">{{ $stats['favorites'] ?? 0 }}</p>
             <p class="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">Favorit</p>
         </div>
     </div>
@@ -38,9 +42,20 @@
             <div class="flex-1">
                 <x-ui.input name="search" label="Cari" placeholder="Nama atau pesan..." value="{{ $filters['search'] ?? '' }}" />
             </div>
-            <div class="sm:w-48">
+            <div class="sm:w-44">
+                <label for="status" class="label">Status</label>
+                <select id="status" name="status" class="input">
+                    <option value="">Semua Status</option>
+                    @foreach (\App\Enums\MessageStatus::cases() as $case)
+                        <option value="{{ $case->value }}" @selected(($filters['status'] ?? '') === $case->value)>
+                            {{ $case->label() }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="sm:w-44">
                 <label for="date" class="label">Tanggal</label>
-                <input type="text" id="date" name="date" class="input" placeholder="dd M yyyy" value="{{ $filters['date'] ?? '' }}" data-datepicker />
+                <input type="text" id="date" name="date" class="input" placeholder="dd M yyyy" value="{{ $filters['date'] ?? '' }}" data-datepicker aria-label="Cari tanggal" />
             </div>
             <div class="flex gap-2 self-end">
                 <button type="submit" class="btn btn-primary">Cari</button>
@@ -67,7 +82,7 @@
                     <div class="flex flex-col items-end gap-2">
                         <form action="{{ route('owner.wishes.favorite', $message) }}" method="POST" class="inline" data-confirm data-confirm-title="Ubah favorit?" data-confirm="Tandai sebagai {{ in_array($message->id, $favoriteIds ?? [], true) ? 'bukan' : '' }}favorit?">
                             @csrf
-                            <button type="submit" class="icon-btn h-9 w-9 {{ in_array($message->id, $favoriteIds ?? [], true) ? 'bg-blue-soft text-[#4f7592]' : '' }}">
+                            <button type="submit" class="icon-btn h-9 w-9 {{ in_array($message->id, $favoriteIds ?? [], true) ? 'bg-blue-soft text-ink' : '' }}" aria-label="Favoritkan">
                                 <x-ui.icon name="heart" class="h-4 w-4" />
                             </button>
                         </form>

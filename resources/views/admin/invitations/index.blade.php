@@ -68,13 +68,13 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th class="text-left">Tamu</th>
-                            <th class="text-left">Event</th>
-                            <th class="text-left">Kategori</th>
-                            <th class="text-left">Status</th>
-                            <th class="text-left">Dibuka</th>
-                            <th class="text-left">Dibagikan</th>
-                            <th class="text-left">Aksi</th>
+                            <th scope="col" class="text-left">Tamu</th>
+                            <th scope="col" class="text-left">Event</th>
+                            <th scope="col" class="text-left">Kategori</th>
+                            <th scope="col" class="text-left">Status</th>
+                            <th scope="col" class="text-left">Dibuka</th>
+                            <th scope="col" class="text-left">Dibagikan</th>
+                            <th scope="col" class="text-left">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>

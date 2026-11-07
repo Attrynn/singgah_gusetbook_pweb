@@ -94,7 +94,7 @@
                 <h2 class="section-title">QR pass check-in</h2>
                 <p class="mt-1 text-xs text-muted">Tunjukkan QR ini ke petugas saat check-in.</p>
 
-                <div class="mx-auto mt-4 flex w-full max-w-[260px] items-center justify-center rounded-2xl border border-line bg-white p-4">
+                <div class="mx-auto mt-4 flex w-full max-w-[260px] items-center justify-center rounded-2xl border border-line bg-surface p-4">
                     @if ($qrSvg)
                         <div class="w-full [&>svg]:h-auto [&>svg]:w-full">{!! $qrSvg !!}</div>
                     @else

@@ -11,7 +11,7 @@
     </x-ui.page-header>
 
     @if (session('import_errors') && count(session('import_errors')))
-        <div class="mt-6 rounded-2xl border border-warning/40 bg-warning/10 p-4 text-sm text-[#8f6b2f]">
+        <div class="mt-6 rounded-2xl border border-warning/40 bg-warning/10 p-4 text-sm text-warning">
             <p class="font-semibold">Sebagian baris dilewati:</p>
             <ul class="mt-2 list-inside list-disc space-y-1 text-xs">
                 @foreach (session('import_errors') as $error)
@@ -28,10 +28,10 @@
             <x-ui.select name="event_id" label="Event tujuan" :options="$events->mapWithKeys(fn ($event) => [$event->id => $event->name])" placeholder="Pilih event" required />
 
             <div>
-                <label for="file" class="label">File CSV <span class="text-[#b76a73]">*</span></label>
-                <input id="file" name="file" type="file" accept=".csv,.txt" required class="input py-2 file:mr-3 file:rounded-xl file:border-0 file:bg-blue-soft file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[#4f7592]">
+                <label for="file" class="label">File CSV <span class="text-danger">*</span></label>
+                <input id="file" name="file" type="file" accept=".csv,.txt" required class="input py-2 file:mr-3 file:rounded-xl file:border-0 file:bg-blue-soft file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-ink" aria-invalid="true" aria-describedby="file-error">
                 @error('file')
-                    <p class="error-text">{{ $message }}</p>
+                    <p id="file-error" class="error-text">{{ $message }}</p>
                 @enderror
                 <p class="hint">Maksimal 2 MB. Gunakan encoding UTF-8.</p>
             </div>

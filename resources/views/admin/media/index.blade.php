@@ -84,13 +84,13 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th class="text-center">Foto</th>
-                        <th>Nama</th>
-                        <th>Pengunggah</th>
-                        <th>Status</th>
-                        <th class="text-center">Featured</th>
-                        <th>Waktu</th>
-                        <th class="text-right">Aksi</th>
+                        <th scope="col" class="text-center">Foto</th>
+                        <th scope="col">Nama</th>
+                        <th scope="col">Pengunggah</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" class="text-center">Featured</th>
+                        <th scope="col">Waktu</th>
+                        <th scope="col" class="text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -116,6 +116,7 @@
                                         type="button"
                                         class="btn-ghost btn-xs"
                                         x-on:click="$dispatch('toggle-featured-{{ $asset->id }}')"
+                                        aria-label="Tandai unggulan"
                                     >
                                         <x-ui.icon name="star" class="h-3 w-3" />
                                     </button>
@@ -128,26 +129,26 @@
                                 <form method="POST" action="{{ route('admin.media.moderate', $asset) }}" class="inline">
                                     @csrf
                                     @method('POST')
-                                    <button type="submit" class="btn-ghost btn-xs" data-action="approve" title="Setujui">
+                                    <button type="submit" class="btn-ghost btn-xs" data-action="approve" title="Setujui" aria-label="Setujui">
                                         <x-ui.icon name="check" class="h-3 w-3" />
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('admin.media.moderate', $asset) }}" class="inline">
                                     @csrf
                                     @method('POST')
-                                    <button type="submit" class="btn-ghost btn-xs" data-action="reject" title="Tolak">
+                                    <button type="submit" class="btn-ghost btn-xs" data-action="reject" title="Tolak" aria-label="Tolak">
                                         <x-ui.icon name="x" class="h-3 w-3" />
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('admin.media.feature', $asset) }}" class="inline">
-                                    <button type="submit" class="btn-ghost btn-xs" title="Tandai unggulan">
+                                    <button type="submit" class="btn-ghost btn-xs" title="Tandai unggulan" aria-label="Tandai unggulan">
                                         <x-ui.icon name="star" class="h-3 w-3" />
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('admin.media.destroy', $asset) }}" class="inline" data-confirm="Yakin menghapus foto ini?">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-ghost btn-xs text-danger" title="Hapus">
+                                    <button type="submit" class="btn-ghost btn-xs text-danger" title="Hapus" aria-label="Hapus">
                                         <x-ui.icon name="trash" class="h-3 w-3" />
                                     </button>
                                 </form>

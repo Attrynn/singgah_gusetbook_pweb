@@ -12,6 +12,8 @@ class GuestGiftController extends Controller
 
     public function index(Request $request)
     {
+        abort_unless($this->can($request, 'gift'), 403, 'Informasi hadiah tidak tersedia untuk acara ini.');
+
         $event = $this->event($request);
         $gifts = $event->gift_enabled
             ? $event->giftAccounts()->where('is_active', true)->get()

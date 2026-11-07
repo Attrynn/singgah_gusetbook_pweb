@@ -8,7 +8,7 @@
 @endif
 
 @if ($errors->any())
-    <div class="mb-5 rounded-2xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-[#8f4f58]" data-auto-dismiss="9000">
+    <div class="mb-5 rounded-2xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger" data-auto-dismiss="9000" role="alert">
         <div class="flex items-start gap-3">
             <x-ui.icon name="alert" class="mt-0.5 h-4 w-4 shrink-0" />
             <div>

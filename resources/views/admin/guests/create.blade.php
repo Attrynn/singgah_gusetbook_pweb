@@ -13,10 +13,10 @@
     <div class="mt-6">
         <form method="POST" action="{{ route('admin.guests.store') }}" class="space-y-6">
             <div>
-                <label class="label">
+                <label for="event_id" class="label">
                     Event
                 </label>
-                <select name="event_id" class="input" required>
+                <select id="event_id" name="event_id" class="input" required>
                     <option value="">Pilih event</option>
                     @foreach ($events as $event)
                         <option value="{{ $event->id }}" {{ request('event_id') == $event->id ? 'selected' : '' }}>
@@ -27,34 +27,34 @@
             </div>
 
             <div>
-                <label class="label">
-                    Name <span class="text-[#b76a73]">*</span>
+                <label for="name" class="label">
+                    Name <span class="text-danger">*</span>
                 </label>
-                <input type="text" name="name" value="{{ old('name') }}" class="input" required>
+                <input id="name" type="text" name="name" value="{{ old('name') }}" class="input" required aria-invalid="true" aria-describedby="name-error">
                 @error('name')
-                    <p class="error-text">{{ $message }}</p>
+                    <p id="name-error" class="error-text">{{ $message }}</p>
                 @enderror
             </div>
 
             <div>
-                <label class="label">
+                <label for="email" class="label">
                     Email
                 </label>
-                <input type="email" name="email" value="{{ old('email') }}" class="input">
+                <input id="email" type="email" name="email" value="{{ old('email') }}" class="input">
             </div>
 
             <div>
-                <label class="label">
+                <label for="phone" class="label">
                     Phone
                 </label>
-                <input type="text" name="phone" value="{{ old('phone') }}" class="input">
+                <input id="phone" type="text" name="phone" value="{{ old('phone') }}" class="input">
             </div>
 
             <div>
-                <label class="label">
+                <label for="guest_category_id" class="label">
                     Category
                 </label>
-                <select name="guest_category_id" class="input">
+                <select id="guest_category_id" name="guest_category_id" class="input">
                     <option value="">Pilih kategori</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category->id }}" {{ request('guest_category_id') == $category->id ? 'selected' : '' }}>
@@ -65,10 +65,10 @@
             </div>
 
             <div>
-                <label class="label">
+                <label for="guest_group_id" class="label">
                     Group
                 </label>
-                <select name="guest_group_id" class="input">
+                <select id="guest_group_id" name="guest_group_id" class="input">
                     <option value="">Pilih kelompok</option>
                     @foreach ($groups as $group)
                         <option value="{{ $group->id }}" {{ request('guest_group_id') == $group->id ? 'selected' : '' }}>
@@ -79,10 +79,10 @@
             </div>
 
             <div>
-                <label class="label">
+                <label for="status" class="label">
                     Status
                 </label>
-                <select name="status" class="input" required>
+                <select id="status" name="status" class="input" required>
                     <option value="">Pilih status</option>
                     @foreach (\App\Enums\GuestStatus::cases() as $status)
                         <option value="{{ $status->value }}" {{ request('status') == $status->value ? 'selected' : '' }}>
@@ -93,17 +93,17 @@
             </div>
 
             <div>
-                <label class="label">
-                    Max Attendees <span class="text-[#b76a73]">*</span>
+                <label for="max_attendees" class="label">
+                    Max Attendees <span class="text-danger">*</span>
                 </label>
-                <input type="number" name="max_attendees" value="{{ old('max_attendees', 2) }}" min="1" max="20" class="input" required>
+                <input id="max_attendees" type="number" name="max_attendees" value="{{ old('max_attendees', 2) }}" min="1" max="20" class="input" required>
             </div>
 
             <div>
-                <label class="label">
+                <label for="notes" class="label">
                     Notes
                 </label>
-                <textarea name="notes" rows="3" class="input">{{ old('notes') }}</textarea>
+                <textarea id="notes" name="notes" rows="3" class="input">{{ old('notes') }}</textarea>
                 <p class="hint">Catatan tambahan tentang tamu</p>
             </div>
 

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\CheckinController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\Admin\GameController;
 use App\Http\Controllers\Admin\GiftAccountController;
 use App\Http\Controllers\Admin\GuestbookController;
 use App\Http\Controllers\Admin\GuestCategoryController;
@@ -19,7 +20,6 @@ use App\Http\Controllers\Admin\RsvpController;
 use App\Http\Controllers\Admin\SeatingController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\SongController;
-use App\Http\Controllers\Admin\GameController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'role:superadmin'])->group(function () {
@@ -64,6 +64,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'role:supe
     Route::delete('guestbook/{message}', [GuestbookController::class, 'destroy'])->name('guestbook.destroy');
 
     Route::get('media', [MediaController::class, 'index'])->name('media.index');
+    Route::get('media/{asset}/preview', [MediaController::class, 'preview'])->name('media.preview');
     Route::post('media', [MediaController::class, 'store'])->name('media.store');
     Route::post('media/{asset}/moderate', [MediaController::class, 'moderate'])->name('media.moderate');
     Route::post('media/{asset}/feature', [MediaController::class, 'feature'])->name('media.feature');

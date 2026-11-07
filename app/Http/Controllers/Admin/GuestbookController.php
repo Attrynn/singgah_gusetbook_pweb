@@ -16,9 +16,7 @@ class GuestbookController extends Controller
 {
     use ExportsCsv;
 
-    public function __construct(protected GuestbookService $guestbook)
-    {
-    }
+    public function __construct(protected GuestbookService $guestbook) {}
 
     public function index(Request $request)
     {
@@ -92,20 +90,24 @@ class GuestbookController extends Controller
             ->when($request->integer('event_id'), fn ($q, $id) => $q->where('event_id', $id))
             ->when($request->string('status')->value(), fn ($q, $status) => $q->where('status', $status));
 
-        $rows = [['Event', 'Sender', 'Message', 'Emoji', 'Visibility', 'Status', 'Pinned', 'Created At']];
+        $rows = function (callable $write) use ($query): void {
+            $write(['Event', 'Sender', 'Message', 'Emoji', 'Visibility', 'Status', 'Pinned', 'Created At']);
 
-        foreach ($query->get() as $message) {
-            $rows[] = [
-                $message->event?->name,
-                $message->sender_name,
-                $message->message,
-                $message->emoji,
-                $message->visibility->label(),
-                $message->status->label(),
-                $message->is_pinned ? 'Yes' : 'No',
-                $message->created_at?->format('Y-m-d H:i'),
-            ];
-        }
+            $query->orderBy('id')->chunk(200, function ($messages) use ($write): void {
+                foreach ($messages as $message) {
+                    $write([
+                        $message->event?->name,
+                        $message->sender_name,
+                        $message->message,
+                        $message->emoji,
+                        $message->visibility->label(),
+                        $message->status->label(),
+                        $message->is_pinned ? 'Yes' : 'No',
+                        $message->created_at?->format('Y-m-d H:i'),
+                    ]);
+                }
+            });
+        };
 
         return $this->csvResponse($rows, 'vowspace-guestbook.csv');
     }

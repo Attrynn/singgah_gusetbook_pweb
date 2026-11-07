@@ -66,12 +66,12 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th class="text-left">Waktu</th>
-                            <th class="text-left">Aksi</th>
-                            <th class="text-left">Pengguna</th>
-                            <th class="text-left">Event</th>
-                            <th class="text-left">Deskripsi</th>
-                            <th class="text-left">IP</th>
+                            <th scope="col" class="text-left">Waktu</th>
+                            <th scope="col" class="text-left">Aksi</th>
+                            <th scope="col" class="text-left">Pengguna</th>
+                            <th scope="col" class="text-left">Event</th>
+                            <th scope="col" class="text-left">Deskripsi</th>
+                            <th scope="col" class="text-left">IP</th>
                         </tr>
                     </thead>
                     <tbody>

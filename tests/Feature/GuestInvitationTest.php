@@ -2,9 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\Event;
 use App\Models\Game;
-use App\Models\Guest;
 use App\Models\GuestToken;
 use App\Models\Poll;
 use App\Models\User;
@@ -89,7 +87,7 @@ class GuestInvitationTest extends TestCase
 
         $this->from('/invite/'.$token)
             ->post('/invite/'.$token.'/poll/'.$pollB->id, ['poll_option_id' => $option->id])
-            ->assertSessionHasErrors('poll');
+            ->assertNotFound();
     }
 
     public function test_admin_can_preview_invitation(): void

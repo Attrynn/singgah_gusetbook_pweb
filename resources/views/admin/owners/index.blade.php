@@ -31,11 +31,11 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th class="text-left">Nama / Email / Phone</th>
-                                <th class="text-left">Events</th>
-                                <th class="text-left">Status</th>
-                                <th class="text-left">Last Login</th>
-                                <th class="text-left">Actions</th>
+                                <th scope="col" class="text-left">Nama / Email / Phone</th>
+                                <th scope="col" class="text-left">Events</th>
+                                <th scope="col" class="text-left">Status</th>
+                                <th scope="col" class="text-left">Last Login</th>
+                                <th scope="col" class="text-left">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -63,7 +63,7 @@
                                             <x-ui.icon name="edit" class="h-4 w-4" />
                                         </a>
                                         <form method="POST" action="{{ route('admin.owners.destroy', $owner) }}" class="inline" data-confirm="Yakin ingin menghapus akun owner ini?" data-confirm-title="Hapus Owner">
-                                            <button type="submit" class="text-xs text-[#a35b64]" title="Hapus">
+                                            <button type="submit" class="text-xs text-danger" title="Hapus" aria-label="Hapus">
                                                 <x-ui.icon name="trash" class="h-4 w-4" />
                                             </button>
                                         </form>
@@ -102,8 +102,8 @@
                         showCancelButton: true,
                         confirmButtonText: form.dataset.confirmButton || 'Ya, lanjutkan',
                         cancelButtonText: 'Batal',
-                        confirmButtonColor: '#8EB4D3',
-                        cancelButtonColor: '#94A3B8',
+                        confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim(),
+                        cancelButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--color-muted').trim(),
                         reverseButtons: true,
                     }).then(result => {
                         if (result.isConfirmed) {

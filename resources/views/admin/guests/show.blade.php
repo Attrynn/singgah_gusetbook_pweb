@@ -140,7 +140,7 @@
                     <ol class="mt-4 space-y-4">
                         @foreach ($activities as $activity)
                             <li class="flex gap-3">
-                                <span class="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-blue-soft text-[#4f7592]">
+                                <span class="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-blue-soft text-ink">
                                     <x-ui.icon name="sparkles" class="h-3.5 w-3.5" />
                                 </span>
                                 <div class="min-w-0">
@@ -198,7 +198,7 @@
             </div>
 
             <div class="card border-danger/20 p-5">
-                <h2 class="section-title text-[#8f4f58]">Zona berbahaya</h2>
+                <h2 class="section-title text-danger">Zona berbahaya</h2>
                 <p class="mt-2 text-xs text-muted">Menghapus tamu juga menghapus RSVP, check-in, dan konten terkait.</p>
                 <form method="POST" action="{{ route('admin.guests.destroy', $guest) }}" class="mt-3" data-confirm="Hapus tamu {{ $guest->name }}? Tindakan ini tidak bisa dibatalkan." data-confirm-title="Hapus Tamu">
                     @csrf

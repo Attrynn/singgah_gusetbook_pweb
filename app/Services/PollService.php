@@ -7,7 +7,6 @@ use App\Models\Guest;
 use App\Models\Poll;
 use App\Models\PollOption;
 use App\Models\PollResponse;
-use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -58,11 +57,8 @@ class PollService
 
                 return $response;
             });
-        } catch (UniqueConstraintViolationException|QueryException $e) {
-            if (str_contains($e->getMessage(), 'Duplicate entry') || str_contains($e->getMessage(), 'UNIQUE')) {
-                throw ValidationException::withMessages(['poll' => 'Anda sudah memberikan suara pada polling ini.']);
-            }
-            throw $e;
+        } catch (UniqueConstraintViolationException) {
+            throw ValidationException::withMessages(['poll' => 'Anda sudah memberikan suara pada polling ini.']);
         }
     }
 

@@ -35,16 +35,16 @@
 
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>
-                    <label class="label">Ditutup pada</label>
-                    <input name="closes_at" type="text" class="input" data-datetimepicker value="{{ old('closes_at', $poll->closes_at?->format('Y-m-d H:i')) }}" placeholder="YYYY-MM-DD HH:MM">
+                    <label for="closes_at" class="label">Ditutup pada</label>
+                    <input id="closes_at" name="closes_at" type="text" class="input" data-datetimepicker value="{{ old('closes_at', $poll->closes_at?->format('Y-m-d H:i')) }}" placeholder="YYYY-MM-DD HH:MM">
                 </div>
                 <div class="space-y-3">
-                    <label class="flex items-center gap-3 rounded-2xl border border-line bg-surface-2/40 px-4 py-3">
-                        <input type="checkbox" name="is_active" value="1" class="h-4 w-4 rounded border-line text-accent focus:ring-accent" @checked(old('is_active', $poll->is_active))>
+                    <label for="is_active" class="flex items-center gap-3 rounded-2xl border border-line bg-surface-2/40 px-4 py-3">
+                        <input id="is_active" type="checkbox" name="is_active" value="1" class="h-4 w-4 rounded border-line text-accent focus:ring-accent" @checked(old('is_active', $poll->is_active))>
                         <span class="text-sm font-medium text-ink">Aktifkan polling</span>
                     </label>
-                    <label class="flex items-center gap-3 rounded-2xl border border-line bg-surface-2/40 px-4 py-3">
-                        <input type="checkbox" name="show_results" value="1" class="h-4 w-4 rounded border-line text-accent focus:ring-accent" @checked(old('show_results', $poll->show_results))>
+                    <label for="show_results" class="flex items-center gap-3 rounded-2xl border border-line bg-surface-2/40 px-4 py-3">
+                        <input id="show_results" type="checkbox" name="show_results" value="1" class="h-4 w-4 rounded border-line text-accent focus:ring-accent" @checked(old('show_results', $poll->show_results))>
                         <span class="text-sm font-medium text-ink">Tampilkan hasil ke tamu</span>
                     </label>
                 </div>
@@ -92,7 +92,7 @@
             </div>
 
             <div class="card border-danger/20 p-5">
-                <h2 class="section-title text-[#8f4f58]">Hapus polling</h2>
+                <h2 class="section-title text-danger">Hapus polling</h2>
                 <p class="mt-2 text-xs text-muted">Semua respons polling akan ikut terhapus.</p>
                 <form method="POST" action="{{ route('admin.interactions.polls.destroy', $poll) }}" class="mt-3" data-confirm="Hapus polling ini beserta seluruh responsnya?" data-confirm-title="Hapus Polling">
                     @csrf

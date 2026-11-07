@@ -8,19 +8,27 @@ use App\Models\Event;
 use App\Models\EventSchedule;
 use App\Models\EventVenue;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class EventService
 {
-    public function __construct(protected AuditService $audit) {}
+    public function __construct(
+        protected AuditService $audit,
+        protected EventLifecycleService $lifecycle,
+    ) {}
 
     public function create(array $data, User $actor): Event
     {
         return DB::transaction(function () use ($data, $actor) {
+            $status = EventStatus::tryFrom((string) ($data['status'] ?? EventStatus::Draft->value)) ?? EventStatus::Draft;
+
             $event = Event::create([
                 ...$this->eventPayload($data),
+                ...$this->lifecycle->initialPayload($status),
                 'created_by' => $actor->id,
             ]);
 
@@ -48,9 +56,27 @@ class EventService
 
             if (! empty($data['slug']) && $data['slug'] !== $event->slug) {
                 $payload['slug'] = Event::uniqueSlug($data['slug'], $event->id);
+            } elseif (empty($data['slug'])) {
+                // Never wipe the slug when a partial update omits it.
+                unset($payload['slug']);
+            }
+
+            if (empty($data['timezone'])) {
+                unset($payload['timezone']);
             }
 
             $event->update($payload);
+
+            if (isset($data['status'])) {
+                $status = EventStatus::tryFrom((string) $data['status']);
+
+                if (! $status) {
+                    throw ValidationException::withMessages(['status' => 'Status event tidak dikenal.']);
+                }
+
+                $this->lifecycle->transition($event, $status, $actor);
+            }
+
             $this->syncVenue($event, $data);
 
             if (array_key_exists('schedules', $data)) {
@@ -69,13 +95,7 @@ class EventService
 
     public function setStatus(Event $event, EventStatus $status, User $actor): Event
     {
-        $event->update([
-            'status' => $status,
-            'published_at' => in_array($status, [EventStatus::Published, EventStatus::Live], true)
-                ? ($event->published_at ?? now())
-                : $event->published_at,
-            'archived_at' => $status === EventStatus::Archived ? now() : null,
-        ]);
+        $event = $this->lifecycle->transition($event, $status, $actor);
 
         $this->audit->record(
             'event.status',
@@ -97,16 +117,32 @@ class EventService
 
     public function storeCover(Event $event, UploadedFile $file): void
     {
-        if ($event->cover_image) {
-            Storage::disk('public')->delete($event->cover_image);
+        $disk = config('media.public_disk', 'public');
+        $newPath = $file->store("events/{$event->id}/cover", $disk);
+
+        if ($newPath === false) {
+            throw new \RuntimeException('Failed to store event cover image.');
         }
 
-        $path = $file->store("events/{$event->id}/cover", 'public');
-        $event->update(['cover_image' => $path]);
+        $oldCover = $event->cover_image;
+
+        try {
+            $event->update(['cover_image' => $newPath]);
+        } catch (\Throwable $e) {
+            Storage::disk($disk)->delete($newPath);
+
+            throw $e;
+        }
+
+        if ($oldCover && $oldCover !== $newPath) {
+            Storage::disk($disk)->delete($oldCover);
+        }
     }
 
     protected function eventPayload(array $data): array
     {
+        $timezone = $data['timezone'] ?? AppSetting::get('default_timezone', config('app.timezone', 'Asia/Jakarta'));
+
         return [
             'name' => $data['name'],
             'slug' => $data['slug'] ?? null,
@@ -123,15 +159,31 @@ class EventService
             'google_maps_url' => $data['google_maps_url'] ?? null,
             'dress_code' => $data['dress_code'] ?? null,
             'description' => $data['description'] ?? null,
-            'status' => $data['status'] ?? 'draft',
-            'rsvp_deadline' => $data['rsvp_deadline'] ?? null,
+            'rsvp_deadline' => $this->toUtc($data['rsvp_deadline'] ?? null, $timezone),
             'rsvp_enabled' => (bool) ($data['rsvp_enabled'] ?? true),
             'guestbook_enabled' => (bool) ($data['guestbook_enabled'] ?? true),
             'gallery_enabled' => (bool) ($data['gallery_enabled'] ?? true),
             'gift_enabled' => (bool) ($data['gift_enabled'] ?? true),
             'live_wall_enabled' => (bool) ($data['live_wall_enabled'] ?? false),
-            'timezone' => $data['timezone'] ?? AppSetting::get('default_timezone', config('app.timezone', 'Asia/Jakarta')),
+            'timezone' => $timezone,
         ];
+    }
+
+    /**
+     * Parse a wall-clock date/time value in the event timezone and store the
+     * resulting absolute instant in UTC.
+     */
+    protected function toUtc(?string $value, string $timezone): ?Carbon
+    {
+        if (blank($value)) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value, $timezone)->utc();
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     protected function syncVenue(Event $event, array $data): void
@@ -162,8 +214,8 @@ class EventService
                 'event_id' => $event->id,
                 'title' => $schedule['title'],
                 'description' => $schedule['description'] ?? null,
-                'start_time' => $schedule['start_time'],
-                'end_time' => $schedule['end_time'] ?? null,
+                'start_time' => $this->toUtc($schedule['start_time'], $event->timezoneName()),
+                'end_time' => $this->toUtc($schedule['end_time'] ?? null, $event->timezoneName()),
                 'status' => $schedule['status'] ?? 'planned',
                 'sort_order' => $order++,
             ]);

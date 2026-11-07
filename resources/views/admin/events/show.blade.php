@@ -184,8 +184,8 @@
             <h2 class="section-title">Public URL</h2>
         </div>
         <div class="p-6 flex items-center gap-3">
-            <input type="text" value="{{ $event->publicUrl() }}" class="input flex-1" readonly>
-            <button type="button" class="icon-btn" data-copy="{{ $event->publicUrl() }}" title="Salin">
+            <input type="text" value="{{ $event->publicUrl() }}" class="input flex-1" readonly aria-label="URL publik event">
+            <button type="button" class="icon-btn" data-copy="{{ $event->publicUrl() }}" title="Salin" aria-label="Salin">
                 <x-ui.icon name="copy" class="h-4 w-4" />
             </button>
         </div>

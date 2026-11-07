@@ -48,7 +48,7 @@
                     <div class="divide-y divide-line/70">
                         @foreach ($categories as $category)
                             <div class="flex flex-wrap items-center gap-3 px-5 py-4">
-                                <span class="h-9 w-9 shrink-0 rounded-xl border border-line" style="background-color: {{ $category->color ?: '#8EB4D3' }}"></span>
+                                <span class="h-9 w-9 shrink-0 rounded-xl border border-line" style="background-color: {{ $category->color ?: 'var(--color-accent)' }}"></span>
                                 <div class="min-w-0 flex-1">
                                     <p class="truncate text-sm font-semibold text-ink">{{ $category->name }}</p>
                                     <p class="text-xs text-faint">{{ $category->slug }} · {{ $category->guests_count }} tamu</p>
@@ -63,16 +63,16 @@
                                         @method('PUT')
                                         <input type="hidden" name="event_id" value="{{ $event->id }}">
                                         <div class="sm:col-span-2">
-                                            <label class="label">Nama</label>
-                                            <input name="name" type="text" class="input" value="{{ $category->name }}" required>
+                                            <label for="category-name-{{ $category->id }}" class="label">Nama</label>
+                                            <input id="category-name-{{ $category->id }}" name="name" type="text" class="input" value="{{ $category->name }}" required>
                                         </div>
                                         <div>
-                                            <label class="label">Warna</label>
-                                            <input name="color" type="color" class="input h-11 py-1" value="{{ $category->color ?: '#8EB4D3' }}">
+                                            <label for="category-color-{{ $category->id }}" class="label">Warna</label>
+                                            <input id="category-color-{{ $category->id }}" name="color" type="color" class="input h-11 py-1" value="{{ $category->color ?: 'var(--color-accent)' }}">
                                         </div>
                                         <div>
-                                            <label class="label">Deskripsi</label>
-                                            <input name="description" type="text" class="input" value="{{ $category->description }}">
+                                            <label for="category-description-{{ $category->id }}" class="label">Deskripsi</label>
+                                            <input id="category-description-{{ $category->id }}" name="description" type="text" class="input" value="{{ $category->description }}">
                                         </div>
                                         <div class="flex items-center gap-2 sm:col-span-2">
                                             <button type="submit" class="btn btn-primary btn-sm">Simpan</button>
@@ -82,7 +82,7 @@
                                 <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" data-confirm="Hapus kategori {{ $category->name }}? Tamu terkait tidak dihapus." data-confirm-title="Hapus Kategori">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="icon-btn h-8 w-8 text-[#a35b64]" title="Hapus">
+                                    <button type="submit" class="icon-btn h-8 w-8 text-danger" title="Hapus" aria-label="Hapus">
                                         <x-ui.icon name="trash" class="h-3.5 w-3.5" />
                                     </button>
                                 </form>
@@ -98,17 +98,17 @@
                     @csrf
                     <input type="hidden" name="event_id" value="{{ $event->id }}">
                     <div>
-                        <label class="label">Nama <span class="text-[#b76a73]">*</span></label>
-                        <input name="name" type="text" class="input" value="{{ old('name') }}" required placeholder="Contoh: Keluarga">
-                        @error('name')<p class="error-text">{{ $message }}</p>@enderror
+                        <label for="category-name" class="label">Nama <span class="text-danger">*</span></label>
+                        <input id="category-name" name="name" type="text" class="input" value="{{ old('name') }}" required placeholder="Contoh: Keluarga" aria-invalid="true" aria-describedby="category-name-error">
+                        @error('name')<p id="category-name-error" class="error-text">{{ $message }}</p>@enderror
                     </div>
                     <div>
-                        <label class="label">Warna</label>
-                        <input name="color" type="color" class="input h-11 py-1" value="{{ old('color', '#8EB4D3') }}">
+                        <label for="category-color" class="label">Warna</label>
+                        <input id="category-color" name="color" type="color" class="input h-11 py-1" value="{{ old('color', 'var(--color-accent)') }}">
                     </div>
                     <div>
-                        <label class="label">Deskripsi</label>
-                        <input name="description" type="text" class="input" value="{{ old('description') }}" placeholder="Opsional">
+                        <label for="category-description" class="label">Deskripsi</label>
+                        <input id="category-description" name="description" type="text" class="input" value="{{ old('description') }}" placeholder="Opsional">
                     </div>
                     <button type="submit" class="btn btn-primary w-full">
                         <x-ui.icon name="plus" class="h-4 w-4" /> Tambah kategori

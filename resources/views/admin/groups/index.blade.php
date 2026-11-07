@@ -48,7 +48,7 @@
                     <div class="divide-y divide-line/70">
                         @foreach ($groups as $group)
                             <div class="flex flex-wrap items-center gap-3 px-5 py-4">
-                                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-soft text-[#4f7592]">
+                                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-soft text-ink">
                                     <x-ui.icon name="users" class="h-4 w-4" />
                                 </span>
                                 <div class="min-w-0 flex-1">
@@ -65,12 +65,12 @@
                                         @method('PUT')
                                         <input type="hidden" name="event_id" value="{{ $event->id }}">
                                         <div>
-                                            <label class="label">Nama</label>
-                                            <input name="name" type="text" class="input" value="{{ $group->name }}" required>
+                                            <label for="group-name-{{ $group->id }}" class="label">Nama</label>
+                                            <input id="group-name-{{ $group->id }}" name="name" type="text" class="input" value="{{ $group->name }}" required>
                                         </div>
                                         <div>
-                                            <label class="label">Deskripsi</label>
-                                            <input name="description" type="text" class="input" value="{{ $group->description }}">
+                                            <label for="group-description-{{ $group->id }}" class="label">Deskripsi</label>
+                                            <input id="group-description-{{ $group->id }}" name="description" type="text" class="input" value="{{ $group->description }}">
                                         </div>
                                         <div class="flex items-center gap-2 sm:col-span-2">
                                             <button type="submit" class="btn btn-primary btn-sm">Simpan</button>
@@ -80,7 +80,7 @@
                                 <form method="POST" action="{{ route('admin.groups.destroy', $group) }}" data-confirm="Hapus kelompok {{ $group->name }}? Tamu terkait tidak dihapus." data-confirm-title="Hapus Kelompok">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="icon-btn h-8 w-8 text-[#a35b64]" title="Hapus">
+                                    <button type="submit" class="icon-btn h-8 w-8 text-danger" title="Hapus" aria-label="Hapus">
                                         <x-ui.icon name="trash" class="h-3.5 w-3.5" />
                                     </button>
                                 </form>
@@ -96,13 +96,13 @@
                     @csrf
                     <input type="hidden" name="event_id" value="{{ $event->id }}">
                     <div>
-                        <label class="label">Nama <span class="text-[#b76a73]">*</span></label>
-                        <input name="name" type="text" class="input" value="{{ old('name') }}" required placeholder="Contoh: Keluarga Besar">
-                        @error('name')<p class="error-text">{{ $message }}</p>@enderror
+                        <label for="group-name" class="label">Nama <span class="text-danger">*</span></label>
+                        <input id="group-name" name="name" type="text" class="input" value="{{ old('name') }}" required placeholder="Contoh: Keluarga Besar" aria-invalid="true" aria-describedby="group-name-error">
+                        @error('name')<p id="group-name-error" class="error-text">{{ $message }}</p>@enderror
                     </div>
                     <div>
-                        <label class="label">Deskripsi</label>
-                        <input name="description" type="text" class="input" value="{{ old('description') }}" placeholder="Opsional">
+                        <label for="group-description" class="label">Deskripsi</label>
+                        <input id="group-description" name="description" type="text" class="input" value="{{ old('description') }}" placeholder="Opsional">
                     </div>
                     <button type="submit" class="btn btn-primary w-full">
                         <x-ui.icon name="plus" class="h-4 w-4" /> Tambah kelompok

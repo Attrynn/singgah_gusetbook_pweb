@@ -2,6 +2,10 @@
 
 @php
     $id = $attributes->get('id') ?? $name;
+    $hasError = $errors->has($name);
+    $errorId = $id.'-error';
+    $hintId = $id.'-hint';
+    $describedBy = trim(($hasError ? $errorId : '').($hint ? ($hasError ? ' ' : '').$hintId : ''));
 @endphp
 
 <div>
@@ -9,7 +13,8 @@
         <label for="{{ $id }}" class="label">
             {{ $label }}
             @if ($required)
-                <span class="text-[#b76a73]">*</span>
+                <span class="text-danger" aria-hidden="true">*</span>
+                <span class="sr-only">(wajib)</span>
             @endif
         </label>
     @endif
@@ -21,14 +26,16 @@
         value="{{ old($name, $value) }}"
         placeholder="{{ $placeholder }}"
         @if ($required) required @endif
+        @if ($hasError) aria-invalid="true" @endif
+        @if ($describedBy !== '') aria-describedby="{{ $describedBy }}" @endif
         {{ $attributes->merge(['class' => 'input']) }}
     >
 
     @error($name)
-        <p class="error-text">{{ $message }}</p>
+        <p id="{{ $errorId }}" class="error-text">{{ $message }}</p>
     @enderror
 
     @if ($hint)
-        <p class="hint">{{ $hint }}</p>
+        <p id="{{ $hintId }}" class="hint">{{ $hint }}</p>
     @endif
 </div>

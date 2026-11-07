@@ -14,7 +14,7 @@ class GuestPhotoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(int) config('media.max_kb', 5120)],
             'caption' => ['nullable', 'string', 'max:255'],
         ];
     }

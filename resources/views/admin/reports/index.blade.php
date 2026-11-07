@@ -94,7 +94,7 @@
                                                 <span class="text-ink">{{ $option['count'] }} · {{ $option['percent'] }}%</span>
                                             </div>
                                             <div class="mt-1 h-2 overflow-hidden rounded-full bg-surface-2">
-                                                <div class="h-full rounded-full bg-[#8EB4D3]" style="width: {{ $option['percent'] }}%"></div>
+                                                <div class="h-full rounded-full bg-accent" style="width: {{ $option['percent'] }}%"></div>
                                             </div>
                                         </li>
                                     @endforeach
@@ -116,10 +116,10 @@
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th class="text-left">Game</th>
-                                    <th class="text-right">Percobaan</th>
-                                    <th class="text-right">Rata-rata</th>
-                                    <th class="text-right">Terbaik</th>
+                                    <th scope="col" class="text-left">Game</th>
+                                    <th scope="col" class="text-right">Percobaan</th>
+                                    <th scope="col" class="text-right">Rata-rata</th>
+                                    <th scope="col" class="text-right">Terbaik</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -169,7 +169,9 @@
 @push('scripts')
     @if ($event)
         <script>
-            document.addEventListener('DOMContentLoaded', () => {
+            document.addEventListener('DOMContentLoaded', async () => {
+                const Chart = await window.loadChart();
+                const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
                 @if (count($timeline))
                     new Chart(document.getElementById('timelineChart'), {
                         type: 'bar',
@@ -178,7 +180,7 @@
                             datasets: [{
                                 label: 'Check-in',
                                 data: @json(array_column($timeline, 'count')),
-                                backgroundColor: '#8EB4D3',
+                                backgroundColor: css('--color-accent'),
                                 borderRadius: 8,
                                 maxBarThickness: 42,
                             }],
@@ -188,8 +190,8 @@
                             maintainAspectRatio: false,
                             plugins: { legend: { display: false } },
                             scales: {
-                                x: { grid: { display: false }, ticks: { color: '#94A3B8', font: { size: 10 } } },
-                                y: { beginAtZero: true, ticks: { color: '#94A3B8', precision: 0 }, grid: { color: 'rgba(148,163,184,0.18)' } },
+                                x: { grid: { display: false }, ticks: { color: css('--color-muted'), font: { size: 10 } } },
+                                y: { beginAtZero: true, ticks: { color: css('--color-muted'), precision: 0 }, grid: { color: css('--color-line') } },
                             },
                         },
                     });
@@ -201,7 +203,7 @@
                         labels: @json(array_column($rsvpBreakdown, 'label')),
                         datasets: [{
                             data: @json(array_column($rsvpBreakdown, 'count')),
-                            backgroundColor: ['#94A3B8', '#5DAD91', '#D88C96', '#D5AD70'],
+                            backgroundColor: [css('--color-muted'), css('--color-success'), css('--color-danger'), css('--color-warning')],
                             borderWidth: 0,
                         }],
                     },
@@ -209,7 +211,7 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         cutout: '62%',
-                        plugins: { legend: { position: 'bottom', labels: { color: '#64748B', boxWidth: 10, font: { size: 11 } } } },
+                        plugins: { legend: { position: 'bottom', labels: { color: css('--color-muted'), boxWidth: 10, font: { size: 11 } } } },
                     },
                 });
             });

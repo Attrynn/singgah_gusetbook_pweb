@@ -49,12 +49,12 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th class="text-left">Judul</th>
-                            <th class="text-left">Event</th>
-                            <th class="text-left">Pertanyaan</th>
-                            <th class="text-left">Percobaan</th>
-                            <th class="text-left">Status</th>
-                            <th class="text-left">Aksi</th>
+                            <th scope="col" class="text-left">Judul</th>
+                            <th scope="col" class="text-left">Event</th>
+                            <th scope="col" class="text-left">Pertanyaan</th>
+                            <th scope="col" class="text-left">Percobaan</th>
+                            <th scope="col" class="text-left">Status</th>
+                            <th scope="col" class="text-left">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -79,14 +79,14 @@
                                         </a>
                                         <form method="POST" action="{{ route('admin.interactions.games.toggle', $game) }}">
                                             @csrf
-                                            <button type="submit" class="icon-btn h-8 w-8" title="{{ $game->is_active ? 'Nonaktifkan' : 'Aktifkan' }}">
+                                            <button type="submit" class="icon-btn h-8 w-8" title="{{ $game->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" aria-label="{{ $game->is_active ? 'Nonaktifkan' : 'Aktifkan' }}">
                                                 <x-ui.icon name="refresh" class="h-3.5 w-3.5" />
                                             </button>
                                         </form>
                                         <form method="POST" action="{{ route('admin.interactions.games.destroy', $game) }}" data-confirm="Hapus game {{ $game->title }} beserta pertanyaannya?" data-confirm-title="Hapus Game">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="icon-btn h-8 w-8 text-[#a35b64]" title="Hapus">
+                                            <button type="submit" class="icon-btn h-8 w-8 text-danger" title="Hapus" aria-label="Hapus">
                                                 <x-ui.icon name="trash" class="h-3.5 w-3.5" />
                                             </button>
                                         </form>

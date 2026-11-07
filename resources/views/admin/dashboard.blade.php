@@ -41,7 +41,7 @@
                 @foreach ($statusOverview as $item)
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <span class="inline-block h-3 w-3 rounded-full" style="background-color: {{ $item['status']->color ?? '#8EB4D3' }}"></span>
+                            <span class="inline-block h-3 w-3 rounded-full" style="background-color: {{ $item['status']->color ?? 'var(--color-accent)' }}"></span>
                             <span class="text-sm text-ink">{{ $item['status']->label() }}</span>
                         </div>
                         <span class="text-sm font-semibold text-ink">{{ $item['count'] }}</span>
@@ -165,48 +165,53 @@
 
     @push('scripts')
         <script>
-            const ctx = document.getElementById('rsvpChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: {{ json_encode($rsvpChart->pluck('name')) }},
-                    datasets: [
-                        {
-                            label: 'Confirmed',
-                            data: {{ json_encode($rsvpChart->pluck('confirmed')) }},
-                            backgroundColor: '#5DAD91',
+            document.addEventListener('DOMContentLoaded', async () => {
+                const Chart = await window.loadChart();
+                const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+                const ctx = document.getElementById('rsvpChart').getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: {{ json_encode($rsvpChart->pluck('name')) }},
+                        datasets: [
+                            {
+                                label: 'Confirmed',
+                                data: {{ json_encode($rsvpChart->pluck('confirmed')) }},
+                                backgroundColor: css('--color-success'),
+                            },
+                            {
+                                label: 'Declined',
+                                data: {{ json_encode($rsvpChart->pluck('declined')) }},
+                                backgroundColor: css('--color-danger'),
+                            },
+                            {
+                                label: 'Pending',
+                                data: {{ json_encode($rsvpChart->pluck('pending')) }},
+                                backgroundColor: css('--color-muted'),
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                stacked: true,
+                                grid: { display: false },
+                            },
+                            y: {
+                                stacked: true,
+                                beginAtZero: true,
+                                grid: { color: css('--color-line') },
+                            },
                         },
-                        {
-                            label: 'Declined',
-                            data: {{ json_encode($rsvpChart->pluck('declined')) }},
-                            backgroundColor: '#D88C96',
-                        },
-                        {
-                            label: 'Pending',
-                            data: {{ json_encode($rsvpChart->pluck('pending')) }},
-                            backgroundColor: '#94A3B8',
-                        },
-                    ],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            stacked: true,
-                            grid: { display: false },
-                        },
-                        y: {
-                            stacked: true,
-                            beginAtZero: true,
-                            grid: { color: 'rgba(220, 229, 239, 0.3)' },
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: false },
                         },
                     },
-                    plugins: {
-                        legend: { position: 'top' },
-                        title: { display: false },
-                    },
-                },
+                });
             });
         </script>
     @endpush

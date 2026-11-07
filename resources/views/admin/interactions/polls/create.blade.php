@@ -24,11 +24,11 @@
         <x-ui.textarea name="description" label="Deskripsi" rows="3" placeholder="Konteks tambahan untuk tamu (opsional)." />
 
         <div class="space-y-2">
-            <p class="label">Pilihan jawaban <span class="text-[#b76a73]">*</span></p>
+            <p class="label">Pilihan jawaban <span class="text-danger">*</span></p>
             <template x-for="(option, index) in options" :key="index">
                 <div class="flex items-center gap-2">
-                    <input type="text" :name="'options[' + index + ']'" x-model="options[index]" class="input" required :placeholder="'Pilihan ' + (index + 1)">
-                    <button type="button" class="icon-btn h-8 w-8 shrink-0 text-[#a35b64]" x-show="options.length > 2" x-on:click="remove(index)" title="Hapus pilihan">
+                    <input type="text" :name="'options[' + index + ']'" x-model="options[index]" class="input" required :placeholder="'Pilihan ' + (index + 1)" aria-describedby="options-error">
+                    <button type="button" class="icon-btn h-8 w-8 shrink-0 text-danger" x-show="options.length > 2" x-on:click="remove(index)" title="Hapus pilihan" aria-label="Hapus pilihan">
                         <x-ui.icon name="close" class="h-3.5 w-3.5" />
                     </button>
                 </div>
@@ -36,22 +36,22 @@
             <button type="button" class="btn btn-ghost btn-sm" x-show="options.length < 10" x-on:click="add()">
                 <x-ui.icon name="plus" class="h-3.5 w-3.5" /> Tambah pilihan
             </button>
-            @error('options')<p class="error-text">{{ $message }}</p>@enderror
+            @error('options')<p id="options-error" class="error-text">{{ $message }}</p>@enderror
         </div>
 
         <div class="grid gap-4 sm:grid-cols-2">
             <div>
-                <label class="label">Ditutup pada</label>
-                <input name="closes_at" type="text" class="input" data-datetimepicker value="{{ old('closes_at') }}" placeholder="YYYY-MM-DD HH:MM">
+                <label for="closes_at" class="label">Ditutup pada</label>
+                <input id="closes_at" name="closes_at" type="text" class="input" data-datetimepicker value="{{ old('closes_at') }}" placeholder="YYYY-MM-DD HH:MM">
                 <p class="hint">Kosongkan bila polling dibiarkan terbuka.</p>
             </div>
             <div class="space-y-3">
-                <label class="flex items-center gap-3 rounded-2xl border border-line bg-surface-2/40 px-4 py-3">
-                    <input type="checkbox" name="is_active" value="1" class="h-4 w-4 rounded border-line text-accent focus:ring-accent" @checked(old('is_active', true))>
+                <label for="is_active" class="flex items-center gap-3 rounded-2xl border border-line bg-surface-2/40 px-4 py-3">
+                    <input id="is_active" type="checkbox" name="is_active" value="1" class="h-4 w-4 rounded border-line text-accent focus:ring-accent" @checked(old('is_active', true))>
                     <span class="text-sm font-medium text-ink">Aktifkan polling</span>
                 </label>
-                <label class="flex items-center gap-3 rounded-2xl border border-line bg-surface-2/40 px-4 py-3">
-                    <input type="checkbox" name="show_results" value="1" class="h-4 w-4 rounded border-line text-accent focus:ring-accent" @checked(old('show_results', true))>
+                <label for="show_results" class="flex items-center gap-3 rounded-2xl border border-line bg-surface-2/40 px-4 py-3">
+                    <input id="show_results" type="checkbox" name="show_results" value="1" class="h-4 w-4 rounded border-line text-accent focus:ring-accent" @checked(old('show_results', true))>
                     <span class="text-sm font-medium text-ink">Tampilkan hasil ke tamu</span>
                 </label>
             </div>

@@ -12,9 +12,7 @@ class GuestInvitationController extends Controller
 {
     use ResolvesGuest;
 
-    public function __construct(protected InvitationService $invitations)
-    {
-    }
+    public function __construct(protected InvitationService $invitations) {}
 
     public function landing(string $slug)
     {
@@ -25,6 +23,8 @@ class GuestInvitationController extends Controller
 
     public function show(Request $request)
     {
+        abort_unless($this->can($request, 'invitation'), 403, 'Undangan untuk acara ini belum dapat diakses.');
+
         $guest = $this->guest($request);
         $event = $this->event($request);
         $token = (string) $request->route('token');
@@ -42,7 +42,6 @@ class GuestInvitationController extends Controller
             ->first();
 
         $game = $event->games()->where('is_active', true)->first();
-
         $myPollResponse = $poll
             ? $poll->responses()->where('guest_id', $guest->id)->first()
             : null;

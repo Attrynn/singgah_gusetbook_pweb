@@ -31,11 +31,11 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <x-ui.badge variant="{{ $gift->is_active ? 'success' : 'muted' }}" class="text-[10px]">{{ $gift->is_active ? 'Active' : 'Inactive' }}</x-ui.badge>
-                            <button type="button" class="icon-btn" title="Edit">
+                            <button type="button" class="icon-btn" title="Edit" aria-label="Edit">
                                 <x-ui.icon name="edit" class="h-4 w-4" />
                             </button>
                             <form method="POST" action="{{ route('admin.gifts.destroy', $gift) }}" class="inline" data-confirm="Yakin ingin menghapus rekening hadiah ini?" data-confirm-title="Hapus Rekening">
-                                <button type="submit" class="icon-btn" title="Hapus">
+                                <button type="submit" class="icon-btn" title="Hapus" aria-label="Hapus">
                                     <x-ui.icon name="trash" class="h-4 w-4" />
                                 </button>
                             </form>
@@ -67,8 +67,8 @@
                         showCancelButton: true,
                         confirmButtonText: form.dataset.confirmButton || 'Ya, lanjutkan',
                         cancelButtonText: 'Batal',
-                        confirmButtonColor: '#8EB4D3',
-                        cancelButtonColor: '#94A3B8',
+                        confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim(),
+                        cancelButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--color-muted').trim(),
                         reverseButtons: true,
                     }).then(result => {
                         if (result.isConfirmed) {

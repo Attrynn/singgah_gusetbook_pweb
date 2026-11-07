@@ -11,7 +11,7 @@
             @if ($user->avatar_path)
                 <img src="{{ $user->avatar_path ? Illuminate\Support\Facades\Storage::disk('public')->url($user->avatar_path) : null }}" alt="Avatar" class="h-16 w-16 rounded-2xl object-cover" />
             @else
-                <span class="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-soft text-[#4f7592] text-lg font-semibold">
+                <span class="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-soft text-ink text-lg font-semibold">
                     {{ mb_strtoupper(mb_substr($user->name ?? '', 0, 1)) }}
                 </span>
             @endif

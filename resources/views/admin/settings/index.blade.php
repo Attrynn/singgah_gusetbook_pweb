@@ -40,8 +40,8 @@
 
             <div class="border-t border-line/70 pt-5">
                 <h2 class="section-title">Moderasi</h2>
-                <label class="mt-4 flex items-start gap-3 rounded-2xl border border-line bg-surface-2/40 px-4 py-3">
-                    <input type="checkbox" name="guestbook_auto_approve" value="1" class="mt-0.5 h-4 w-4 rounded border-line text-accent focus:ring-accent" @checked((string) $settings['guestbook_auto_approve'] === '1')>
+                <label for="guestbook_auto_approve" class="mt-4 flex items-start gap-3 rounded-2xl border border-line bg-surface-2/40 px-4 py-3">
+                    <input id="guestbook_auto_approve" type="checkbox" name="guestbook_auto_approve" value="1" class="mt-0.5 h-4 w-4 rounded border-line text-accent focus:ring-accent" @checked((string) $settings['guestbook_auto_approve'] === '1')>
                     <span>
                         <span class="block text-sm font-medium text-ink">Setujui ucapan otomatis</span>
                         <span class="block text-xs text-muted">Ucapan tamu langsung tampil tanpa moderasi. Nonaktifkan untuk meninjau setiap ucapan terlebih dahulu.</span>
@@ -70,7 +70,7 @@
                     <ol class="mt-4 space-y-4">
                         @foreach ($recentLogs as $log)
                             <li class="flex gap-3">
-                                <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-blue-soft text-[#4f7592]">
+                                <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-blue-soft text-ink">
                                     <x-ui.icon name="sparkles" class="h-3.5 w-3.5" />
                                 </span>
                                 <div class="min-w-0">

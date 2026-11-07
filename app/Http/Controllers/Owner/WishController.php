@@ -90,17 +90,36 @@ class WishController extends Controller
     public function download(Request $request)
     {
         $event = $this->ownerEvent($request);
-        $rows = [['Sender', 'Message', 'Visibility', 'Status', 'Created At']];
+        $query = $event->messages();
 
-        foreach ($event->messages()->orderBy('created_at')->get() as $message) {
-            $rows[] = [
-                $message->sender_name,
-                $message->message,
-                $message->visibility->label(),
-                $message->status->label(),
-                $message->created_at?->format('Y-m-d H:i'),
-            ];
+        if ($status = $request->string('status')->value()) {
+            $query->where('status', $status);
         }
+
+        if ($search = $request->string('search')->trim()->value()) {
+            $query->where(fn ($q) => $q->where('sender_name', 'like', "%{$search}%")
+                ->orWhere('message', 'like', "%{$search}%"));
+        }
+
+        if ($date = $request->string('date')->value()) {
+            $query->whereDate('created_at', $date);
+        }
+
+        $rows = function (callable $write) use ($query): void {
+            $write(['Sender', 'Message', 'Visibility', 'Status', 'Created At']);
+
+            $query->orderBy('created_at')->chunk(200, function ($messages) use ($write): void {
+                foreach ($messages as $message) {
+                    $write([
+                        $message->sender_name,
+                        $message->message,
+                        $message->visibility->label(),
+                        $message->status->label(),
+                        $message->created_at?->format('Y-m-d H:i'),
+                    ]);
+                }
+            });
+        };
 
         return $this->csvResponse($rows, 'vowspace-wishes-'.$event->slug.'.csv');
     }

@@ -125,7 +125,7 @@ MariaDB instance), and [docs/DEMO.md](docs/DEMO.md) for a guided tour.
 ## Verification
 
 ```bash
-php artisan test                 # 54 feature tests, 144 assertions
+php artisan test                 # 80 feature tests, 227 assertions, all passing
 php bin/blade_lint.php           # compiles + PHP-lints every Blade view (77 views)
 ./bin/smoke.sh                   # real HTTP smoke test against `php artisan serve`
 npm run build                    # Vite production build

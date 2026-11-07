@@ -19,8 +19,8 @@
 
         <x-ui.textarea name="description" label="Deskripsi" rows="3" placeholder="Jelaskan singkat aturan atau tema kuis." />
 
-        <label class="flex items-center gap-3 rounded-2xl border border-line bg-surface-2/40 px-4 py-3">
-            <input type="checkbox" name="is_active" value="1" class="h-4 w-4 rounded border-line text-accent focus:ring-accent" @checked(old('is_active', true))>
+        <label for="is_active" class="flex items-center gap-3 rounded-2xl border border-line bg-surface-2/40 px-4 py-3">
+            <input id="is_active" type="checkbox" name="is_active" value="1" class="h-4 w-4 rounded border-line text-accent focus:ring-accent" @checked(old('is_active', true))>
             <span>
                 <span class="block text-sm font-medium text-ink">Aktifkan game</span>
                 <span class="block text-xs text-muted">Game aktif langsung tampil di halaman interaksi tamu.</span>

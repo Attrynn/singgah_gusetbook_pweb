@@ -25,6 +25,12 @@ return [
         'guest_per_page' => 20,
     ],
 
+    'guest_import_limit' => (int) env('GUEST_IMPORT_LIMIT', 1000),
+
+    'retention' => [
+        'trashed_days' => (int) env('TRASHED_RETENTION_DAYS', 30),
+    ],
+
     'rate_limits' => [
         'guest_actions_per_minute' => 12,
         'guestbook_per_minute' => 4,

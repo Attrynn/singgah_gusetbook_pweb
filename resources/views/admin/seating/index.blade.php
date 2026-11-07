@@ -15,7 +15,7 @@
         subtitle="Susun tamu di meja-acara"
     >
         <div class="flex items-center gap-2">
-            <select id="event_id" name="event_id" class="input appearance-none" x-on="change"="$dispatch('update-event')">
+            <select id="event_id" name="event_id" class="input appearance-none" x-on="change"="$dispatch('update-event')" aria-label="Filter event">
                 <option value="">Semua event</option>
                 @foreach ($events as $e)
                     <option value="{{ $e->id }}" @selected($eventId === $e->id)>
@@ -50,12 +50,12 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Nama</th>
-                            <th class="text-center">Kapasitas</th>
-                            <th class="text-center">Terisi</th>
-                            <th class="text-center">Sisa</th>
-                            <th class="text-center">Zone</th>
-                            <th class="text-right">Aksi</th>
+                            <th scope="col">Nama</th>
+                            <th scope="col" class="text-center">Kapasitas</th>
+                            <th scope="col" class="text-center">Terisi</th>
+                            <th scope="col" class="text-center">Sisa</th>
+                            <th scope="col" class="text-center">Zone</th>
+                            <th scope="col" class="text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -67,13 +67,13 @@
                                 <td class="text-center">{{ $table->remainingCapacity() }}</td>
                                 <td class="text-sm text-muted">{{ $table->zone ?? '—' }}</td>
                                 <td class="text-right">
-                                    <button type="button" class="btn-ghost btn-xs" x-on:click="$dispatch('open-edit-table-{{ $table->id }}')">
+                                    <button type="button" class="btn-ghost btn-xs" x-on:click="$dispatch('open-edit-table-{{ $table->id }}')" aria-label="Edit meja">
                                         <x-ui.icon name="edit" class="h-3 w-3" />
                                     </button>
                                     <form method="POST" action="{{ route('admin.seating.tables.destroy', $table) }}" class="inline" data-confirm="Yakin menghapus meja ini?">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-ghost btn-xs text-danger">
+                                        <button type="submit" class="btn-ghost btn-xs text-danger" aria-label="Hapus">
                                             <x-ui.icon name="trash" class="h-3 w-3" />
                                         </button>
                                     </form>
@@ -84,10 +84,7 @@
                 </table>
 
                 <template x-if="tables->isEmpty()">
-                    <div class="p-8 text-center text-faint">
-                        <x-ui.icon name="grid" class="h-12 w-12 mx-auto text-faint mb-3" />
-                        <p>Belum ada meja. Buat meja pertama dengan tombol di atas.</p>
-                    </div>
+                    <x-ui.empty-state icon="grid" title="Belum ada meja" description="Buat meja pertama dengan tombol di atas." />
                 </template>
             </div>
 
@@ -98,13 +95,13 @@
 
                     <div class="grid gap-3">
                         <div>
-                            <label for="table_name" class="label">Nama meja <span class="text-[#b76a73]">*</span></label>
+                            <label for="table_name" class="label">Nama meja <span class="text-danger">*</span></label>
                             <input type="text" id="table_name" name="name" required class="input">
                         </div>
 
                         <div class="grid gap-3 sm:grid-cols-2">
                             <div>
-                                <label for="table_capacity" class="label">Kapasitas <span class="text-[#b76a73]">*</span></label>
+                                <label for="table_capacity" class="label">Kapasitas <span class="text-danger">*</span></label>
                                 <input type="number" id="table_capacity" name="capacity" min="1" max="100" required class="input">
                             </div>
                             <div>
@@ -149,7 +146,7 @@
 
                         <div class="grid gap-3">
                             <div>
-                                <label for="assign_table" class="label">Pilih meja <span class="text-[#b76a73]">*</span></label>
+                                <label for="assign_table" class="label">Pilih meja <span class="text-danger">*</span></label>
                                 <select id="assign_table" name="seating_table_id" class="input appearance-none" required>
                                     <option value="">-- Pilih meja --</option>
                                     @foreach ($tables as $table)
@@ -161,7 +158,7 @@
                             </div>
 
                             <div>
-                                <label for="assign_guest" class="label">Pilih tamu <span class="text-[#b76a73]">*</span></label>
+                                <label for="assign_guest" class="label">Pilih tamu <span class="text-danger">*</span></label>
                                 <select id="assign_guest" name="guest_id" class="input appearance-none" required>
                                     <option value="">-- Pilih tamu --</option>
                                     @foreach ($unassigned as $guest)
@@ -188,8 +185,8 @@
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Tamu</th>
-                                        <th class="text-center">Event</th>
+                                        <th scope="col">Tamu</th>
+                                        <th scope="col" class="text-center">Event</th>
                                     </tr>
                                 </thead>
                                 <tbody>

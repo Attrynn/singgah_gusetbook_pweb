@@ -140,7 +140,7 @@ server {
     ssl_certificate     /etc/letsencrypt/live/vowspace.example.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/vowspace.example.com/privkey.pem;
 
-    client_max_body_size 12M;   # guest photo uploads are capped at 5 MB each
+    client_max_body_size 64M;   # batch uploads capped at 10 files x 5 MB (50 MB budget) + multipart overhead
 
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
@@ -167,8 +167,9 @@ server {
 }
 ```
 
-`client_max_body_size` must be at least as large as the largest accepted upload plus multipart
-overhead. PHP's `upload_max_filesize` and `post_max_size` must match.
+`client_max_body_size` must match or exceed the batch upload budget (64M recommended for 10 files × 5 MB).
+PHP's `upload_max_filesize = 6M` and `post_max_size = 64M`, with `max_file_uploads = 20`.
+Application limits are governed by `config/media.php` (`MEDIA_MAX_KB=5120`, `MEDIA_MAX_FILES=10`, `MEDIA_MAX_TOTAL_KB=51200`).
 
 ---
 
@@ -203,11 +204,15 @@ Back up `storage/app/public` alongside the database — media rows are useless w
 
 ## 7. Media storage
 
-Default is the local `public` disk (`storage/app/public`), exposed through the `public/storage`
-symlink. For multi-host or container deployments, switch to S3:
+Media storage resolves through `config/media.php`:
+- `MEDIA_PUBLIC_DISK` (default `public`): approved media and generated derivatives (`thumbnail_path`, `medium_path`).
+- `MEDIA_STAGING_DISK` (default `local`): private staging for pending guest uploads until approved.
+
+For multi-host or container deployments with S3 / object storage:
 
 ```dotenv
-FILESYSTEM_DISK=s3
+MEDIA_PUBLIC_DISK=s3
+MEDIA_STAGING_DISK=s3_private
 AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
 AWS_DEFAULT_REGION=...
@@ -215,8 +220,8 @@ AWS_BUCKET=...
 AWS_URL=https://cdn.example.com
 ```
 
-The service layer uses `Storage::disk(config('filesystems.default'))`-style access through
-`MediaService`, so no code change is required. There is no thumbnail pipeline; originals are served.
+The service layer routes through `config('media.public_disk')` and `config('media.staging_disk')`.
+A bounded derivative pipeline generates 480px thumbnails and 1280px medium derivatives on publish.
 
 ---
 
@@ -263,18 +268,27 @@ Migrations are additive where possible. Two known constraints if you must roll b
 - `GET /up` — Laravel health endpoint, returns `200` when the app boots.
 - Application log: `storage/logs/laravel.log` (single channel by default).
 - Audit trail: `/admin/audit-logs`, table `audit_logs`.
+- Scheduled cleanup: `vowspace:purge-trashed` runs daily via the Laravel scheduler (`routes/console.php`) to purge soft-deleted records past `TRASHED_RETENTION_DAYS`.
 - Suggested checks: HTTP 200 on `/up`, DB connectivity, disk space on `storage/app/public`,
   and a synthetic login every few minutes.
 
 ---
 
-## 11. What is intentionally not included
+## 11. Release packaging hygiene
+
+When producing production distribution archives:
+- Never package `.env` — supply `.env.example` and set secrets in the deployment environment.
+- Exclude `.git`, `node_modules`, `vendor`, compiled view cache, and `storage/logs/*`.
+- Ensure executable bits (`chmod +x`) on `artisan` and `bin/*` are preserved or restored on deploy.
+- Install dependencies on target: `composer install --no-dev --optimize-autoloader` and `npm ci && npm run build`.
+
+---
+
+## 12. What is intentionally not included
 
 Stated plainly so nobody assumes it exists:
 
-- No queue worker or scheduler is required or configured.
-- No WebSocket/broadcast server; the live wall polls `GET /wall/{slug}/messages`.
+- No WebSocket/broadcast server; the live wall polls `GET /wall/{slug}/messages` with monotonic cursors.
 - No email provider integration beyond Laravel's standard mailer config.
-- No CDN, image resizing, or thumbnail generation.
 - No 2FA, SSO, or social login.
 - No multi-tenant subdomain routing; tenancy is row-level via `event_id`.

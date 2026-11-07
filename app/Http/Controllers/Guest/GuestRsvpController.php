@@ -5,19 +5,18 @@ namespace App\Http\Controllers\Guest;
 use App\Http\Controllers\Guest\Concerns\ResolvesGuest;
 use App\Http\Requests\Guest\GuestRsvpRequest;
 use App\Services\RsvpService;
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
 class GuestRsvpController extends Controller
 {
     use ResolvesGuest;
 
-    public function __construct(protected RsvpService $rsvps)
-    {
-    }
+    public function __construct(protected RsvpService $rsvps) {}
 
     public function store(GuestRsvpRequest $request)
     {
+        abort_unless($this->can($request, 'rsvp'), 403, 'RSVP tidak tersedia untuk acara ini.');
+
         $guest = $this->guest($request);
         $rsvp = $this->rsvps->submit($guest, $request->validated());
 

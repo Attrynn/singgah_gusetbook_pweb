@@ -44,7 +44,7 @@
             @endforeach
             <div class="sm:w-48">
                 <label for="date" class="label">Tanggal</label>
-                <input type="text" id="date" name="date" class="input" placeholder="dd M yyyy" value="{{ $filters['date'] ?? '' }}" data-datepicker />
+                <input type="text" id="date" name="date" class="input" placeholder="dd M yyyy" value="{{ $filters['date'] ?? '' }}" data-datepicker aria-label="Filter tanggal" />
             </div>
             <div class="flex gap-2 self-end">
                 <button type="submit" class="btn btn-primary">Filter</button>

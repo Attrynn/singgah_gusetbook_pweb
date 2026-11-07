@@ -16,9 +16,7 @@ class RsvpController extends Controller
 {
     use ExportsCsv;
 
-    public function __construct(protected RsvpService $rsvps)
-    {
-    }
+    public function __construct(protected RsvpService $rsvps) {}
 
     public function index(Request $request)
     {
@@ -68,20 +66,24 @@ class RsvpController extends Controller
         $eventId = $request->integer('event_id');
         $query = Rsvp::with(['guest', 'event'])->when($eventId, fn ($q) => $q->where('event_id', $eventId));
 
-        $rows = [['Event', 'Guest', 'Status', 'Attendance', 'Companions', 'Dietary', 'Notes', 'Responded At']];
+        $rows = function (callable $write) use ($query): void {
+            $write(['Event', 'Guest', 'Status', 'Attendance', 'Companions', 'Dietary', 'Notes', 'Responded At']);
 
-        foreach ($query->get() as $rsvp) {
-            $rows[] = [
-                $rsvp->event?->name,
-                $rsvp->guest?->name,
-                $rsvp->status->label(),
-                $rsvp->attendance_count,
-                $rsvp->companion_names,
-                $rsvp->dietary_preference,
-                $rsvp->notes,
-                $rsvp->responded_at?->format('Y-m-d H:i'),
-            ];
-        }
+            $query->orderBy('id')->chunk(200, function ($rsvps) use ($write): void {
+                foreach ($rsvps as $rsvp) {
+                    $write([
+                        $rsvp->event?->name,
+                        $rsvp->guest?->name,
+                        $rsvp->status->label(),
+                        $rsvp->attendance_count,
+                        $rsvp->companion_names,
+                        $rsvp->dietary_preference,
+                        $rsvp->notes,
+                        $rsvp->responded_at?->format('Y-m-d H:i'),
+                    ]);
+                }
+            });
+        };
 
         return $this->csvResponse($rows, 'vowspace-rsvp.csv');
     }

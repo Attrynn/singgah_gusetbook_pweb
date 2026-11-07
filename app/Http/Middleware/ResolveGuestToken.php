@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Enums\GuestStatus;
+use App\Services\GuestCapabilityResolver;
 use App\Services\InvitationService;
 use Closure;
 use Illuminate\Http\Request;
@@ -10,7 +11,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ResolveGuestToken
 {
-    public function __construct(protected InvitationService $invitations) {}
+    public function __construct(
+        protected InvitationService $invitations,
+        protected GuestCapabilityResolver $capabilities,
+    ) {}
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -41,9 +45,14 @@ class ResolveGuestToken
         $request->attributes->set('guest', $guest);
         $request->attributes->set('event', $token->event);
 
+        $capabilities = $this->capabilities->for($token->event, $guest);
+
+        $request->attributes->set('capabilities', $capabilities);
+
         view()->share('token', $raw);
         view()->share('currentGuest', $guest);
         view()->share('currentEvent', $token->event);
+        view()->share('capabilities', $capabilities);
 
         return $next($request);
     }

@@ -27,10 +27,10 @@
                     <div>
                         <label for="avatar" class="label">Foto profil</label>
                         <input id="avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/webp"
-                            class="input py-2 file:mr-3 file:rounded-xl file:border-0 file:bg-blue-soft file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-[#4f7592]"
-                            x-on:change="const file = $event.target.files[0]; preview = file ? URL.createObjectURL(file) : null">
+                            class="input py-2 file:mr-3 file:rounded-xl file:border-0 file:bg-blue-soft file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-ink"
+                            x-on:change="const file = $event.target.files[0]; preview = file ? URL.createObjectURL(file) : null" aria-invalid="true" aria-describedby="avatar-error">
                         @error('avatar')
-                            <p class="error-text">{{ $message }}</p>
+                            <p id="avatar-error" class="error-text">{{ $message }}</p>
                         @enderror
                         <p class="hint">JPG, PNG, atau WebP. Maksimal 2 MB.</p>
                     </div>

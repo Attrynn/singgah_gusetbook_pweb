@@ -30,7 +30,7 @@
             <p class="text-[10px] text-faint">{{ $message->created_at?->translatedFormat('l, d M Y H:i') }}</p>
             <form action="{{ route('owner.wishes.favorite', $message) }}" method="POST" class="inline" data-confirm data-confirm-title="Ubah favorit?" data-confirm="Tandai sebagai {{ $isFavorite ? 'bukan' : '' }}favorit?">
                 @csrf
-                <button type="submit" class="icon-btn h-9 w-9 {{ $isFavorite ? 'bg-blue-soft text-[#4f7592]' : '' }}">
+                <button type="submit" class="icon-btn h-9 w-9 {{ $isFavorite ? 'bg-blue-soft text-ink' : '' }}" aria-label="Favoritkan">
                     <x-ui.icon name="heart" class="h-4 w-4" />
                 </button>
             </form>

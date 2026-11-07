@@ -160,7 +160,7 @@
                                     </span>
                                 </div>
                                 <p class="text-[11px] text-faint truncate hidden sm:block">
-                                    {{ $currentEv->event_date?->translatedFormat('d F Y') }} · {{ $currentEv->venue?->name ?? 'Venue' }}
+                                    {{ $currentEv->event_date?->translatedFormat('d F Y') }} · {{ $currentEv->primaryVenue?->name ?? 'Venue' }}
                                 </p>
                             </div>
                         @else

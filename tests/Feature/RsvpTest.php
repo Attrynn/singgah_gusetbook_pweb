@@ -62,7 +62,7 @@ class RsvpTest extends TestCase
 
         $this->from('/invite/'.$token)
             ->post('/invite/'.$token.'/rsvp', ['status' => 'confirmed', 'attendance_count' => 1])
-            ->assertSessionHasErrors('rsvp');
+            ->assertForbidden();
 
         $this->assertDatabaseMissing('rsvps', ['guest_id' => $guest->id]);
     }
@@ -75,7 +75,7 @@ class RsvpTest extends TestCase
 
         $this->from('/invite/'.$token)
             ->post('/invite/'.$token.'/rsvp', ['status' => 'confirmed', 'attendance_count' => 1])
-            ->assertSessionHasErrors('rsvp');
+            ->assertForbidden();
     }
 
     public function test_confirmed_rsvp_requires_at_least_one_attendee(): void

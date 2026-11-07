@@ -98,13 +98,13 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Sender</th>
-                            <th>Ucapan</th>
-                            <th>Visibilitas</th>
-                            <th>Status</th>
-                            <th class="text-center">Pinned</th>
-                            <th>Waktu</th>
-                            <th class="text-right">Aksi</th>
+                            <th scope="col">Sender</th>
+                            <th scope="col">Ucapan</th>
+                            <th scope="col">Visibilitas</th>
+                            <th scope="col">Status</th>
+                            <th scope="col" class="text-center">Pinned</th>
+                            <th scope="col">Waktu</th>
+                            <th scope="col" class="text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -136,6 +136,7 @@
                                             type="button"
                                             class="btn-ghost btn-xs"
                                             x-on:click="$dispatch('toggle-pin-{{ $message->id }}')"
+                                        aria-label="Sematkan"
                                         >
                                             <x-ui.icon name="pin" class="h-3 w-3" />
                                         </button>
@@ -148,7 +149,7 @@
                                     <form method="POST" action="{{ route('admin.guestbook.moderate', $message) }}" class="inline">
                                         @csrf
                                         @method('POST')
-                                        <button type="submit" class="btn-ghost btn-xs" data-action="approve" title="Approve">
+                                        <button type="submit" class="btn-ghost btn-xs" data-action="approve" title="Approve" aria-label="Approve">
                                             <x-ui.icon name="check" class="h-3 w-3" />
                                         </button>
                                     </form>
@@ -156,12 +157,12 @@
                                         @csrf
                                         @if ($message->is_pinned)
                                             @method('POST')
-                                            <button type="submit" class="btn-ghost btn-xs" data-action="unpin" title="Unpin">
+                                            <button type="submit" class="btn-ghost btn-xs" data-action="unpin" title="Unpin" aria-label="Unpin">
                                                 <x-ui.icon name="pin-off" class="h-3 w-3" />
                                             </button>
                                         @else
                                             @method('POST')
-                                            <button type="submit" class="btn-ghost btn-xs" data-action="pin" title="Pin">
+                                            <button type="submit" class="btn-ghost btn-xs" data-action="pin" title="Pin" aria-label="Pin">
                                                 <x-ui.icon name="pin" class="h-3 w-3" />
                                             </button>
                                         @endif
@@ -169,7 +170,7 @@
                                     <form method="POST" action="{{ route('admin.guestbook.destroy', $message) }}" class="inline" data-confirm="Yakin menghapus ucapan ini?">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-ghost btn-xs text-danger" title="Hapus">
+                                        <button type="submit" class="btn-ghost btn-xs text-danger" title="Hapus" aria-label="Hapus">
                                             <x-ui.icon name="trash" class="h-3 w-3" />
                                         </button>
                                     </form>

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\EventStatus;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -219,20 +221,98 @@ class Event extends Model
         return ! $this->rsvp_deadline || $this->rsvp_deadline->isFuture();
     }
 
-    public function countdownTarget(): ?\Illuminate\Support\Carbon
+    /**
+     * IANA timezone for this event, falling back to the application timezone
+     * when the stored value is missing or invalid.
+     */
+    public function timezoneName(): string
     {
-        $date = $this->event_date?->copy();
+        $timezone = $this->timezone ?: config('app.timezone', 'UTC');
 
-        if (! $date) {
+        return in_array($timezone, timezone_identifiers_list(), true)
+            ? $timezone
+            : config('app.timezone', 'UTC');
+    }
+
+    /**
+     * Absolute start instant (UTC). Event date/time input is interpreted in the
+     * event timezone, never in the server timezone.
+     */
+    public function startsAtUtc(): ?CarbonImmutable
+    {
+        if (! $this->event_date) {
             return null;
         }
 
-        if ($this->start_time) {
-            [$h, $m] = array_pad(explode(':', $this->start_time), 2, '0');
-            $date->setTime((int) $h, (int) $m);
+        $date = $this->event_date->format('Y-m-d');
+        $time = $this->start_time ? substr((string) $this->start_time, 0, 5) : '00:00';
+
+        try {
+            $local = CarbonImmutable::createFromFormat(
+                'Y-m-d H:i',
+                "{$date} {$time}",
+                $this->timezoneName()
+            );
+        } catch (\Throwable) {
+            return null;
         }
 
-        return $date;
+        return $local?->utc();
+    }
+
+    /**
+     * Absolute end instant (UTC), or start + 4 hours when no end time is set.
+     */
+    public function endsAtUtc(): ?CarbonImmutable
+    {
+        $start = $this->startsAtUtc();
+
+        if (! $start) {
+            return null;
+        }
+
+        if (! $this->end_time) {
+            return $start->addHours(4);
+        }
+
+        $date = $this->event_date->format('Y-m-d');
+        $time = substr((string) $this->end_time, 0, 5);
+
+        try {
+            $local = CarbonImmutable::createFromFormat(
+                'Y-m-d H:i',
+                "{$date} {$time}",
+                $this->timezoneName()
+            );
+        } catch (\Throwable) {
+            return $start->addHours(4);
+        }
+
+        // An end time earlier than the start time is treated as next day.
+        if ($local && $local->lessThan($start->setTimezone($this->timezoneName()))) {
+            $local = $local->addDay();
+        }
+
+        return $local?->utc();
+    }
+
+    /**
+     * Countdown target as an absolute instant, expressed in the app timezone
+     * for consistent Carbon comparisons.
+     */
+    public function countdownTarget(): ?Carbon
+    {
+        $utc = $this->startsAtUtc();
+
+        return $utc ? Carbon::instance($utc) : null;
+    }
+
+    /**
+     * Event start rendered in the event timezone.
+     */
+    public function localStartsAt(): ?CarbonImmutable
+    {
+        return $this->startsAtUtc()?->setTimezone($this->timezoneName());
     }
 
     public function coverUrl(): ?string

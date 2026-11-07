@@ -103,7 +103,7 @@ Open `http://127.0.0.1:8000/invite/<token>`.
 3. **Wishes** — post a public message (enters `pending`) and a private one (visible only to the
    couple/admin).
 4. **Photo** — upload a JPG. It lands in `/admin/media` as `pending`.
-5. **Pass** — QR code plus a downloadable PDF.
+5. **Pass** — QR code plus a downloadable PNG.
 6. **Gifts** — bank account, QRIS image, gift address.
 7. **Song request** — submits and appears in `/admin/interactions/songs`.
 8. **Poll** — vote once; voting again is rejected.

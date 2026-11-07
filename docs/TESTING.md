@@ -19,7 +19,7 @@ php artisan test --compact          # one-line summary
 php artisan test --filter=Checkin   # a single file
 ```
 
-Current state: **54 tests, 144 assertions, all passing.**
+Current state: **80 tests, 227 assertions, all passing.**
 
 Environment: `phpunit.xml` forces `APP_ENV=testing`, `DB_CONNECTION=sqlite`,
 `DB_DATABASE=:memory:`, `CACHE_STORE=array`, `MAIL_MAILER=array`, `QUEUE_CONNECTION=sync`,

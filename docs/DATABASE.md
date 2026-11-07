@@ -6,7 +6,7 @@
 Conventions:
 
 - Every table has `id`, `created_at`, `updated_at` unless noted.
-- `event_id` is the tenancy key. Deleting an event cascades to its children.
+- `event_id` is the tenancy key. Events and core children use soft deletes (`deleted_at`); permanent purging is governed by the retention window (`TRASHED_RETENTION_DAYS`, default 30 days) and executed via the scheduled `vowspace:purge-trashed` command. Trashed events are preserved unless `--include-events` is explicitly passed. Database-level cascade applies on hard delete.
 - Soft deletes are used on `users`, `events`, `guests`, `guestbook_messages` and `media_assets`.
 
 ---

@@ -4,9 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
 
 class MediaAlbum extends Model
 {
@@ -22,16 +20,12 @@ class MediaAlbum extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function assets(): BelongsToMany
+    /**
+     * Single source of truth for album membership: media_assets.media_album_id.
+     */
+    public function assets(): HasMany
     {
-        return $this->belongsToMany(MediaAsset::class, 'media_album_items')
-            ->withPivot('sort_order')
-            ->withTimestamps();
-    }
-
-    public function items(): HasMany
-    {
-        return $this->hasMany(MediaAlbumItem::class);
+        return $this->hasMany(MediaAsset::class, 'media_album_id')->orderBy('sort_order');
     }
 
     public function cover(): BelongsTo
@@ -45,8 +39,6 @@ class MediaAlbum extends Model
             return $this->cover->url();
         }
 
-        $first = $this->assets()->first();
-
-        return $first?->url();
+        return $this->assets()->approved()->first()?->url();
     }
 }
