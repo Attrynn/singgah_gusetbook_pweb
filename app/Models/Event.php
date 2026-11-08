@@ -224,6 +224,31 @@ class Event extends Model
         return $this->hasMany(EventActivity::class);
     }
 
+    public function setupConfig(): HasOne
+    {
+        return $this->hasOne(EventSetupConfig::class);
+    }
+
+    public function checklistItems(): HasMany
+    {
+        return $this->hasMany(EventSetupChecklistItem::class)->orderBy('sequence');
+    }
+
+    public function phases(): HasMany
+    {
+        return $this->hasMany(EventPhase::class)->orderBy('sequence');
+    }
+
+    public function sessions(): HasMany
+    {
+        return $this->hasMany(EventSession::class)->orderBy('session_date')->orderBy('sequence');
+    }
+
+    public function runOfShowItems(): HasMany
+    {
+        return $this->hasMany(EventRunOfShowItem::class)->orderBy('sequence');
+    }
+
     public function scopePubliclyVisible(Builder $query): Builder
     {
         return $query->whereIn('status', [

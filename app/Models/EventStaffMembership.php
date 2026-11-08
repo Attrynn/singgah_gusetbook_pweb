@@ -7,6 +7,7 @@ use App\Enums\MembershipStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EventStaffMembership extends Model
 {
@@ -43,6 +44,11 @@ class EventStaffMembership extends Model
     public function assignedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_by');
+    }
+
+    public function runOfShowItems(): HasMany
+    {
+        return $this->hasMany(EventRunOfShowItem::class, 'pic_staff_membership_id');
     }
 
     public function isActive(): bool

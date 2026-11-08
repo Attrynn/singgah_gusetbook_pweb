@@ -1,0 +1,31 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('event_sessions', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('event_id')->constrained('events')->cascadeOnDelete();
+            $table->foreignId('phase_id')->nullable()->constrained('event_phases')->nullOnDelete();
+            $table->string('name');
+            $table->date('session_date');
+            $table->dateTime('start_time')->nullable();
+            $table->dateTime('end_time')->nullable();
+            $table->string('timezone')->default('Asia/Jakarta');
+            $table->unsignedSmallInteger('sequence')->default(0);
+            $table->timestamps();
+
+            $table->index(['event_id', 'session_date']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('event_sessions');
+    }
+};

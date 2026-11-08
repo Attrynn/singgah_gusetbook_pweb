@@ -32,6 +32,21 @@ enum EventStatus: string
         };
     }
 
+    /**
+     * Human-facing lifecycle stage label. Maps the internal status to the
+     * wording used across the workspace UI (Published = Upcoming, Live = In Progress).
+     */
+    public function stageLabel(): string
+    {
+        return match ($this) {
+            self::Draft => 'Draft',
+            self::Published => 'Upcoming',
+            self::Live => 'In Progress',
+            self::Completed => 'Completed',
+            self::Archived => 'Archived',
+        };
+    }
+
     public function isPublic(): bool
     {
         return in_array($this, [self::Published, self::Live, self::Completed], true);
