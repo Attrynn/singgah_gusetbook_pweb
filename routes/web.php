@@ -64,3 +64,4 @@ Route::prefix('workspace/{organization}')->name('workspace.')
 require __DIR__.'/admin.php';
 require __DIR__.'/owner.php';
 require __DIR__.'/guest.php';
+require __DIR__.'/workspace-events.php';
