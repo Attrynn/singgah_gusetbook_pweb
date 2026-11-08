@@ -120,7 +120,7 @@ class WorkspaceInvitationService
             ->lockForUpdate()
             ->firstOrFail();
 
-        if ($invitation->status !== WorkspaceInvitationStatus::Pending->value) {
+        if ($invitation->status !== WorkspaceInvitationStatus::Pending) {
             abort(422, 'Undangan ini sudah tidak dapat digunakan.');
         }
 
@@ -134,7 +134,7 @@ class WorkspaceInvitationService
         }
 
         DB::transaction(function () use ($invitation, $acceptingUser): void {
-            if ($invitation->type === WorkspaceInvitationType::Staff->value) {
+            if ($invitation->type === WorkspaceInvitationType::Staff) {
                 $this->activateStaffMembership($invitation, $acceptingUser);
             } else {
                 $this->activateCoupleMembership($invitation, $acceptingUser);
@@ -148,7 +148,7 @@ class WorkspaceInvitationService
         });
 
         $this->audit->record(
-            "invitation.{$invitation->type}.accepted",
+            "invitation.{$invitation->type->value}.accepted",
             "Invitation accepted by {$acceptingUser->email}",
             null,
             $acceptingUser,
@@ -163,7 +163,7 @@ class WorkspaceInvitationService
      */
     public function revokeInvitation(WorkspaceInvitation $invitation, User $actor): void
     {
-        if ($invitation->status !== WorkspaceInvitationStatus::Pending->value) {
+        if ($invitation->status !== WorkspaceInvitationStatus::Pending) {
             abort(422, 'Hanya undangan dengan status pending yang dapat dibatalkan.');
         }
 
@@ -186,8 +186,8 @@ class WorkspaceInvitationService
      */
     public function resendInvitation(WorkspaceInvitation $invitation, User $actor): WorkspaceInvitation
     {
-        if ($invitation->status === WorkspaceInvitationStatus::Revoked->value ||
-            $invitation->status === WorkspaceInvitationStatus::Accepted->value) {
+        if ($invitation->status === WorkspaceInvitationStatus::Revoked ||
+            $invitation->status === WorkspaceInvitationStatus::Accepted) {
             abort(422, 'Undangan yang sudah diterima atau dicabut tidak dapat dikirim ulang.');
         }
 
