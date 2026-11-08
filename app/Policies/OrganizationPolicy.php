@@ -55,4 +55,13 @@ class OrganizationPolicy
 
         return $this->permissions->hasOrgPermission($user, $org, PermissionRegistry::ORG_MANAGE_ROLES);
     }
+
+    public function managePlaybooks(User $user, Organization $org): bool
+    {
+        if ($user->isSuperadmin() || $user->isPlatformSuperadmin()) {
+            return true;
+        }
+
+        return $this->permissions->hasOrgPermission($user, $org, PermissionRegistry::PLAYBOOK_MANAGE);
+    }
 }

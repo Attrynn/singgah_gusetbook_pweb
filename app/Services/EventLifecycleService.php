@@ -33,7 +33,7 @@ class EventLifecycleService
         EventStatus::Published->value => [EventStatus::Draft, EventStatus::Live, EventStatus::Archived],
         EventStatus::Live->value => [EventStatus::Completed, EventStatus::Archived],
         EventStatus::Completed->value => [EventStatus::Archived],
-        EventStatus::Archived->value => [],
+        EventStatus::Archived->value => [EventStatus::Published],
     ];
 
     public function canTransition(EventStatus $from, EventStatus $to): bool

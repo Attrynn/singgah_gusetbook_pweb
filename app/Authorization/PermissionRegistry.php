@@ -37,6 +37,22 @@ class PermissionRegistry
 
     const EVENT_MANAGE_SETTINGS = 'event.manage_settings';
 
+    const EVENT_SETUP_MANAGE = 'event.setup.manage';
+
+    const EVENT_TEAM_MANAGE = 'event.team.manage';
+
+    const EVENT_SCHEDULE_MANAGE = 'event.schedule.manage';
+
+    const EVENT_RUN_OF_SHOW_VIEW = 'event.run_of_show.view';
+
+    const EVENT_RUN_OF_SHOW_MANAGE = 'event.run_of_show.manage';
+
+    const EVENT_ARCHIVE = 'event.archive';
+
+    const PLAYBOOK_VIEW = 'playbook.view';
+
+    const PLAYBOOK_MANAGE = 'playbook.manage';
+
     // Guest permissions
     const GUEST_VIEW = 'guest.view';
 
@@ -96,6 +112,8 @@ class PermissionRegistry
         return match ($role) {
             EventStaffRole::EventManager => [
                 self::EVENT_VIEW, self::EVENT_UPDATE, self::EVENT_MANAGE_SETTINGS,
+                self::EVENT_SETUP_MANAGE, self::EVENT_TEAM_MANAGE, self::EVENT_SCHEDULE_MANAGE,
+                self::EVENT_RUN_OF_SHOW_VIEW, self::EVENT_RUN_OF_SHOW_MANAGE,
                 self::GUEST_VIEW, self::GUEST_CREATE, self::GUEST_UPDATE, self::GUEST_DELETE,
                 self::GUEST_IMPORT, self::GUEST_EXPORT,
                 self::CHECKIN_VIEW, self::CHECKIN_SCAN, self::CHECKIN_CREATE,
@@ -107,6 +125,7 @@ class PermissionRegistry
             ],
             EventStaffRole::GuestManager => [
                 self::EVENT_VIEW,
+                self::EVENT_RUN_OF_SHOW_VIEW,
                 self::GUEST_VIEW, self::GUEST_CREATE, self::GUEST_UPDATE,
                 self::GUEST_IMPORT, self::GUEST_EXPORT,
                 self::CHECKIN_VIEW,
@@ -114,6 +133,7 @@ class PermissionRegistry
             ],
             EventStaffRole::CheckinSupervisor => [
                 self::EVENT_VIEW,
+                self::EVENT_RUN_OF_SHOW_VIEW,
                 self::GUEST_VIEW,
                 self::CHECKIN_VIEW, self::CHECKIN_SCAN, self::CHECKIN_CREATE,
                 self::CHECKIN_CORRECT, self::CHECKIN_REPORT,
@@ -122,20 +142,24 @@ class PermissionRegistry
             ],
             EventStaffRole::CheckinStaff => [
                 self::EVENT_VIEW,
+                self::EVENT_RUN_OF_SHOW_VIEW,
                 self::CHECKIN_VIEW, self::CHECKIN_SCAN, self::CHECKIN_CREATE,
                 self::SEATING_VIEW,
             ],
             EventStaffRole::SeatingUsher => [
                 self::EVENT_VIEW,
+                self::EVENT_RUN_OF_SHOW_VIEW,
                 self::SEATING_VIEW, self::SEATING_MANAGE,
                 self::CHECKIN_VIEW,
             ],
             EventStaffRole::MediaCurator => [
                 self::EVENT_VIEW,
+                self::EVENT_RUN_OF_SHOW_VIEW,
                 self::MEDIA_VIEW, self::MEDIA_MODERATE, self::MEDIA_MANAGE_ALBUMS, self::MEDIA_PUBLISH,
             ],
             EventStaffRole::GiftSteward => [
                 self::EVENT_VIEW,
+                self::EVENT_RUN_OF_SHOW_VIEW,
                 self::GIFT_VIEW, self::GIFT_MANAGE,
             ],
         };
@@ -152,6 +176,9 @@ class PermissionRegistry
             self::ORG_VIEW, self::ORG_UPDATE, self::ORG_MANAGE_MEMBERS,
             self::ORG_INVITE_MEMBERS, self::ORG_MANAGE_ROLES, self::ORG_MANAGE_EVENTS,
             self::EVENT_VIEW, self::EVENT_UPDATE, self::EVENT_DELETE, self::EVENT_MANAGE_SETTINGS,
+            self::EVENT_SETUP_MANAGE, self::EVENT_TEAM_MANAGE, self::EVENT_SCHEDULE_MANAGE,
+            self::EVENT_RUN_OF_SHOW_VIEW, self::EVENT_RUN_OF_SHOW_MANAGE, self::EVENT_ARCHIVE,
+            self::PLAYBOOK_VIEW, self::PLAYBOOK_MANAGE,
             self::GUEST_VIEW, self::GUEST_CREATE, self::GUEST_UPDATE, self::GUEST_DELETE,
             self::GUEST_IMPORT, self::GUEST_EXPORT,
             self::CHECKIN_VIEW, self::CHECKIN_SCAN, self::CHECKIN_CREATE,

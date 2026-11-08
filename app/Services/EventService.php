@@ -31,7 +31,9 @@ class EventService
                 ...$this->eventPayload($data),
                 ...$this->lifecycle->initialPayload($status),
                 'created_by' => $actor->id,
-                'organization_id' => $this->resolveLegacyOrganizationId(),
+                'organization_id' => isset($data['organization_id'])
+                    ? (int) $data['organization_id']
+                    : $this->resolveLegacyOrganizationId(),
             ]);
 
             $this->syncVenue($event, $data);
