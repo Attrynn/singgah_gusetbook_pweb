@@ -108,7 +108,7 @@ class ProfileController extends Controller
         }
         $request->session()->regenerate();
 
-        $this->audit->record('profile.password', 'Password diperbarui dan sesi lain dicabut', null, $user);
+        $this->audit->recordCritical('profile.password', 'Password diperbarui dan sesi lain dicabut', null, $user);
 
         return back()->with('status', 'Password berhasil diperbarui.');
     }

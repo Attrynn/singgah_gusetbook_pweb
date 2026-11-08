@@ -19,7 +19,7 @@ php artisan test --compact          # one-line summary
 php artisan test --filter=Checkin   # a single file
 ```
 
-Current state: **106 tests, 325 assertions, all passing.**
+Current state: **133 tests, 391 assertions, all passing.**
 
 Environment: `phpunit.xml` forces `APP_ENV=testing`, `DB_CONNECTION=sqlite`,
 `DB_DATABASE=:memory:`, `CACHE_STORE=array`, `MAIL_MAILER=array`, `QUEUE_CONNECTION=sync`,
@@ -50,6 +50,8 @@ server is required.
 | `ReportPerformanceTest` | 2 | report aggregation query bounds |
 | `MasterSecurityRemediationTest` | 11 | owner sync, password revocation, guestbook setting, check-in denial, stable schedules, private derivatives, pre-decode pixel guard, purge |
 | `ProductionHardeningTest` | 17 | signed media delivery, demotion/archive revocation, album cover tenancy, album detach, QR expiry, durable check-in audit, pending email verification, session revocation, purge anonymisation, event purge, legacy media migration |
+| `SecurityHeadersTest` | varies | HTTP security header assertions |
+| `OrganizationTenancyTest` | varies | organization multi-tenant isolation |
 | `ExampleTest` (Feature) | 1 | home page renders |
 | `ExampleTest` (Unit) | 1 | framework sanity check |
 

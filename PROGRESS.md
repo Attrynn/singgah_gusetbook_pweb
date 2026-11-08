@@ -1,8 +1,8 @@
 # VOWSPACE Delivery Progress
 
-Updated: November 2026
+Updated: November 2026 (remediation cycle closed 2026-11-08)
 
-Status: **Delivered & verified end-to-end.**
+Status: **Delivered, hardened, and release-ready. All 16 security/privacy/backend findings closed.**
 
 ---
 
@@ -15,9 +15,9 @@ Status: **Delivered & verified end-to-end.**
 | Backend domain | Models, enums, services, form requests | 33 models, 13 enums, 13 domain services, 22 Form Requests, 4 policies | Complete |
 | Security | Hashed tokens, authorization, rate limiters, duplicate guards, audit | SHA-256 + ciphertext tokens, `EnsureRole`, `EnsureActiveUser`, unique check-in constraint, `audit_logs` | Complete |
 | Views & UI | 3 distinct role shells, cold-minimalist neumorphic design | 84 Blade views, 5 layouts, 12 `x-ui` components, Tailwind v4 `@utility` system, Vite assets | Complete |
-| Routes | Superadmin, Owner, Guest, Public | 145 registered routes across `admin.php`, `owner.php`, `guest.php`, `web.php` | Complete |
-| Automated verification | Feature tests, Blade lint, real HTTP smoke | 106 tests (325 assertions, all passing), `bin/blade_lint.php` (84 views clean), `./bin/smoke.sh` (real server, all roles passing) | Complete |
-| Documentation | ERD, schema, roles, journeys, install, deploy, demo, testing | `README.md`, `PROGRESS.md`, and 8 full guides in `docs/` | Complete |
+| Routes | Superadmin, Owner, Guest, Public | 152 route lines across `admin.php`, `owner.php`, `guest.php`, `web.php` (101 admin, 19 owner, 15 guest) | Complete |
+| Automated verification | Feature tests, Blade lint, real HTTP smoke | 133 tests (391 assertions, all passing), `bin/blade_lint.php` (84 views clean), `./bin/smoke.sh` (real server, all roles passing) | Complete |
+| Documentation | ERD, schema, roles, journeys, install, deploy, demo, testing | `README.md`, `PROGRESS.md`, and 8 full guides in `docs/`; `VOWSPACE_REMEDIATION_REGISTER.md`, `VOWSPACE_RELEASE_READINESS_REPORT.md` | Complete |
 
 ---
 
