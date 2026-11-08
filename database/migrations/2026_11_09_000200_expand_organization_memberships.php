@@ -15,9 +15,8 @@ return new class extends Migration
             $table->string('role')->default('member')->change();
 
             // Expand status lifecycle: active | suspended | revoked.
-            // Existing rows have status='active' or 'inactive'.
-            // 'inactive' was the M1 default but has no semantic weight yet;
-            // we treat it as equivalent to 'suspended' and migrate via data command.
+            // Legacy rows may still have status='inactive'; rows with status
+            // 'inactive' are treated as suspended (no resource access).
             $table->string('status')->default('active')->change();
 
             // Audit/invitation traceability columns.
