@@ -23,8 +23,13 @@
                     <div>
                         <x-ui.input name="email" type="email" label="Email" :value="$user->email" required />
                         @if ($user->pending_email)
-                            <p class="hint">Menunggu verifikasi: <span class="font-semibold text-ink">{{ $user->pending_email }}</span></p>
+                            <p class="hint">Menunggu verifikasi: <span class="font-semibold text-ink">{{ $user->pending_email }}</span> — email login belum berubah.</p>
                         @endif
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <x-ui.input name="current_password" type="password" label="Password saat ini"
+                            hint="Wajib diisi hanya jika Anda mengubah email login." autocomplete="current-password" />
                     </div>
 
                     <x-ui.input name="phone" label="Telepon" :value="$user->phone" hint="Opsional, maksimal 30 karakter." />
@@ -94,6 +99,23 @@
                     <x-ui.badge :variant="$user->role?->value === 'superadmin' ? 'success' : 'info'">{{ $user->role?->label() ?? 'User' }}</x-ui.badge>
                 </div>
             </div>
+
+            @if ($user->pending_email)
+                <div class="card p-5">
+                    <h2 class="section-title">Verifikasi email tertunda</h2>
+                    <p class="mt-2 text-xs leading-relaxed text-muted">
+                        Tautan verifikasi dikirim ke <span class="font-semibold text-ink">{{ $user->pending_email }}</span>.
+                        Email login tetap <span class="font-semibold text-ink">{{ $user->email }}</span> sampai Anda mengonfirmasi melalui tautan tersebut.
+                    </p>
+                    <form method="POST" action="{{ route('admin.profile.email.resend') }}" class="mt-4 space-y-3">
+                        @csrf
+                        <x-ui.input name="current_password" id="resend_current_password" type="password" label="Password saat ini" required autocomplete="current-password" />
+                        <button type="submit" class="btn btn-secondary w-full">
+                            <x-ui.icon name="mail" class="h-4 w-4" /> Kirim ulang tautan verifikasi
+                        </button>
+                    </form>
+                </div>
+            @endif
 
             <div class="card p-5">
                 <h2 class="section-title">Detail akun</h2>

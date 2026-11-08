@@ -74,7 +74,7 @@
                                         <a href="{{ route('admin.events.edit', $event) }}" class="text-xs text-muted" title="Edit">
                                             <x-ui.icon name="edit" class="h-4 w-4" />
                                         </a>
-                                        <form method="POST" action="{{ route('admin.events.destroy', $event) }}" class="inline" onsubmit="return confirm('Yakin ingin menghapus event ini?');">
+                                        <form method="POST" action="{{ route('admin.events.destroy', $event) }}" class="inline" data-confirm="Yakin ingin menghapus event ini?">
                                             <button type="submit" class="text-xs text-danger" title="Hapus" aria-label="Hapus">
                                                 <x-ui.icon name="trash" class="h-4 w-4" />
                                             </button>
@@ -101,7 +101,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('[data-confirm]').forEach(form => {
                 form.addEventListener('submit', (e) => {

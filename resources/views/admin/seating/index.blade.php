@@ -215,7 +215,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
         Alpine.data('seating', () => ({
             isCreatingTable: false,
             isAssigning: false,

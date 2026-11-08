@@ -119,6 +119,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'auth.session', 'act
     Route::delete('gifts/{gift}', [GiftAccountController::class, 'destroy'])->name('gifts.destroy');
 
     Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('profile', [ProfileController::class, 'update'])->middleware('throttle:6,1')->name('profile.update');
+    Route::post('profile/email/resend', [ProfileController::class, 'resendEmail'])->middleware('throttle:3,1')->name('profile.email.resend');
     Route::put('profile/password', [ProfileController::class, 'password'])->name('profile.password');
 });

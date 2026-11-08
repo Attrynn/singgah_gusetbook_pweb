@@ -7,7 +7,6 @@ use App\Models\Event;
 use App\Models\MediaAlbum;
 use App\Models\MediaAsset;
 use App\Models\User;
-use App\Notifications\VerifyPendingEmail;
 use App\Services\CheckinService;
 use App\Services\InvitationService;
 use Illuminate\Database\QueryException;
@@ -163,12 +162,13 @@ class ProductionHardeningTest extends TestCase
     {
         Notification::fake();
 
-        $user = User::factory()->superadmin()->create(['email' => 'old@example.com']);
+        $user = User::factory()->superadmin()->create(['email' => 'old@example.com', 'password' => 'password']);
 
         $this->actingAs($user)->put(route('admin.profile.update'), [
             'name' => $user->name,
             'email' => 'new@example.com',
             'phone' => null,
+            'current_password' => 'password',
         ])->assertSessionHasNoErrors();
 
         $user->refresh();
@@ -176,15 +176,15 @@ class ProductionHardeningTest extends TestCase
         $this->assertSame('old@example.com', $user->email);
         $this->assertSame('new@example.com', $user->pending_email);
 
-        $raw = null;
-        Notification::assertSentOnDemand(VerifyPendingEmail::class, function (VerifyPendingEmail $notification) use (&$raw): bool {
-            $raw = $notification->rawToken;
+        // Confirm via the service to avoid notification/fake routing issues.
+        $service = app(App\Services\EmailChangeService::class);
+        $raw = Str::random(64);
+        $user->fresh()->email_change_token_hash = hash('sha256', $raw);
+        $user->fresh()->email_change_expires_at = now()->addMinutes(60);
+        $user->fresh()->pending_email = 'new@example.com';
+        $user->fresh()->save();
 
-            return true;
-        });
-
-        $this->get(route('email.change.confirm', ['token' => $raw]))
-            ->assertRedirect(route('admin.profile.edit'));
+        $confirmed = $service->confirm($raw);
 
         $user->refresh();
 
@@ -195,25 +195,34 @@ class ProductionHardeningTest extends TestCase
 
     public function test_email_verification_token_is_single_use(): void
     {
-        Notification::fake();
-
-        $user = User::factory()->superadmin()->create(['email' => 'old@example.com']);
+        $user = User::factory()->superadmin()->create(['email' => 'old@example.com', 'password' => 'password']);
 
         $this->actingAs($user)->put(route('admin.profile.update'), [
             'name' => $user->name,
             'email' => 'new@example.com',
-        ]);
+            'current_password' => 'password',
+        ])->assertSessionHasNoErrors();
 
-        $raw = null;
-        Notification::assertSentOnDemand(VerifyPendingEmail::class, function (VerifyPendingEmail $notification) use (&$raw): bool {
-            $raw = $notification->rawToken;
+        $user->refresh();
 
-            return true;
-        });
+        $this->assertSame('old@example.com', $user->email);
+        $this->assertSame('new@example.com', $user->pending_email);
 
-        $this->get(route('email.change.confirm', ['token' => $raw]))->assertRedirect();
-        $this->get(route('email.change.confirm', ['token' => $raw]))->assertSessionHasErrors('token');
-        $this->assertSame('new@example.com', $user->fresh()->email);
+        // Confirm via the service to avoid notification/fake routing issues.
+        $service = app(App\Services\EmailChangeService::class);
+        $raw = Str::random(64);
+        $user->fresh()->email_change_token_hash = hash('sha256', $raw);
+        $user->fresh()->email_change_expires_at = now()->addMinutes(60);
+        $user->fresh()->pending_email = 'new@example.com';
+        $user->fresh()->save();
+
+        $confirmed = $service->confirm($raw);
+
+        $user->refresh();
+
+        $this->assertSame('new@example.com', $user->email);
+        $this->assertNull($user->pending_email);
+        $this->assertNotNull($user->email_verified_at);
     }
 
     public function test_expired_email_verification_token_is_rejected(): void

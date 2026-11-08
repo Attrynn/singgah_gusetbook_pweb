@@ -335,4 +335,15 @@
     .prose-wedding {
         @apply text-sm leading-relaxed text-muted;
     }
+
+    /* Tappable QRIS image: expands on tap without an inline handler. */
+    [data-expand-image] {
+        transition: width 150ms ease, height 150ms ease;
+        cursor: pointer;
+    }
+
+    [data-expand-image].is-expanded {
+        width: 12rem;
+        height: 12rem;
+    }
 }

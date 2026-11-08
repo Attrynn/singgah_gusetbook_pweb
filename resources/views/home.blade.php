@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="VOWSPACE — Beyond the Guestbook. A Complete Wedding Experience.">
     <title>VOWSPACE · Beyond the Guestbook</title>
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
         (function() {
             const theme = localStorage.getItem('vowspace_theme') || 'system';
             const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);

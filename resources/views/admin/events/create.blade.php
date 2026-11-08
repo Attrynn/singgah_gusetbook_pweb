@@ -303,7 +303,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('[data-datepicker]').forEach(el => {
                 flatpickr(el, {

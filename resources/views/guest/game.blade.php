@@ -93,7 +93,7 @@
                 </div>
             </form>
 
-            <script>
+            <script nonce="{{ request()->attributes->get('csp_nonce') }}">
                 function gameQuiz(questions) {
                     return {
                         questions: questions,

@@ -115,7 +115,7 @@
 
     @push('scripts')
         @if (!empty($timelineLabels))
-            <script>
+            <script nonce="{{ request()->attributes->get('csp_nonce') }}">
                 document.addEventListener('DOMContentLoaded', async () => {
                 const Chart = await window.loadChart();
                 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();

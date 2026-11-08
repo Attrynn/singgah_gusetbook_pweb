@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('pending_email', 190)->nullable()->after('email');
             $table->string('email_change_token_hash', 64)->nullable()->after('pending_email');
             $table->timestamp('email_change_expires_at')->nullable()->after('email_change_token_hash');
+            // Unique index preflight: fail fast if duplicates exist.
+            $table->unique('pending_email', 'users_unique_pending_email');
         });
     }
 

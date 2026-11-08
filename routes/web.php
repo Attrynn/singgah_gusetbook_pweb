@@ -13,9 +13,13 @@ Route::controller(LoginController::class)->group(function () {
     Route::post('/logout', 'logout')->middleware('auth')->name('logout');
 });
 
-Route::get('/email/verify/{token}', [EmailChangeController::class, 'confirm'])
+Route::get('/email/verify/{token}', [EmailChangeController::class, 'show'])
     ->middleware('throttle:10,1')
     ->name('email.change.confirm');
+
+Route::post('/email/verify/{token}', [EmailChangeController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('email.change.store');
 
 require __DIR__.'/admin.php';
 require __DIR__.'/owner.php';

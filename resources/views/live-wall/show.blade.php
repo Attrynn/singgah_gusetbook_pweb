@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $event->coupleNames() }} · Live Wall · VOWSPACE</title>
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
         (function() {
             const theme = localStorage.getItem('vowspace_theme') || 'system';
             const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -87,7 +87,7 @@
         </footer>
     </div>
 
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
         function liveWall(initialMessages, endpoint) {
             return {
                 messages: (initialMessages || []).slice().sort((a, b) => a.id - b.id),

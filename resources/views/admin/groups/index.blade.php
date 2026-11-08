@@ -10,7 +10,7 @@
         <div class="grid gap-3 md:grid-cols-[minmax(0,320px)_auto]">
             <div>
                 <label for="event_id" class="label">Event</label>
-                <select id="event_id" name="event_id" class="input appearance-none" onchange="this.form.submit()">
+                <select id="event_id" name="event_id" class="input appearance-none" data-auto-submit>
                     @foreach ($events as $item)
                         <option value="{{ $item->id }}" @selected($event?->id === $item->id)>{{ $item->name }}</option>
                     @endforeach

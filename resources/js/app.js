@@ -1,4 +1,5 @@
 import Alpine from 'alpinejs';
+import './scanner';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import flatpickr from 'flatpickr';
@@ -126,6 +127,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
+    });
+
+    // Selects marked data-auto-submit submit their own form on change. This
+    // replaces inline onchange handlers that an enforced CSP would block.
+    document.querySelectorAll('select[data-auto-submit]').forEach((select) => {
+        select.addEventListener('change', () => select.form?.requestSubmit());
+    });
+
+    // Staff QRIS images expand on tap without an inline onclick handler.
+    document.querySelectorAll('[data-expand-image]').forEach((image) => {
+        image.addEventListener('click', () => image.classList.toggle('is-expanded'));
     });
 
     document.querySelectorAll('form[data-confirm]').forEach((form) => {

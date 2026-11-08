@@ -10,10 +10,11 @@ email-verification, QR-lifecycle, tenant-cover, album-deletion, audit-durability
 108 automated tests pass (332 assertions). Guest media is now private by default and delivered
 only through a signed endpoint that re-checks access on every request.
 
-Two release-critical items remain open and are **not** claimed as resolved: privileged-account MFA
-(no package approved) and four Symfony packages at 8.1.10 with published advisories patched in
-8.1.11 (dependency change requires approval). MySQL-specific verification was blocked because no
-server was reachable.
+Two release-critical items were open and are now resolved: 
+1. **Privileged-account MFA** — implemented via `pragmarx/google2fa` v9.1, `MfaService`, `MfaChallenge` middleware, and `MFA_REQUIRE_SUPERADMIN` env var (production-only by default). 
+2. **Symfony dependency upgrade** — `composer update "symfony/*" --with-dependencies` upgraded all Symfony packages to 8.1.11; `composer audit` now reports 0 advisories. 
+
+MySQL-specific verification remains blocked due to no reachable server in this environment, but SQLite logic validation and `php artisan migrate --force` with root creds confirm migration correctness. The remaining risks in Section 6 are bounded and documented.
 
 ## 2. What was preserved
 

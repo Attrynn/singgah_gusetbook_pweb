@@ -32,6 +32,7 @@ Route::prefix('owner')->name('owner.')->middleware(['auth', 'auth.session', 'act
     Route::get('story', StoryController::class)->name('story');
 
     Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('profile', [ProfileController::class, 'update'])->middleware('throttle:6,1')->name('profile.update');
+    Route::post('profile/email/resend', [ProfileController::class, 'resendEmail'])->middleware('throttle:3,1')->name('profile.email.resend');
     Route::put('profile/password', [ProfileController::class, 'password'])->name('profile.password');
 });

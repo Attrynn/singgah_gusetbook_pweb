@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Undangan Tidak Valid · VOWSPACE</title>
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
         (function() {
             const theme = localStorage.getItem('vowspace_theme') || 'system';
             const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);

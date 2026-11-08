@@ -45,7 +45,7 @@
                                 <div class="flex-1">
                                     <p class="guest-eyebrow">QRIS</p>
                                     <img src="{{ $gift->qrisUrl() }}" alt="QRIS {{ $gift->bank_name }}"
-                                         class="mt-2 h-24 w-24 cursor-pointer rounded-xl" onclick="this.classList.toggle('h-48','h-24')">
+                                         class="mt-2 h-24 w-24 cursor-pointer rounded-xl" data-expand-image>
                                     <p class="hint">Ketuk untuk memperbesar.</p>
                                 </div>
                             </div>

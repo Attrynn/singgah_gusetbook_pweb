@@ -8,7 +8,10 @@
         $selectedEventId = $selectedEventId ?? null;
     @endphp
 
-    <div class="space-y-6">
+    <div class="space-y-6"
+         x-data="scanner"
+         data-selected-event-id="{{ $selectedEventId }}"
+         data-scan-url="{{ route('admin.checkins.scan') }}">
         <x-ui.page-header
             eyebrow="Guests"
             title="Scanner QR Check-in"
@@ -170,110 +173,4 @@
             </div>
         </div>
     </div>
-
-    @push('scripts')
-        <script>
-            (function () {
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-                const scanUrl = '{{ route('admin.checkins.scan') }}';
-
-                Alpine.data('scanner', () => ({
-                    isScanning: false,
-                    scanner: null,
-                    selectedEventId: {{ $selectedEventId ?? 'null' }},
-                    manualToken: '',
-                    scans: [],
-                    lastResult: null,
-
-                    init() {
-                        this.selectedEventId = {{ $selectedEventId ?? 'null' }};
-                    },
-
-                    async startCamera() {
-                        if (this.isScanning) return;
-                        try {
-                            const Html5Qrcode = await window.loadQrScanner();
-                            this.scanner = new Html5Qrcode('reader');
-                            await this.scanner.start(
-                                { facingMode: 'environment' },
-                                { fps: 10, qrbox: 250 },
-                                (decodedText) => this.handleScan(decodedText),
-                                (errorMessage) => { /* ignore per-frame errors */ }
-                            );
-                            this.isScanning = true;
-                        } catch (err) {
-                            Swal.fire('Kamera tidak tersedia', 'Pastikan kamera diizinkan dan tersedia. Anda masih dapat memasukkan token secara manual.', 'error');
-                        }
-                    },
-
-                    stopCamera() {
-                        if (!this.scanner || !this.isScanning) return;
-                        this.scanner.stop().then(() => {
-                            this.scanner.clear();
-                            this.isScanning = false;
-                        }).catch(() => {
-                            this.isScanning = false;
-                        });
-                    },
-
-                    async handleScan(token) {
-                        this.stopCamera();
-                        await this.submitToken(token);
-                    },
-
-                    async pasteToken() {
-                        const token = (this.manualToken || '').trim();
-                        if (!token) return;
-                        this.manualToken = '';
-                        await this.submitToken(token);
-                    },
-
-                    async submitToken(token) {
-                        try {
-                            const res = await fetch(scanUrl, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json',
-                                    'X-CSRF-TOKEN': csrfToken,
-                                },
-                                body: JSON.stringify({ token, event_id: this.selectedEventId || undefined }),
-                            });
-                            const data = await res.json();
-                            this.addResult(data);
-                        } catch (err) {
-                            this.addResult({ status: 'error', message: 'Gagal menghubungi server.', time: nowStr() });
-                        }
-                    },
-
-                    addResult(data) {
-                        const time = nowStr();
-                        const entry = {
-                            id: Date.now(),
-                            status: data.status || 'error',
-                            message: data.message || 'Tidak ada respons.',
-                            time,
-                            warning: data.warning || null,
-                        };
-                        this.scans.unshift(entry);
-                        this.lastResult = { ...entry, guest: data.guest || null };
-                    },
-
-                    clearLog() {
-                        this.scans = [];
-                        this.lastResult = null;
-                    },
-                }));
-
-                function nowStr() {
-                    const d = new Date();
-                    return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                }
-
-                window.addEventListener('beforeunload', () => {
-                    const data = Alpine.store('scanner');
-                });
-            })();
-        </script>
-    @endpush
 @endsection

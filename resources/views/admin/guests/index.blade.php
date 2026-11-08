@@ -144,7 +144,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script nonce="{{ request()->attributes->get('csp_nonce') }}">
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('[data-confirm]').forEach(form => {
                 form.addEventListener('submit', (e) => {
