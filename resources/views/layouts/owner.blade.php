@@ -20,6 +20,12 @@
         $ownerEvents = $ownerEventsList ?? ($navUser ? $navUser->events()->orderBy('event_date')->get() : collect());
         $activeEventId = session('owner_active_event_id', request()->integer('event'));
         $currentEv = $currentOwnerEvent ?? ($activeEventId ? $ownerEvents->firstWhere('id', (int) $activeEventId) : null) ?? $ownerEvents->first();
+
+        $orgMemberships = $navUser
+            ? $navUser->organizationMemberships()->with('organization')->get()->filter(fn ($m) => $m->isActive() && $m->organization)
+            : collect();
+        $activeOrgMembership = $orgMemberships->firstWhere('organization_id', session('active_organization_id')) ?? $orgMemberships->first();
+        $activeOrg = $activeOrgMembership?->organization;
     @endphp
 
     <div class="lg:flex">
@@ -48,6 +54,52 @@
 
             <!-- Navigation Links -->
             <nav class="flex-1 space-y-5 overflow-y-auto px-3 py-4 text-xs">
+                <!-- Workspace Context -->
+                @if ($orgMemberships->isNotEmpty())
+                    <div class="space-y-1">
+                        <p class="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-faint">Workspace</p>
+
+                        <div class="flex items-center gap-2.5 rounded-xl border border-line/70 bg-surface-2/40 px-3 py-2">
+                            <x-ui.avatar :name="$activeOrg->name" size="sm" />
+                            <div class="min-w-0">
+                                <p class="truncate text-xs font-semibold text-ink">{{ $activeOrg->name }}</p>
+                                <p class="truncate text-[10px] text-faint">{{ $activeOrgMembership->role->label() }}</p>
+                            </div>
+                        </div>
+
+                        @if ($activeOrgMembership->hasAtLeastRole(\App\Enums\OrganizationRole::Admin))
+                            <a href="{{ route('workspace.members.index', $activeOrg) }}" class="nav-item {{ request()->routeIs('workspace.*') ? 'nav-item-active' : '' }}">
+                                <x-ui.icon name="users" class="h-4 w-4 shrink-0 text-accent" />
+                                <span>Kelola anggota</span>
+                            </a>
+                        @endif
+
+                        @if ($orgMemberships->count() > 1)
+                            <div class="pt-1">
+                                <p class="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-faint">Ganti workspace</p>
+                                <div class="space-y-0.5">
+                                    @foreach ($orgMemberships as $membership)
+                                        @php $org = $membership->organization; @endphp
+                                        <form method="POST" action="{{ route('workspace.switch', $org->id) }}">
+                                            @csrf
+                                            <button type="submit"
+                                                    class="nav-item w-full text-left {{ $org->id === $activeOrg->id ? 'nav-item-active' : '' }}">
+                                                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-blue-soft text-[10px] font-semibold text-ink">
+                                                    {{ mb_strtoupper(mb_substr($org->name, 0, 1)) }}
+                                                </span>
+                                                <span class="truncate">{{ $org->name }}</span>
+                                                @if ($org->id === $activeOrg->id)
+                                                    <x-ui.icon name="check" class="ml-auto h-3.5 w-3.5 shrink-0 text-accent" />
+                                                @endif
+                                            </button>
+                                        </form>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
                 <!-- Overview -->
                 <div class="space-y-1">
                     <p class="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-faint">Overview</p>

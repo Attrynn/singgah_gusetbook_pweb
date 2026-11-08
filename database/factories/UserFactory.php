@@ -50,6 +50,11 @@ class UserFactory extends Factory
         return $this->state(fn () => ['role' => 'superadmin']);
     }
 
+    public function platform_superadmin(): static
+    {
+        return $this->state(fn () => ['platform_role' => 'superadmin']);
+    }
+
     public function owner(): static
     {
         return $this->state(fn () => ['role' => 'owner']);

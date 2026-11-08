@@ -163,10 +163,10 @@ class User extends Authenticatable
         $eventModel = $event instanceof Event ? $event : null;
 
         if ($eventModel?->organization_id !== null) {
-            $orgId = $eventModel->organization_id;
-
-            // Active org membership grants access.
-            if ($this->organizations()->whereKey($orgId)->exists()) {
+            // Active org membership grants access. organizationMembershipFor()
+            // only returns ACTIVE memberships, so suspended/revoked members are
+            // denied even though an org pivot row exists.
+            if ($this->organizationMembershipFor((int) $eventModel->organization_id)?->isActive()) {
                 return true;
             }
 
