@@ -7,6 +7,7 @@ use App\Models\AppSetting;
 use App\Models\Event;
 use App\Models\EventSchedule;
 use App\Models\EventVenue;
+use App\Models\Organization;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
@@ -30,6 +31,7 @@ class EventService
                 ...$this->eventPayload($data),
                 ...$this->lifecycle->initialPayload($status),
                 'created_by' => $actor->id,
+                'organization_id' => $this->resolveLegacyOrganizationId(),
             ]);
 
             $this->syncVenue($event, $data);
@@ -107,6 +109,27 @@ class EventService
         );
 
         return $event->fresh();
+    }
+
+    protected function resolveLegacyOrganizationId(): ?int
+    {
+        $legacyId = (int) config('vowspace.legacy_workspace_id');
+
+        if ($legacyId > 0) {
+            return $legacyId;
+        }
+
+        $legacySlug = config('vowspace.organization.legacy_workspace_slug', 'legacy-workspace');
+        $legacyName = config('vowspace.organization.legacy_workspace_name', 'Legacy Workspace');
+
+        $legacy = Organization::firstOrCreate(
+            ['slug' => $legacySlug],
+            ['name' => $legacyName, 'status' => 'active']
+        );
+
+        config()->set('vowspace.legacy_workspace_id', $legacy->id);
+
+        return $legacy->id;
     }
 
     public function delete(Event $event, User $actor): void

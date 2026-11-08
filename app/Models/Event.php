@@ -26,6 +26,7 @@ class Event extends Model
         'venue_name', 'venue_address', 'google_maps_url', 'dress_code', 'description',
         'status', 'created_by', 'rsvp_deadline', 'rsvp_enabled', 'guestbook_enabled',
         'gallery_enabled', 'gift_enabled', 'live_wall_enabled', 'timezone',
+        'organization_id',
         'published_at', 'archived_at',
     ];
 
@@ -73,6 +74,16 @@ class Event extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
+    }
+
+    public function hasValidOrganization(): bool
+    {
+        return $this->organization_id !== null;
     }
 
     public function owners(): BelongsToMany

@@ -26,6 +26,13 @@ return [
         'email_change_ttl_minutes' => (int) env('EMAIL_CHANGE_TTL_MINUTES', 60),
     ],
 
+    'organization' => [
+        'legacy_workspace_slug' => 'legacy-workspace',
+        'legacy_workspace_name' => 'Legacy Workspace',
+    ],
+
+    'legacy_workspace_id' => (int) env('LEGACY_WORKSPACE_ID', 0),
+
     'pagination' => [
         'per_page' => 15,
         'guest_per_page' => 20,

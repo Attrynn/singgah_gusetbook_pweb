@@ -13,8 +13,10 @@ use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use App\Services\EmailChangeService;
 use Tests\Concerns\BuildsWedding;
 use Tests\TestCase;
 
@@ -177,12 +179,14 @@ class ProductionHardeningTest extends TestCase
         $this->assertSame('new@example.com', $user->pending_email);
 
         // Confirm via the service to avoid notification/fake routing issues.
-        $service = app(App\Services\EmailChangeService::class);
+        $service = app(EmailChangeService::class);
         $raw = Str::random(64);
-        $user->fresh()->email_change_token_hash = hash('sha256', $raw);
-        $user->fresh()->email_change_expires_at = now()->addMinutes(60);
-        $user->fresh()->pending_email = 'new@example.com';
-        $user->fresh()->save();
+        // Persist the token so confirm() can look it up by hash.
+        $user->forceFill([
+            'email_change_token_hash' => hash('sha256', $raw),
+            'email_change_expires_at' => now()->addMinutes(60),
+            'pending_email' => 'new@example.com',
+        ])->save();
 
         $confirmed = $service->confirm($raw);
 
@@ -209,12 +213,14 @@ class ProductionHardeningTest extends TestCase
         $this->assertSame('new@example.com', $user->pending_email);
 
         // Confirm via the service to avoid notification/fake routing issues.
-        $service = app(App\Services\EmailChangeService::class);
+        $service = app(EmailChangeService::class);
         $raw = Str::random(64);
-        $user->fresh()->email_change_token_hash = hash('sha256', $raw);
-        $user->fresh()->email_change_expires_at = now()->addMinutes(60);
-        $user->fresh()->pending_email = 'new@example.com';
-        $user->fresh()->save();
+        // Persist the token so confirm() can look it up by hash.
+        $user->forceFill([
+            'email_change_token_hash' => hash('sha256', $raw),
+            'email_change_expires_at' => now()->addMinutes(60),
+            'pending_email' => 'new@example.com',
+        ])->save();
 
         $confirmed = $service->confirm($raw);
 
