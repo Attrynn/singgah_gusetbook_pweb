@@ -68,10 +68,75 @@
                         </div>
 
                         @if ($activeOrgMembership->hasAtLeastRole(\App\Enums\OrganizationRole::Admin))
-                            <a href="{{ route('workspace.members.index', $activeOrg) }}" class="nav-item {{ request()->routeIs('workspace.*') ? 'nav-item-active' : '' }}">
+                            <a href="{{ route('workspace.members.index', $activeOrg) }}" class="nav-item {{ request()->routeIs('workspace.members.*') ? 'nav-item-active' : '' }}">
                                 <x-ui.icon name="users" class="h-4 w-4 shrink-0 text-accent" />
                                 <span>Kelola anggota</span>
                             </a>
+                        @endif
+
+                        {{-- Workspace event workspace (Milestone 3). Every entry is
+                             guarded so the shared layout never references a route that
+                             has not been registered yet. --}}
+                        @php
+                            $workspaceEvent = (request()->routeIs('workspace.events.*') && isset($event) && $event instanceof \App\Models\Event) ? $event : null;
+                        @endphp
+
+                        @if (Route::has('workspace.events.index'))
+                            <a href="{{ route('workspace.events.index', $activeOrg) }}" class="nav-item {{ request()->routeIs('workspace.events.index') ? 'nav-item-active' : '' }}">
+                                <x-ui.icon name="calendar" class="h-4 w-4 shrink-0 text-accent" />
+                                <span>Portofolio acara</span>
+                            </a>
+                        @endif
+
+                        @if (Route::has('workspace.playbooks.index') && auth()->user()->can('managePlaybooks', $activeOrg))
+                            <a href="{{ route('workspace.playbooks.index', $activeOrg) }}" class="nav-item {{ request()->routeIs('workspace.playbooks.*') ? 'nav-item-active' : '' }}">
+                                <x-ui.icon name="file-text" class="h-4 w-4 shrink-0 text-accent" />
+                                <span>Playbook</span>
+                            </a>
+                        @endif
+
+                        @if ($workspaceEvent && Route::has('workspace.events.show'))
+                            <div class="space-y-0.5 rounded-xl border border-line/70 bg-surface-2/30 p-2">
+                                <div class="flex items-center gap-2.5 px-1.5 pt-0.5">
+                                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent">
+                                        <x-ui.icon name="calendar-check" class="h-3.5 w-3.5" />
+                                    </span>
+                                    <div class="min-w-0">
+                                        <p class="truncate text-xs font-semibold text-ink">{{ $workspaceEvent->coupleNames() }}</p>
+                                        <p class="truncate text-[10px] text-faint">{{ $workspaceEvent->name }}</p>
+                                    </div>
+                                </div>
+                                <div class="mt-1.5 space-y-0.5">
+                                    <a href="{{ route('workspace.events.show', [$activeOrg, $workspaceEvent]) }}" class="nav-item py-1.5 {{ request()->routeIs('workspace.events.show') ? 'nav-item-active' : '' }}">
+                                        <x-ui.icon name="eye" class="h-3.5 w-3.5 shrink-0" />
+                                        <span>Ringkasan</span>
+                                    </a>
+                                    @can('manageSetup', $workspaceEvent)
+                                        <a href="{{ route('workspace.events.setup', [$activeOrg, $workspaceEvent]) }}" class="nav-item py-1.5 {{ request()->routeIs('workspace.events.setup') ? 'nav-item-active' : '' }}">
+                                            <x-ui.icon name="sliders" class="h-3.5 w-3.5 shrink-0" />
+                                            <span>Persiapan acara</span>
+                                        </a>
+                                    @endcan
+                                    @can('manageTeam', $workspaceEvent)
+                                        <a href="{{ route('workspace.events.team.index', [$activeOrg, $workspaceEvent]) }}" class="nav-item py-1.5 {{ request()->routeIs('workspace.events.team.*') ? 'nav-item-active' : '' }}">
+                                            <x-ui.icon name="users" class="h-3.5 w-3.5 shrink-0" />
+                                            <span>Tim acara</span>
+                                        </a>
+                                    @endcan
+                                    @can('manageSchedule', $workspaceEvent)
+                                        <a href="{{ route('workspace.events.schedule.index', [$activeOrg, $workspaceEvent]) }}" class="nav-item py-1.5 {{ request()->routeIs('workspace.events.schedule.*') ? 'nav-item-active' : '' }}">
+                                            <x-ui.icon name="clock" class="h-3.5 w-3.5 shrink-0" />
+                                            <span>Jadwal publik</span>
+                                        </a>
+                                    @endcan
+                                    @can('viewRunOfShow', $workspaceEvent)
+                                        <a href="{{ route('workspace.events.run-of-show.index', [$activeOrg, $workspaceEvent]) }}" class="nav-item py-1.5 {{ request()->routeIs('workspace.events.run-of-show.*') ? 'nav-item-active' : '' }}">
+                                            <x-ui.icon name="list" class="h-3.5 w-3.5 shrink-0" />
+                                            <span>Run of show</span>
+                                        </a>
+                                    @endcan
+                                </div>
+                            </div>
                         @endif
 
                         @if ($orgMemberships->count() > 1)
