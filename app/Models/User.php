@@ -51,6 +51,18 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function organizationMemberships(): HasMany
+    {
+        return $this->hasMany(OrganizationMembership::class);
+    }
+
+    public function organizations(): BelongsToMany
+    {
+        return $this->belongsToMany(Organization::class, 'organization_memberships')
+            ->using(OrganizationMembership::class)
+            ->withTimestamps();
+    }
+
     public function guestbookFavorites(): HasMany
     {
         return $this->hasMany(GuestbookFavorite::class);
@@ -72,6 +84,11 @@ class User extends Authenticatable
         return $this->role === UserRole::Owner;
     }
 
+    public function eventIds(): array
+    {
+        return $this->events()->pluck('events.id')->all();
+    }
+
     public function canAccessEvent(Event|int $event): bool
     {
         $eventId = $event instanceof Event ? $event->id : $event;
@@ -80,12 +97,22 @@ class User extends Authenticatable
             return true;
         }
 
-        return $this->events()->whereKey($eventId)->exists();
-    }
+        // Organization-scoped check: if the event belongs to an organization,
+        // the user must be an active organization member.
+        $eventModel = $event instanceof Event ? $event : null;
 
-    public function eventIds(): array
-    {
-        return $this->events()->pluck('events.id')->all();
+        if ($eventModel?->organization_id !== null) {
+            // User must have an active membership in the organization
+            // that owns this event.
+            $orgId = $eventModel->organization_id;
+
+            return $this->organizations()
+                ->whereKey($orgId)
+                ->exists();
+        }
+
+        // Legacy path: direct event_user pivot (event has no organization_id).
+        return $this->events()->whereKey($eventId)->exists();
     }
 
     public function scopeActive($query)
