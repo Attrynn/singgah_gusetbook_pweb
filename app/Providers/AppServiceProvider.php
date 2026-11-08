@@ -2,9 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\Organization;
+use App\Policies\OrganizationPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -18,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useTailwind();
+
+        Gate::policy(Organization::class, OrganizationPolicy::class);
 
         RateLimiter::for('guest-actions', function (Request $request) {
             return Limit::perMinute(config('vowspace.rate_limits.guest_actions_per_minute', 12))

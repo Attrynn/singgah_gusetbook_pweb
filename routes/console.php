@@ -11,3 +11,7 @@ Artisan::command('inspire', function () {
 Schedule::command('vowspace:purge-trashed')
     ->dailyAt('03:00')
     ->withoutOverlapping();
+
+Schedule::command('vowspace:expire-invitations')
+    ->daily()
+    ->withoutOverlapping();

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\OrganizationRole;
+use App\Enums\PlatformRole;
 use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -23,6 +25,7 @@ class User extends Authenticatable
         'avatar_path',
         'is_active',
         'last_login_at',
+        'platform_role',
     ];
 
     protected $hidden = [
@@ -38,6 +41,7 @@ class User extends Authenticatable
             'email_change_expires_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'platform_role' => PlatformRole::class,
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
         ];
@@ -63,6 +67,21 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function eventStaffMemberships(): HasMany
+    {
+        return $this->hasMany(EventStaffMembership::class);
+    }
+
+    public function eventOwnerMemberships(): HasMany
+    {
+        return $this->hasMany(EventOwnerMembership::class);
+    }
+
+    public function workspaceInvitations(): HasMany
+    {
+        return $this->hasMany(WorkspaceInvitation::class, 'invited_by');
+    }
+
     public function guestbookFavorites(): HasMany
     {
         return $this->hasMany(GuestbookFavorite::class);
@@ -84,9 +103,51 @@ class User extends Authenticatable
         return $this->role === UserRole::Owner;
     }
 
+    public function isPlatformAdmin(): bool
+    {
+        return $this->platform_role !== null;
+    }
+
+    public function isPlatformSuperadmin(): bool
+    {
+        return $this->platform_role === PlatformRole::Superadmin;
+    }
+
     public function eventIds(): array
     {
         return $this->events()->pluck('events.id')->all();
+    }
+
+    /**
+     * Returns the user's active OrganizationMembership for the given org, or null.
+     */
+    public function organizationMembershipFor(Organization|int $org): ?OrganizationMembership
+    {
+        $orgId = $org instanceof Organization ? $org->id : $org;
+
+        return $this->organizationMemberships()
+            ->where('organization_id', $orgId)
+            ->where('status', 'active')
+            ->first();
+    }
+
+    public function hasOrganizationRole(Organization|int $org, OrganizationRole $role): bool
+    {
+        $membership = $this->organizationMembershipFor($org);
+
+        return $membership !== null && $membership->hasRole($role);
+    }
+
+    public function isWorkspaceOwner(Organization|int $org): bool
+    {
+        return $this->hasOrganizationRole($org, OrganizationRole::Owner);
+    }
+
+    public function isWorkspaceAdmin(Organization|int $org): bool
+    {
+        $membership = $this->organizationMembershipFor($org);
+
+        return $membership !== null && $membership->hasAtLeastRole(OrganizationRole::Admin);
     }
 
     public function canAccessEvent(Event|int $event): bool
@@ -98,17 +159,34 @@ class User extends Authenticatable
         }
 
         // Organization-scoped check: if the event belongs to an organization,
-        // the user must be an active organization member.
+        // the user must be an active organization member, event staff, or event owner.
         $eventModel = $event instanceof Event ? $event : null;
 
         if ($eventModel?->organization_id !== null) {
-            // User must have an active membership in the organization
-            // that owns this event.
             $orgId = $eventModel->organization_id;
 
-            return $this->organizations()
-                ->whereKey($orgId)
-                ->exists();
+            // Active org membership grants access.
+            if ($this->organizations()->whereKey($orgId)->exists()) {
+                return true;
+            }
+
+            // Active event staff membership grants access.
+            if ($this->eventStaffMemberships()
+                ->where('event_id', $eventId)
+                ->where('status', 'active')
+                ->exists()) {
+                return true;
+            }
+
+            // Active event owner membership grants access.
+            if ($this->eventOwnerMemberships()
+                ->where('event_id', $eventId)
+                ->where('status', 'active')
+                ->exists()) {
+                return true;
+            }
+
+            return false;
         }
 
         // Legacy path: direct event_user pivot (event has no organization_id).

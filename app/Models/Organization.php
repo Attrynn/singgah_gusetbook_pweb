@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\OrganizationMembershipStatus;
+use App\Enums\OrganizationRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -38,8 +40,38 @@ class Organization extends Model
             ->withTimestamps();
     }
 
+    public function activeMembers(): HasMany
+    {
+        return $this->hasMany(OrganizationMembership::class)
+            ->where('status', OrganizationMembershipStatus::Active);
+    }
+
+    public function owners(): HasMany
+    {
+        return $this->hasMany(OrganizationMembership::class)
+            ->where('role', OrganizationRole::Owner)
+            ->where('status', OrganizationMembershipStatus::Active);
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    public function hasOwner(): bool
+    {
+        return $this->owners()->exists();
+    }
+
+    /**
+     * Returns the OrganizationMembership for the given user, or null if none exists.
+     */
+    public function membershipFor(User|int $user): ?OrganizationMembership
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+
+        return $this->memberships()
+            ->where('user_id', $userId)
+            ->first();
     }
 }

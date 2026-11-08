@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\OrganizationMembershipStatus;
+use App\Enums\OrganizationRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,12 +17,18 @@ class OrganizationMembership extends Model
         'user_id',
         'role',
         'status',
+        'invited_by',
+        'accepted_at',
     ];
 
-    protected $casts = [
-        'role' => 'string',
-        'status' => 'string',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'role' => OrganizationRole::class,
+            'status' => OrganizationMembershipStatus::class,
+            'accepted_at' => 'datetime',
+        ];
+    }
 
     public function organization(): BelongsTo
     {
@@ -32,8 +40,33 @@ class OrganizationMembership extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function invitedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'invited_by');
+    }
+
     public function isActive(): bool
     {
-        return $this->status === 'active';
+        return $this->status === OrganizationMembershipStatus::Active;
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->status === OrganizationMembershipStatus::Suspended;
+    }
+
+    public function isRevoked(): bool
+    {
+        return $this->status === OrganizationMembershipStatus::Revoked;
+    }
+
+    public function hasRole(OrganizationRole $role): bool
+    {
+        return $this->role === $role;
+    }
+
+    public function hasAtLeastRole(OrganizationRole $minimum): bool
+    {
+        return $this->role->isAtLeast($minimum);
     }
 }

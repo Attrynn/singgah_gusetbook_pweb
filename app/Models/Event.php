@@ -94,6 +94,36 @@ class Event extends Model
             ->withTimestamps();
     }
 
+    public function staffMemberships(): HasMany
+    {
+        return $this->hasMany(EventStaffMembership::class);
+    }
+
+    public function ownerMemberships(): HasMany
+    {
+        return $this->hasMany(EventOwnerMembership::class);
+    }
+
+    public function hasStaffMember(User|int $user): bool
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+
+        return $this->staffMemberships()
+            ->where('user_id', $userId)
+            ->where('status', 'active')
+            ->exists();
+    }
+
+    public function hasOwnerMember(User|int $user): bool
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+
+        return $this->ownerMemberships()
+            ->where('user_id', $userId)
+            ->where('status', 'active')
+            ->exists();
+    }
+
     public function settings(): HasMany
     {
         return $this->hasMany(EventSetting::class);

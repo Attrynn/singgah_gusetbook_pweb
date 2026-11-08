@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Middleware\EnsureActiveUser;
+use App\Http\Middleware\EnsureOrganizationMembership;
 use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\ResolveGuestToken;
+use App\Http\Middleware\ResolveOrganizationContext;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,6 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => EnsureRole::class,
             'active' => EnsureActiveUser::class,
             'guest.token' => ResolveGuestToken::class,
+            'org.context' => ResolveOrganizationContext::class,
+            'org.member' => EnsureOrganizationMembership::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
