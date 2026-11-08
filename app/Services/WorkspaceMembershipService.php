@@ -21,6 +21,8 @@ class WorkspaceMembershipService
         return DB::transaction(function () use ($org, $target, $newRole, $actor): OrganizationMembership {
             $membership = $this->lockedMembership($org, $target);
 
+            $this->assertActorMayManage($org, $membership, $actor);
+
             if ($membership->role === OrganizationRole::Owner && $newRole !== OrganizationRole::Owner) {
                 $this->assertNotLastActiveOwner($org, $membership);
             }
@@ -47,6 +49,8 @@ class WorkspaceMembershipService
         DB::transaction(function () use ($org, $target, $actor): void {
             $membership = $this->lockedMembership($org, $target);
 
+            $this->assertActorMayManage($org, $membership, $actor);
+
             if ($membership->role === OrganizationRole::Owner) {
                 $this->assertNotLastActiveOwner($org, $membership);
             }
@@ -70,6 +74,8 @@ class WorkspaceMembershipService
     {
         DB::transaction(function () use ($org, $target, $actor): void {
             $membership = $this->lockedMembership($org, $target);
+
+            $this->assertActorMayManage($org, $membership, $actor);
 
             if ($membership->role === OrganizationRole::Owner) {
                 $this->assertNotLastActiveOwner($org, $membership);
@@ -140,6 +146,32 @@ class WorkspaceMembershipService
 
         if ($activeOwners <= 1) {
             abort(422, 'Workspace harus memiliki minimal satu Workspace Owner aktif.');
+        }
+    }
+
+    /**
+     * Defense-in-depth authorization: an actor may only manage a target whose
+     * role is at least as privileged as their own, and may never revoke/suspend
+     * an Owner unless they are themselves an Owner (or a platform superadmin).
+     */
+    private function assertActorMayManage(Organization $org, OrganizationMembership $target, User $actor): void
+    {
+        if ($actor->isSuperadmin() || $actor->isPlatformSuperadmin()) {
+            return;
+        }
+
+        $actorRole = $org->membershipFor($actor)?->role;
+
+        if ($target->role === OrganizationRole::Owner && $actorRole !== OrganizationRole::Owner) {
+            abort(422, 'Hanya Workspace Owner yang dapat mengelola Workspace Owner lain.');
+        }
+
+        if ($actorRole === null) {
+            return;
+        }
+
+        if (! $actorRole->isAtLeast($target->role)) {
+            abort(422, 'Anda tidak dapat mengelola anggota dengan role di atas kewenangan Anda.');
         }
     }
 }

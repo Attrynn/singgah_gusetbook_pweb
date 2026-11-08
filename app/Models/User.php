@@ -25,7 +25,6 @@ class User extends Authenticatable
         'avatar_path',
         'is_active',
         'last_login_at',
-        'platform_role',
     ];
 
     protected $hidden = [
@@ -152,17 +151,21 @@ class User extends Authenticatable
 
     public function canAccessEvent(Event|int $event): bool
     {
-        $eventId = $event instanceof Event ? $event->id : $event;
-
-        if ($this->isSuperadmin()) {
+        if ($this->isSuperadmin() || $this->isPlatformSuperadmin()) {
             return true;
         }
 
+        $eventModel = $event instanceof Event ? $event : Event::find($event);
+
+        if ($eventModel === null) {
+            return false;
+        }
+
+        $eventId = $eventModel->id;
+
         // Organization-scoped check: if the event belongs to an organization,
         // the user must be an active organization member, event staff, or event owner.
-        $eventModel = $event instanceof Event ? $event : null;
-
-        if ($eventModel?->organization_id !== null) {
+        if ($eventModel->organization_id !== null) {
             // Active org membership grants access. organizationMembershipFor()
             // only returns ACTIVE memberships, so suspended/revoked members are
             // denied even though an org pivot row exists.

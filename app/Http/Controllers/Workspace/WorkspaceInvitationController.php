@@ -11,6 +11,7 @@ use App\Services\WorkspaceInvitationService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
@@ -78,7 +79,9 @@ class WorkspaceInvitationController extends Controller
             abort(422, 'Undangan sudah tidak dapat digunakan.');
         }
 
-        if (User::where('email', strtolower($invitation->email))->exists()) {
+        // Query the base table directly so soft-deleted accounts still block
+        // reuse of their email address during invitation registration.
+        if (DB::table('users')->where('email', strtolower($invitation->email))->exists()) {
             return redirect()->route('login')->withErrors([
                 'email' => 'Akun dengan email ini sudah ada. Silakan masuk.',
             ]);

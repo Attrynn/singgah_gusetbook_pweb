@@ -82,7 +82,7 @@ class WorkspaceRegistrationService
         $slug = $base;
         $i = 2;
 
-        while (Organization::where('slug', $slug)->exists()) {
+        while (Organization::withTrashed()->where('slug', $slug)->exists()) {
             $slug = "{$base}-{$i}";
             $i++;
         }

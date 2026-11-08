@@ -7,6 +7,7 @@ enum OrganizationMembershipStatus: string
     case Active = 'active';
     case Suspended = 'suspended';
     case Revoked = 'revoked';
+    case Inactive = 'inactive';
 
     public function label(): string
     {
@@ -14,6 +15,7 @@ enum OrganizationMembershipStatus: string
             self::Active => 'Active',
             self::Suspended => 'Suspended',
             self::Revoked => 'Revoked',
+            self::Inactive => 'Inactive',
         };
     }
 

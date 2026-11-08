@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\UserRole;
 use App\Services\MfaService;
 use Closure;
 use Illuminate\Http\Request;
@@ -62,7 +63,7 @@ class MfaChallenge
         }
 
         // Only superadmin
-        return $request->user()?->role === 'superadmin';
+        return $request->user()?->role === UserRole::Superadmin;
     }
 
     protected function isLockedOut(Request $request): bool
