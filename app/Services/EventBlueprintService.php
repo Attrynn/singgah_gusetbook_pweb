@@ -46,7 +46,7 @@ class EventBlueprintService
             ],
             'playbook_refs' => ['playbook_id', 'playbook_version_id'],
             'excluded' => [
-                'guests', 'guest_tokens', 'invitations', 'rsvps', 'checkins', 'media',
+                'guests', 'guest_party_memberships', 'guest_passes', 'guest_tokens', 'invitations', 'rsvps', 'checkins', 'media',
                 'guestbook_messages', 'gifts', 'event_user', 'event_owner_memberships',
                 'event_staff_memberships', 'audit_logs', 'published_at', 'archived_at',
             ],
