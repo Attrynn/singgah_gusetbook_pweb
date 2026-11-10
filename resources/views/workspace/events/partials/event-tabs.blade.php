@@ -2,7 +2,10 @@
     Shared navigation strip for a workspace event. Each tab renders only when
     the acting user passes the matching EventPolicy ability, so a staff member
     never sees links they cannot open. `$active` is one of:
-    overview | setup | team | schedule | run-of-show | playbook | guests
+    overview | setup | team | schedule | run-of-show | guests | checkins | playbook
+    | operations | operations-my-work | operations-staff | operations-stations
+    | operations-tasks | operations-incidents | operations-announcements
+    | operations-reports | operations-closure
 --}}
 @php
     $active = $active ?? 'overview';
@@ -55,6 +58,13 @@
             </a>
         @endif
 
+        @can('viewOperations', $event)
+            <a href="{{ route('workspace.events.operations.index', [$organization, $event]) }}" class="{{ $tabClass(str_starts_with($active ?? '', 'operations')) }}" @if (str_starts_with($active ?? '', 'operations')) aria-current="page" @endif>
+                <x-ui.icon name="clipboard" class="h-3.5 w-3.5 shrink-0" />
+                <span>Operasi</span>
+            </a>
+        @endcan
+
         @if ($canGuests)
             <a href="{{ route('workspace.events.guests.index', [$organization, $event]) }}" class="{{ $tabClass($active === 'guests') }}" @if ($active === 'guests') aria-current="page" @endif>
                 <x-ui.icon name="ticket" class="h-3.5 w-3.5 shrink-0" />
@@ -77,3 +87,70 @@
         @endif
     </nav>
 </div>
+
+{{-- Secondary navigation for the operations workspace. Rendered only while
+     one of the operations pages is active so the event tabs stay compact. --}}
+@if (str_starts_with($active ?? '', 'operations'))
+    @php
+        $subTabClass = fn (bool $isActive): string => $isActive
+            ? 'inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1.5 text-[11px] font-semibold text-accent'
+            : 'inline-flex items-center gap-1.5 rounded-full border border-line/60 bg-surface px-3 py-1.5 text-[11px] font-medium text-muted transition hover:border-accent/30 hover:text-ink';
+    @endphp
+
+    <div class="mt-3 -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <nav class="flex min-w-max items-center gap-1.5" aria-label="Navigasi operasi">
+            <a href="{{ route('workspace.events.operations.index', [$organization, $event]) }}" class="{{ $subTabClass($active === 'operations') }}">
+                <x-ui.icon name="grid" class="h-3 w-3 shrink-0" />
+                <span>Ruang kendali</span>
+            </a>
+            @can('viewTasks', $event)
+                <a href="{{ route('workspace.events.operations.my-work', [$organization, $event]) }}" class="{{ $subTabClass($active === 'operations-my-work') }}">
+                    <x-ui.icon name="clipboard" class="h-3 w-3 shrink-0" />
+                    <span>Tugas saya</span>
+                </a>
+            @endcan
+            @can('viewStaff', $event)
+                <a href="{{ route('workspace.events.operations.staff.index', [$organization, $event]) }}" class="{{ $subTabClass($active === 'operations-staff') }}">
+                    <x-ui.icon name="users" class="h-3 w-3 shrink-0" />
+                    <span>Staf</span>
+                </a>
+            @endcan
+            @can('viewStations', $event)
+                <a href="{{ route('workspace.events.operations.stations.index', [$organization, $event]) }}" class="{{ $subTabClass($active === 'operations-stations') }}">
+                    <x-ui.icon name="pin" class="h-3 w-3 shrink-0" />
+                    <span>Stasiun</span>
+                </a>
+            @endcan
+            @can('viewTasks', $event)
+                <a href="{{ route('workspace.events.operations.tasks.index', [$organization, $event]) }}" class="{{ $subTabClass($active === 'operations-tasks') }}">
+                    <x-ui.icon name="list" class="h-3 w-3 shrink-0" />
+                    <span>Tugas</span>
+                </a>
+            @endcan
+            @can('viewIncidents', $event)
+                <a href="{{ route('workspace.events.operations.incidents.index', [$organization, $event]) }}" class="{{ $subTabClass($active === 'operations-incidents') }}">
+                    <x-ui.icon name="alert" class="h-3 w-3 shrink-0" />
+                    <span>Insiden</span>
+                </a>
+            @endcan
+            @can('viewAnnouncements', $event)
+                <a href="{{ route('workspace.events.operations.announcements.index', [$organization, $event]) }}" class="{{ $subTabClass($active === 'operations-announcements') }}">
+                    <x-ui.icon name="send" class="h-3 w-3 shrink-0" />
+                    <span>Pengumuman</span>
+                </a>
+            @endcan
+            @can('viewReports', $event)
+                <a href="{{ route('workspace.events.operations.reports.index', [$organization, $event]) }}" class="{{ $subTabClass($active === 'operations-reports') }}">
+                    <x-ui.icon name="chart" class="h-3 w-3 shrink-0" />
+                    <span>Laporan</span>
+                </a>
+            @endcan
+            @can('closeOperations', $event)
+                <a href="{{ route('workspace.events.operations.closure', [$organization, $event]) }}" class="{{ $subTabClass($active === 'operations-closure') }}">
+                    <x-ui.icon name="check" class="h-3 w-3 shrink-0" />
+                    <span>Penutupan</span>
+                </a>
+            @endcan
+        </nav>
+    </div>
+@endif

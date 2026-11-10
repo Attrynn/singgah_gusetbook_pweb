@@ -49,6 +49,49 @@ class PermissionRegistry
 
     const EVENT_ARCHIVE = 'event.archive';
 
+    // Event operations permissions (Milestone 6)
+    const OPERATIONS_VIEW = 'operations.view';
+
+    const OPERATIONS_MANAGE = 'operations.manage';
+
+    const OPERATIONS_CLOSE = 'operations.close';
+
+    const STAFF_VIEW = 'staff.view';
+
+    const STAFF_INVITE = 'staff.invite';
+
+    const STAFF_MANAGE = 'staff.manage';
+
+    const STAFF_PERMISSIONS_MANAGE = 'staff.permissions.manage';
+
+    const STATION_VIEW = 'station.view';
+
+    const STATION_MANAGE = 'station.manage';
+
+    const STATION_ASSIGN = 'station.assign';
+
+    const TASK_VIEW = 'task.view';
+
+    const TASK_CREATE = 'task.create';
+
+    const TASK_ASSIGN = 'task.assign';
+
+    const TASK_MANAGE = 'task.manage';
+
+    const INCIDENT_VIEW = 'incident.view';
+
+    const INCIDENT_CREATE = 'incident.create';
+
+    const INCIDENT_MANAGE = 'incident.manage';
+
+    const INCIDENT_RESOLVE = 'incident.resolve';
+
+    const ANNOUNCEMENT_VIEW = 'announcement.view';
+
+    const ANNOUNCEMENT_MANAGE = 'announcement.manage';
+
+    const ANNOUNCEMENT_PUBLISH = 'announcement.publish';
+
     const PLAYBOOK_VIEW = 'playbook.view';
 
     const PLAYBOOK_MANAGE = 'playbook.manage';
@@ -114,6 +157,12 @@ class PermissionRegistry
                 self::EVENT_VIEW, self::EVENT_UPDATE, self::EVENT_MANAGE_SETTINGS,
                 self::EVENT_SETUP_MANAGE, self::EVENT_TEAM_MANAGE, self::EVENT_SCHEDULE_MANAGE,
                 self::EVENT_RUN_OF_SHOW_VIEW, self::EVENT_RUN_OF_SHOW_MANAGE,
+                self::OPERATIONS_VIEW, self::OPERATIONS_MANAGE, self::OPERATIONS_CLOSE,
+                self::STAFF_VIEW, self::STAFF_INVITE, self::STAFF_MANAGE, self::STAFF_PERMISSIONS_MANAGE,
+                self::STATION_VIEW, self::STATION_MANAGE, self::STATION_ASSIGN,
+                self::TASK_VIEW, self::TASK_CREATE, self::TASK_ASSIGN, self::TASK_MANAGE,
+                self::INCIDENT_VIEW, self::INCIDENT_CREATE, self::INCIDENT_MANAGE, self::INCIDENT_RESOLVE,
+                self::ANNOUNCEMENT_VIEW, self::ANNOUNCEMENT_MANAGE, self::ANNOUNCEMENT_PUBLISH,
                 self::GUEST_VIEW, self::GUEST_CREATE, self::GUEST_UPDATE, self::GUEST_DELETE,
                 self::GUEST_IMPORT, self::GUEST_EXPORT,
                 self::CHECKIN_VIEW, self::CHECKIN_SCAN, self::CHECKIN_CREATE,
@@ -123,17 +172,60 @@ class PermissionRegistry
                 self::GIFT_VIEW, self::GIFT_MANAGE,
                 self::REPORTS_VIEW, self::REPORTS_EXPORT,
             ],
+            EventStaffRole::OperationsCoordinator => [
+                self::EVENT_VIEW, self::EVENT_RUN_OF_SHOW_VIEW, self::EVENT_RUN_OF_SHOW_MANAGE,
+                self::OPERATIONS_VIEW, self::OPERATIONS_MANAGE,
+                self::STAFF_VIEW, self::STAFF_INVITE, self::STAFF_MANAGE,
+                self::STATION_VIEW, self::STATION_MANAGE, self::STATION_ASSIGN,
+                self::TASK_VIEW, self::TASK_CREATE, self::TASK_ASSIGN, self::TASK_MANAGE,
+                self::INCIDENT_VIEW, self::INCIDENT_CREATE, self::INCIDENT_MANAGE, self::INCIDENT_RESOLVE,
+                self::ANNOUNCEMENT_VIEW, self::ANNOUNCEMENT_MANAGE, self::ANNOUNCEMENT_PUBLISH,
+                self::CHECKIN_VIEW,
+                self::REPORTS_VIEW,
+            ],
+            EventStaffRole::StationSupervisor => [
+                self::EVENT_VIEW, self::EVENT_RUN_OF_SHOW_VIEW,
+                self::OPERATIONS_VIEW,
+                self::STAFF_VIEW,
+                self::STATION_VIEW, self::STATION_ASSIGN,
+                self::TASK_VIEW, self::TASK_CREATE, self::TASK_ASSIGN, self::TASK_MANAGE,
+                self::INCIDENT_VIEW, self::INCIDENT_CREATE, self::INCIDENT_MANAGE,
+                self::ANNOUNCEMENT_VIEW,
+                self::REPORTS_VIEW,
+            ],
             EventStaffRole::GuestManager => [
                 self::EVENT_VIEW,
                 self::EVENT_RUN_OF_SHOW_VIEW,
+                self::OPERATIONS_VIEW,
+                self::STAFF_VIEW,
+                self::TASK_VIEW, self::TASK_CREATE,
+                self::INCIDENT_VIEW, self::INCIDENT_CREATE,
+                self::ANNOUNCEMENT_VIEW,
                 self::GUEST_VIEW, self::GUEST_CREATE, self::GUEST_UPDATE,
                 self::GUEST_IMPORT, self::GUEST_EXPORT,
                 self::CHECKIN_VIEW,
                 self::REPORTS_VIEW,
             ],
+            EventStaffRole::GuestRelations => [
+                self::EVENT_VIEW,
+                self::EVENT_RUN_OF_SHOW_VIEW,
+                self::OPERATIONS_VIEW,
+                self::STAFF_VIEW,
+                self::TASK_VIEW, self::TASK_CREATE,
+                self::INCIDENT_VIEW, self::INCIDENT_CREATE,
+                self::ANNOUNCEMENT_VIEW,
+                self::GUEST_VIEW,
+                self::CHECKIN_VIEW,
+            ],
             EventStaffRole::CheckinSupervisor => [
                 self::EVENT_VIEW,
                 self::EVENT_RUN_OF_SHOW_VIEW,
+                self::OPERATIONS_VIEW,
+                self::STAFF_VIEW,
+                self::STATION_VIEW,
+                self::TASK_VIEW,
+                self::INCIDENT_VIEW, self::INCIDENT_CREATE,
+                self::ANNOUNCEMENT_VIEW,
                 self::GUEST_VIEW,
                 self::CHECKIN_VIEW, self::CHECKIN_SCAN, self::CHECKIN_CREATE,
                 self::CHECKIN_CORRECT, self::CHECKIN_REPORT,
@@ -143,26 +235,83 @@ class PermissionRegistry
             EventStaffRole::CheckinStaff => [
                 self::EVENT_VIEW,
                 self::EVENT_RUN_OF_SHOW_VIEW,
+                self::OPERATIONS_VIEW,
+                self::STATION_VIEW,
+                self::TASK_VIEW,
+                self::INCIDENT_VIEW, self::INCIDENT_CREATE,
+                self::ANNOUNCEMENT_VIEW,
                 self::CHECKIN_VIEW, self::CHECKIN_SCAN, self::CHECKIN_CREATE,
                 self::SEATING_VIEW,
             ],
             EventStaffRole::SeatingUsher => [
                 self::EVENT_VIEW,
                 self::EVENT_RUN_OF_SHOW_VIEW,
+                self::OPERATIONS_VIEW,
+                self::STATION_VIEW,
+                self::TASK_VIEW,
+                self::INCIDENT_VIEW, self::INCIDENT_CREATE,
+                self::ANNOUNCEMENT_VIEW,
                 self::SEATING_VIEW, self::SEATING_MANAGE,
                 self::CHECKIN_VIEW,
             ],
             EventStaffRole::MediaCurator => [
                 self::EVENT_VIEW,
                 self::EVENT_RUN_OF_SHOW_VIEW,
+                self::OPERATIONS_VIEW,
+                self::TASK_VIEW,
+                self::INCIDENT_VIEW, self::INCIDENT_CREATE,
+                self::ANNOUNCEMENT_VIEW,
                 self::MEDIA_VIEW, self::MEDIA_MODERATE, self::MEDIA_MANAGE_ALBUMS, self::MEDIA_PUBLISH,
             ],
             EventStaffRole::GiftSteward => [
                 self::EVENT_VIEW,
                 self::EVENT_RUN_OF_SHOW_VIEW,
+                self::OPERATIONS_VIEW,
+                self::TASK_VIEW,
+                self::INCIDENT_VIEW, self::INCIDENT_CREATE,
+                self::ANNOUNCEMENT_VIEW,
                 self::GIFT_VIEW, self::GIFT_MANAGE,
             ],
+            EventStaffRole::GeneralStaff => [
+                self::EVENT_VIEW,
+                self::EVENT_RUN_OF_SHOW_VIEW,
+                self::OPERATIONS_VIEW,
+                self::STATION_VIEW,
+                self::TASK_VIEW,
+                self::INCIDENT_VIEW, self::INCIDENT_CREATE,
+                self::ANNOUNCEMENT_VIEW,
+            ],
+            EventStaffRole::Observer => [
+                self::EVENT_VIEW,
+                self::EVENT_RUN_OF_SHOW_VIEW,
+                self::OPERATIONS_VIEW,
+                self::STAFF_VIEW,
+                self::STATION_VIEW,
+                self::TASK_VIEW,
+                self::INCIDENT_VIEW,
+                self::ANNOUNCEMENT_VIEW,
+                self::REPORTS_VIEW,
+            ],
         };
+    }
+
+    /**
+     * Permissions that an event manager may delegate to staff beyond their profile.
+     *
+     * @return string[]
+     */
+    public static function delegatableEventPermissions(): array
+    {
+        return [
+            self::OPERATIONS_VIEW, self::OPERATIONS_MANAGE,
+            self::STAFF_VIEW, self::STAFF_INVITE, self::STAFF_MANAGE,
+            self::STATION_VIEW, self::STATION_MANAGE, self::STATION_ASSIGN,
+            self::TASK_VIEW, self::TASK_CREATE, self::TASK_ASSIGN, self::TASK_MANAGE,
+            self::INCIDENT_VIEW, self::INCIDENT_CREATE, self::INCIDENT_MANAGE, self::INCIDENT_RESOLVE,
+            self::ANNOUNCEMENT_VIEW, self::ANNOUNCEMENT_MANAGE, self::ANNOUNCEMENT_PUBLISH,
+            self::EVENT_RUN_OF_SHOW_VIEW, self::EVENT_RUN_OF_SHOW_MANAGE,
+            self::REPORTS_VIEW,
+        ];
     }
 
     /**
@@ -178,6 +327,12 @@ class PermissionRegistry
             self::EVENT_VIEW, self::EVENT_UPDATE, self::EVENT_DELETE, self::EVENT_MANAGE_SETTINGS,
             self::EVENT_SETUP_MANAGE, self::EVENT_TEAM_MANAGE, self::EVENT_SCHEDULE_MANAGE,
             self::EVENT_RUN_OF_SHOW_VIEW, self::EVENT_RUN_OF_SHOW_MANAGE, self::EVENT_ARCHIVE,
+            self::OPERATIONS_VIEW, self::OPERATIONS_MANAGE, self::OPERATIONS_CLOSE,
+            self::STAFF_VIEW, self::STAFF_INVITE, self::STAFF_MANAGE, self::STAFF_PERMISSIONS_MANAGE,
+            self::STATION_VIEW, self::STATION_MANAGE, self::STATION_ASSIGN,
+            self::TASK_VIEW, self::TASK_CREATE, self::TASK_ASSIGN, self::TASK_MANAGE,
+            self::INCIDENT_VIEW, self::INCIDENT_CREATE, self::INCIDENT_MANAGE, self::INCIDENT_RESOLVE,
+            self::ANNOUNCEMENT_VIEW, self::ANNOUNCEMENT_MANAGE, self::ANNOUNCEMENT_PUBLISH,
             self::PLAYBOOK_VIEW, self::PLAYBOOK_MANAGE,
             self::GUEST_VIEW, self::GUEST_CREATE, self::GUEST_UPDATE, self::GUEST_DELETE,
             self::GUEST_IMPORT, self::GUEST_EXPORT,

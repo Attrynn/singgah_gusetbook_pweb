@@ -1,6 +1,7 @@
 {{-- Timeline list for a single run-of-show group. Expects:
      $runItems, $event, $organization, $toLocal, $timezone, $canManage,
-     $statuses, $sessionOptions, $phaseOptions, $staffOptions --}}
+     $statuses, $sessionOptions, $phaseOptions, $staffOptions,
+     $stationOptions, $itemOptions, $staff, $staffLabel --}}
 <div class="space-y-3">
     @foreach ($runItems->sortBy([['sequence', 'asc'], ['planned_start', 'asc']]) as $item)
         @php
@@ -10,6 +11,9 @@
             $actualEnd = $toLocal($item->actual_end);
             $picName = $item->pic?->user?->name;
             $picRole = $item->pic?->role instanceof \App\Enums\EventStaffRole ? $item->pic->role->label() : null;
+            $assigneeIds = $item->assignees->pluck('id')->all();
+            $nextStatuses = $item->status->allowedTransitions();
+            $dependencyOptions = $itemOptions->except($item->id);
         @endphp
         <article class="card overflow-hidden animate-float-in" x-data="{ editing: false }">
             <div class="p-4">
@@ -79,6 +83,23 @@
                 </div>
             </div>
 
+            @if ($canManage && $nextStatuses !== [])
+                <form method="POST"
+                      action="{{ route('workspace.events.run-of-show.status', [$organization, $event, $item]) }}"
+                      class="flex flex-wrap items-end gap-2 border-t border-line/60 bg-surface-2/20 px-4 py-3">
+                    @csrf
+                    <div class="min-w-[9rem] flex-1">
+                        <x-ui.select name="status" label="Ubah status" :options="$nextStatuses" />
+                    </div>
+                    <div class="min-w-[9rem] flex-1">
+                        <x-ui.input name="reason" label="Alasan" placeholder="Opsional" />
+                    </div>
+                    <button type="submit" class="btn btn-secondary btn-sm">
+                        <x-ui.icon name="check" class="h-3.5 w-3.5" /> Terapkan
+                    </button>
+                </form>
+            @endif
+
             @if ($canManage)
                 <form method="POST"
                       action="{{ route('workspace.events.run-of-show.update', [$organization, $event, $item]) }}"
@@ -93,11 +114,45 @@
                     <x-ui.select name="session_id" label="Sesi" :options="$sessionOptions" placeholder="Tanpa sesi" :value="$item->event_session_id" />
                     <x-ui.select name="phase_id" label="Fase" :options="$phaseOptions" placeholder="Tanpa fase" :value="$item->phase_id" />
                     <x-ui.select name="pic_staff_membership_id" label="PIC" :options="$staffOptions" placeholder="Tanpa PIC" :value="$item->pic_staff_membership_id" />
+                    <x-ui.select name="station_id" label="Stasiun" :options="$stationOptions" placeholder="Tanpa stasiun" :value="$item->station_id" />
+                    <x-ui.select name="depends_on_item_id" label="Bergantung pada" :options="$dependencyOptions" placeholder="Tidak ada" :value="$item->depends_on_item_id" />
                     <x-ui.select name="status" label="Status" :options="$statuses" :value="$item->status->value" />
-                    <x-ui.input name="planned_start_local" label="Rencana mulai" type="datetime-local" :value="$plannedStart?->format('Y-m-d\TH:i')" />
-                    <x-ui.input name="planned_end_local" label="Rencana selesai" type="datetime-local" :value="$plannedEnd?->format('Y-m-d\TH:i')" />
-                    <x-ui.input name="actual_start_local" label="Aktual mulai" type="datetime-local" :value="$actualStart?->format('Y-m-d\TH:i')" />
-                    <x-ui.input name="actual_end_local" label="Aktual selesai" type="datetime-local" :value="$actualEnd?->format('Y-m-d\TH:i')" />
+
+                    <div class="grid grid-cols-2 gap-3 sm:col-span-2">
+                        <x-ui.input name="sequence" label="Urutan" type="number" min="0" :value="$item->sequence" />
+                        <x-ui.input name="planned_start_local" label="Rencana mulai" type="datetime-local" :value="$plannedStart?->format('Y-m-d\TH:i')" />
+                        <x-ui.input name="planned_end_local" label="Rencana selesai" type="datetime-local" :value="$plannedEnd?->format('Y-m-d\TH:i')" />
+                        <x-ui.input name="actual_start_local" label="Aktual mulai" type="datetime-local" :value="$actualStart?->format('Y-m-d\TH:i')" />
+                        <x-ui.input name="actual_end_local" label="Aktual selesai" type="datetime-local" :value="$actualEnd?->format('Y-m-d\TH:i')" />
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <x-ui.input name="internal_description" label="Deskripsi internal" :value="$item->internal_description" placeholder="Ringkasan teknis untuk tim" />
+                    </div>
+
+                    @if ($staff->isNotEmpty())
+                        <div class="sm:col-span-2">
+                            <p class="label">Petugas</p>
+                            <div class="grid max-h-40 gap-1.5 overflow-y-auto rounded-xl border border-line/60 bg-surface-2/20 p-2 sm:grid-cols-2">
+                                @foreach ($staff as $membership)
+                                    <label class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-[11px] text-muted hover:bg-surface-2/60">
+                                        <input type="checkbox"
+                                               name="assignee_membership_ids[]"
+                                               value="{{ $membership->id }}"
+                                               class="h-3.5 w-3.5 rounded border-line text-accent focus:ring-accent/40"
+                                               @checked(in_array((int) $membership->id, array_map('intval', $assigneeIds), true))>
+                                        <span>{{ $staffLabel($membership) }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    <label class="flex items-start gap-2 rounded-xl border border-line/60 bg-surface-2/20 px-3 py-2 text-[11px] text-muted sm:col-span-2">
+                        <input type="checkbox" name="allow_parallel" value="1" class="mt-0.5 h-3.5 w-3.5 rounded border-line text-accent focus:ring-accent/40">
+                        <span>Izinkan berjalan paralel meski ada bentrok jadwal dengan item lain.</span>
+                    </label>
+
                     <div class="sm:col-span-2">
                         <x-ui.textarea name="internal_notes" label="Catatan internal" :value="$item->internal_notes" rows="2" />
                     </div>

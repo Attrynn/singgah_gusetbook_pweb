@@ -9,9 +9,12 @@ use App\Http\Requests\Workspace\StoreRunOfShowItemRequest;
 use App\Http\Requests\Workspace\UpdateRunOfShowItemRequest;
 use App\Models\Event;
 use App\Models\EventRunOfShowItem;
+use App\Models\EventStation;
 use App\Models\Organization;
 use App\Services\RunOfShowService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class WorkspaceRunOfShowController extends Controller
 {
@@ -30,10 +33,14 @@ class WorkspaceRunOfShowController extends Controller
             'organization' => $organization,
             'event' => $event,
             'items' => $event->runOfShowItems()
-                ->with(['session', 'phase', 'pic.user', 'creator', 'updater'])
+                ->with(['session', 'phase', 'station', 'pic.user', 'assignees.user', 'dependsOn', 'creator', 'updater'])
                 ->get(),
             'sessions' => $event->sessions()->get(),
             'phases' => $event->phases()->get(),
+            'stations' => EventStation::query()
+                ->where('event_id', $event->id)
+                ->orderBy('name')
+                ->get(),
             'staff' => $event->staffMemberships()
                 ->with('user')
                 ->where('status', MembershipStatus::Active->value)
@@ -72,6 +79,27 @@ class WorkspaceRunOfShowController extends Controller
         $this->runOfShow->delete($item, request()->user());
 
         return back()->with('status', 'Item run of show dihapus.');
+    }
+
+    public function status(Request $request, Organization $organization, Event $event, EventRunOfShowItem $item)
+    {
+        $this->assertEventInOrg($organization, $event);
+        abort_unless((int) $item->event_id === (int) $event->id, 404);
+        $this->authorize('manageRunOfShow', $event);
+
+        $data = $request->validate([
+            'status' => ['required', Rule::enum(RunOfShowStatus::class)],
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $this->runOfShow->transition(
+            $item,
+            RunOfShowStatus::from($data['status']),
+            $request->user(),
+            $data['reason'] ?? null,
+        );
+
+        return back()->with('status', 'Status run of show diperbarui.');
     }
 
     private function assertEventInOrg(Organization $organization, Event $event): void
