@@ -36,6 +36,10 @@
             <x-ui.button variant="secondary" :href="route('workspace.events.edit', [$organization, $event])" icon="edit">Edit acara</x-ui.button>
         @endcan
 
+        @can('viewGuests', $event)
+            <x-ui.button variant="secondary" :href="route('workspace.events.guests.index', [$organization, $event])" icon="ticket">Tamu & Undangan</x-ui.button>
+        @endcan
+
         @can('manageSetup', $event)
             <x-ui.button variant="secondary" :href="route('workspace.events.setup', [$organization, $event])" icon="sliders">Persiapan</x-ui.button>
         @endcan

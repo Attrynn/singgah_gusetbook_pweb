@@ -2,7 +2,7 @@
     Shared navigation strip for a workspace event. Each tab renders only when
     the acting user passes the matching EventPolicy ability, so a staff member
     never sees links they cannot open. `$active` is one of:
-    overview | setup | team | schedule | run-of-show | playbook
+    overview | setup | team | schedule | run-of-show | playbook | guests
 --}}
 @php
     $active = $active ?? 'overview';
@@ -11,6 +11,7 @@
     $canSchedule = auth()->user()->can('manageSchedule', $event);
     $canRunOfShow = auth()->user()->can('viewRunOfShow', $event);
     $canPlaybooks = auth()->user()->can('managePlaybooks', $organization);
+    $canGuests = auth()->user()->can('viewGuests', $event);
 
     $appliedPlaybook = ($setup ?? null)?->playbook ?? $event->setupConfig?->playbook;
 
@@ -51,6 +52,13 @@
             <a href="{{ route('workspace.events.run-of-show.index', [$organization, $event]) }}" class="{{ $tabClass($active === 'run-of-show') }}" @if ($active === 'run-of-show') aria-current="page" @endif>
                 <x-ui.icon name="list" class="h-3.5 w-3.5 shrink-0" />
                 <span>Run of show</span>
+            </a>
+        @endif
+
+        @if ($canGuests)
+            <a href="{{ route('workspace.events.guests.index', [$organization, $event]) }}" class="{{ $tabClass($active === 'guests') }}" @if ($active === 'guests') aria-current="page" @endif>
+                <x-ui.icon name="ticket" class="h-3.5 w-3.5 shrink-0" />
+                <span>Tamu & Undangan</span>
             </a>
         @endif
 

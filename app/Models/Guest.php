@@ -160,4 +160,38 @@ class Guest extends Model
             ->latest('id')
             ->first();
     }
+
+    /**
+     * Identified individuals that belong to this invitation party.
+     */
+    public function members(): HasMany
+    {
+        return $this->hasMany(GuestPartyMembership::class);
+    }
+
+    /**
+     * Active identified individuals only.
+     */
+    public function activeMembers(): HasMany
+    {
+        return $this->members()->where('status', 'active');
+    }
+
+    /**
+     * Household alias for the legacy `guest_groups` grouping table.
+     */
+    public function household(): BelongsTo
+    {
+        return $this->belongsTo(GuestGroup::class, 'guest_group_id');
+    }
+
+    public function identifiedCount(): int
+    {
+        return $this->members()->where('status', 'active')->count();
+    }
+
+    public function remainingQuota(): int
+    {
+        return max(0, (int) $this->max_attendees - $this->identifiedCount());
+    }
 }
