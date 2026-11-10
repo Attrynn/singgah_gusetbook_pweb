@@ -184,4 +184,138 @@ class EventPolicy
 
         return $this->permissions->hasEventPermission($user, $event, PermissionRegistry::EVENT_MANAGE_SETTINGS);
     }
+
+    // ---------------------------------------------------------------------
+    // Milestone 6 — Event operations & staff coordination
+    // ---------------------------------------------------------------------
+
+    public function viewOperations(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::OPERATIONS_VIEW);
+    }
+
+    public function manageOperations(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::OPERATIONS_MANAGE)
+            && ! $this->isArchived($event);
+    }
+
+    public function closeOperations(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::OPERATIONS_CLOSE)
+            && ! $this->isArchived($event);
+    }
+
+    public function viewStaff(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::STAFF_VIEW);
+    }
+
+    public function inviteStaff(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::STAFF_INVITE)
+            && ! $this->isArchived($event);
+    }
+
+    public function manageStaff(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::STAFF_MANAGE)
+            && ! $this->isArchived($event);
+    }
+
+    public function manageStaffPermissions(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::STAFF_PERMISSIONS_MANAGE)
+            && ! $this->isArchived($event);
+    }
+
+    public function viewStations(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::STATION_VIEW);
+    }
+
+    public function manageStations(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::STATION_MANAGE)
+            && ! $this->isArchived($event);
+    }
+
+    public function assignStations(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::STATION_ASSIGN)
+            && ! $this->isArchived($event);
+    }
+
+    public function viewTasks(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::TASK_VIEW);
+    }
+
+    public function createTasks(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::TASK_CREATE)
+            && ! $this->isArchived($event);
+    }
+
+    public function assignTasks(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::TASK_ASSIGN)
+            && ! $this->isArchived($event);
+    }
+
+    public function manageTasks(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::TASK_MANAGE)
+            && ! $this->isArchived($event);
+    }
+
+    public function viewIncidents(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::INCIDENT_VIEW);
+    }
+
+    public function reportIncidents(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::INCIDENT_CREATE)
+            && ! $this->isArchived($event);
+    }
+
+    public function manageIncidents(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::INCIDENT_MANAGE)
+            && ! $this->isArchived($event);
+    }
+
+    public function resolveIncidents(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::INCIDENT_RESOLVE)
+            && ! $this->isArchived($event);
+    }
+
+    public function viewAnnouncements(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::ANNOUNCEMENT_VIEW);
+    }
+
+    public function manageAnnouncements(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::ANNOUNCEMENT_MANAGE)
+            && ! $this->isArchived($event);
+    }
+
+    public function publishAnnouncements(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::ANNOUNCEMENT_PUBLISH)
+            && ! $this->isArchived($event);
+    }
+
+    public function viewReports(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::REPORTS_VIEW);
+    }
+
+    public function exportReports(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::REPORTS_EXPORT);
+    }
 }

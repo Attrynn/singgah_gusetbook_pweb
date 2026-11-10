@@ -135,6 +135,12 @@
                                             <span>Run of show</span>
                                         </a>
                                     @endcan
+                                    @can('viewOperations', $workspaceEvent)
+                                        <a href="{{ route('workspace.events.operations.index', [$activeOrg, $workspaceEvent]) }}" class="nav-item py-1.5 {{ request()->routeIs('workspace.events.operations.*') ? 'nav-item-active' : '' }}">
+                                            <x-ui.icon name="clipboard" class="h-3.5 w-3.5 shrink-0" />
+                                            <span>Operasi</span>
+                                        </a>
+                                    @endcan
                                 </div>
                             </div>
                         @endif

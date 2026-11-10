@@ -9,6 +9,7 @@
     $sessions = collect($sessions ?? [])->sortBy('session_date')->values();
     $phases = collect($phases ?? []);
     $staff = collect($staff ?? []);
+    $stations = collect($stations ?? []);
     $statuses = collect($statuses ?? RunOfShowStatus::cases());
 
     $timezone = $event->timezone ?: 'Asia/Jakarta';
@@ -29,6 +30,8 @@
         $session->id => $session->name.' · '.$session->session_date?->translatedFormat('d M Y'),
     ]);
     $phaseOptions = $phases->mapWithKeys(fn ($phase) => [$phase->id => $phase->name]);
+    $stationOptions = $stations->mapWithKeys(fn ($station) => [$station->id => $station->name]);
+    $itemOptions = $items->mapWithKeys(fn ($item) => [$item->id => $item->title]);
 
     $canManage = auth()->user()->can('manageRunOfShow', $event);
 @endphp
@@ -74,16 +77,43 @@
                     <x-ui.select name="session_id" label="Sesi" :options="$sessionOptions" placeholder="Tanpa sesi" />
                     <x-ui.select name="phase_id" label="Fase" :options="$phaseOptions" placeholder="Tanpa fase" />
                     <x-ui.select name="pic_staff_membership_id" label="PIC" :options="$staffOptions" placeholder="Tanpa PIC" />
+                    <x-ui.select name="station_id" label="Stasiun" :options="$stationOptions" placeholder="Tanpa stasiun" />
+                    <x-ui.select name="depends_on_item_id" label="Bergantung pada" :options="$itemOptions" placeholder="Tidak ada" hint="Item ini baru bisa berjalan setelah item induk selesai." />
                     <x-ui.select name="status" label="Status" :options="$statuses" :value="RunOfShowStatus::Pending->value" />
 
                     <div class="grid grid-cols-2 gap-3">
+                        <x-ui.input name="sequence" label="Urutan" type="number" min="0" placeholder="0" />
                         <x-ui.input name="planned_start_local" label="Rencana mulai" type="datetime-local" />
                         <x-ui.input name="planned_end_local" label="Rencana selesai" type="datetime-local" />
                         <x-ui.input name="actual_start_local" label="Aktual mulai" type="datetime-local" />
                         <x-ui.input name="actual_end_local" label="Aktual selesai" type="datetime-local" />
                     </div>
 
+                    @if ($staff->isNotEmpty())
+                        <div>
+                            <p class="label">Petugas</p>
+                            <div class="grid max-h-40 gap-1.5 overflow-y-auto rounded-xl border border-line/60 bg-surface-2/20 p-2">
+                                @foreach ($staff as $membership)
+                                    <label class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-[11px] text-muted hover:bg-surface-2/60">
+                                        <input type="checkbox"
+                                               name="assignee_membership_ids[]"
+                                               value="{{ $membership->id }}"
+                                               class="h-3.5 w-3.5 rounded border-line text-accent focus:ring-accent/40">
+                                        <span>{{ $staffLabel($membership) }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                            <p class="hint">Pilih petugas yang bertanggung jawab pada item ini.</p>
+                        </div>
+                    @endif
+
+                    <x-ui.input name="internal_description" label="Deskripsi internal" placeholder="Ringkasan teknis untuk tim" />
                     <x-ui.textarea name="internal_notes" label="Catatan internal" rows="2" placeholder="Hanya terlihat oleh tim" />
+
+                    <label class="flex items-start gap-2 rounded-xl border border-line/60 bg-surface-2/20 px-3 py-2 text-[11px] text-muted">
+                        <input type="checkbox" name="allow_parallel" value="1" class="mt-0.5 h-3.5 w-3.5 rounded border-line text-accent focus:ring-accent/40">
+                        <span>Izinkan berjalan paralel meski ada bentrok jadwal dengan item lain.</span>
+                    </label>
 
                     <button type="submit" class="btn btn-primary w-full justify-center">
                         <x-ui.icon name="plus" class="h-4 w-4" /> Tambah item
@@ -106,7 +136,7 @@
                                 <x-ui.badge variant="neutral" class="text-[10px]">{{ $session->session_date?->translatedFormat('l, d M Y') }}</x-ui.badge>
                                 <span class="text-[11px] text-faint">{{ $sessionItems->count() }} item</span>
                             </div>
-                            @include('workspace.events.partials.run-of-show-items', ['runItems' => $sessionItems, 'event' => $event, 'organization' => $organization, 'toLocal' => $toLocal, 'timezone' => $timezone, 'canManage' => $canManage, 'statuses' => $statuses, 'sessionOptions' => $sessionOptions, 'phaseOptions' => $phaseOptions, 'staffOptions' => $staffOptions])
+                            @include('workspace.events.partials.run-of-show-items', ['runItems' => $sessionItems, 'event' => $event, 'organization' => $organization, 'toLocal' => $toLocal, 'timezone' => $timezone, 'canManage' => $canManage, 'statuses' => $statuses, 'sessionOptions' => $sessionOptions, 'phaseOptions' => $phaseOptions, 'staffOptions' => $staffOptions, 'stationOptions' => $stationOptions, 'itemOptions' => $itemOptions, 'staff' => $staff, 'staffLabel' => $staffLabel])
                         </section>
                     @endif
                 @endforeach
@@ -117,7 +147,7 @@
                             <h2 class="section-title">Tanpa sesi</h2>
                             <span class="text-[11px] text-faint">{{ $looseItems->count() }} item</span>
                         </div>
-                        @include('workspace.events.partials.run-of-show-items', ['runItems' => $looseItems, 'event' => $event, 'organization' => $organization, 'toLocal' => $toLocal, 'timezone' => $timezone, 'canManage' => $canManage, 'statuses' => $statuses, 'sessionOptions' => $sessionOptions, 'phaseOptions' => $phaseOptions, 'staffOptions' => $staffOptions])
+                        @include('workspace.events.partials.run-of-show-items', ['runItems' => $looseItems, 'event' => $event, 'organization' => $organization, 'toLocal' => $toLocal, 'timezone' => $timezone, 'canManage' => $canManage, 'statuses' => $statuses, 'sessionOptions' => $sessionOptions, 'phaseOptions' => $phaseOptions, 'staffOptions' => $staffOptions, 'stationOptions' => $stationOptions, 'itemOptions' => $itemOptions, 'staff' => $staff, 'staffLabel' => $staffLabel])
                     </section>
                 @endif
             @endif

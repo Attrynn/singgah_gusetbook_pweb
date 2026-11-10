@@ -249,6 +249,36 @@ class Event extends Model
         return $this->hasMany(EventRunOfShowItem::class)->orderBy('sequence');
     }
 
+    public function operation(): HasOne
+    {
+        return $this->hasOne(EventOperation::class);
+    }
+
+    public function stations(): HasMany
+    {
+        return $this->hasMany(EventStation::class)->orderBy('name');
+    }
+
+    public function stationAssignments(): HasMany
+    {
+        return $this->hasMany(EventStationAssignment::class);
+    }
+
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(EventTask::class)->latest();
+    }
+
+    public function incidents(): HasMany
+    {
+        return $this->hasMany(EventIncident::class)->latest('reported_at');
+    }
+
+    public function announcements(): HasMany
+    {
+        return $this->hasMany(EventAnnouncement::class)->latest('published_at');
+    }
+
     public function scopePubliclyVisible(Builder $query): Builder
     {
         return $query->whereIn('status', [
