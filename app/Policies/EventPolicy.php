@@ -147,6 +147,26 @@ class EventPolicy
         return $this->permissions->hasEventPermission($user, $event, PermissionRegistry::GUEST_VIEW);
     }
 
+    public function viewCheckins(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::CHECKIN_VIEW);
+    }
+
+    public function scanCheckins(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::CHECKIN_SCAN);
+    }
+
+    public function createCheckins(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::CHECKIN_CREATE);
+    }
+
+    public function reportCheckins(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::CHECKIN_REPORT);
+    }
+
     public function moderate(User $user, Event $event): bool
     {
         if ($user->isSuperadmin()) {
