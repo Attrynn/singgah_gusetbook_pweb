@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Workspace\WorkspaceCheckinController;
 use App\Http\Controllers\Workspace\WorkspaceEventController;
 use App\Http\Controllers\Workspace\WorkspaceEventDuplicateController;
 use App\Http\Controllers\Workspace\WorkspaceEventScheduleController;
@@ -70,6 +71,12 @@ Route::prefix('workspace/{organization}')->name('workspace.')
         Route::post('events/{event}/guests/{guest}/members/{member}/move', [WorkspaceGuestMemberController::class, 'move'])->name('events.guests.members.move');
         Route::post('events/{event}/guests/{guest}/members/{member}/pass', [WorkspaceGuestMemberController::class, 'issuePass'])->name('events.guests.members.pass.issue');
         Route::delete('events/{event}/guests/{guest}/members/{member}/pass/{pass}', [WorkspaceGuestMemberController::class, 'revokePass'])->name('events.guests.members.pass.revoke');
+
+        // Event-day check-in operations (permission-gated by CHECKIN_*).
+        Route::get('events/{event}/checkins', [WorkspaceCheckinController::class, 'index'])->name('events.checkins.index');
+        Route::get('events/{event}/checkins/scanner', [WorkspaceCheckinController::class, 'scanner'])->name('events.checkins.scanner');
+        Route::post('events/{event}/checkins/scan', [WorkspaceCheckinController::class, 'scan'])->name('events.checkins.scan');
+        Route::post('events/{event}/checkins/manual', [WorkspaceCheckinController::class, 'manual'])->name('events.checkins.manual');
 
         // Duplicate blueprint.
         Route::post('events/{event}/duplicate', [WorkspaceEventDuplicateController::class, 'store'])->name('events.duplicate');

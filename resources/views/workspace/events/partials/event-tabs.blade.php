@@ -62,6 +62,13 @@
             </a>
         @endif
 
+        @can('viewCheckins', $event)
+            <a href="{{ route('workspace.events.checkins.index', [$organization, $event]) }}" class="{{ $tabClass($active === 'checkins') }}" @if ($active === 'checkins') aria-current="page" @endif>
+                <x-ui.icon name="qr" class="h-3.5 w-3.5 shrink-0" />
+                <span>Kehadiran & Check-in</span>
+            </a>
+        @endcan
+
         @if ($canPlaybooks)
             <a href="{{ $appliedPlaybook ? route('workspace.playbooks.show', [$organization, $appliedPlaybook]) : route('workspace.playbooks.index', $organization) }}" class="{{ $tabClass($active === 'playbook') }}" @if ($active === 'playbook') aria-current="page" @endif>
                 <x-ui.icon name="file-text" class="h-3.5 w-3.5 shrink-0" />
