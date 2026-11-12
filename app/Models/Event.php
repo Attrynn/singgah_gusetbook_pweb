@@ -99,6 +99,63 @@ class Event extends Model
         return $this->hasMany(EventStaffMembership::class);
     }
 
+    // Milestone 7 — vendor & service provider management.
+
+    public function vendorRequirements(): HasMany
+    {
+        return $this->hasMany(EventVendorRequirement::class);
+    }
+
+    public function vendorProposals(): HasMany
+    {
+        return $this->hasMany(EventVendorProposal::class);
+    }
+
+    public function vendorEngagements(): HasMany
+    {
+        return $this->hasMany(EventVendorEngagement::class);
+    }
+
+    public function vendorDocuments(): HasMany
+    {
+        return $this->hasMany(EventVendorDocument::class);
+    }
+
+    public function vendorDeliverables(): HasMany
+    {
+        return $this->hasMany(EventVendorDeliverable::class);
+    }
+
+    public function vendorScheduleReferences(): HasMany
+    {
+        return $this->hasMany(EventVendorScheduleReference::class);
+    }
+
+    public function vendorLogisticsRequirements(): HasMany
+    {
+        return $this->hasMany(EventVendorLogisticsRequirement::class);
+    }
+
+    public function vendorChangeRequests(): HasMany
+    {
+        return $this->hasMany(EventVendorChangeRequest::class);
+    }
+
+    public function vendorCommunications(): HasMany
+    {
+        return $this->hasMany(EventVendorCommunication::class);
+    }
+
+    public function vendorIssues(): HasMany
+    {
+        return $this->hasMany(EventVendorIssue::class);
+    }
+
+    public function vendorPerformanceReviews(): HasMany
+    {
+        return $this->hasMany(EventVendorPerformanceReview::class);
+    }
+
     public function ownerMemberships(): HasMany
     {
         return $this->hasMany(EventOwnerMembership::class);

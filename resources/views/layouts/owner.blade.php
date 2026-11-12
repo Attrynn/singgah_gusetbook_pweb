@@ -141,9 +141,22 @@
                                             <span>Operasi</span>
                                         </a>
                                     @endcan
+                                    @can('viewVendors', $workspaceEvent)
+                                        <a href="{{ route('workspace.events.vendors.index', [$activeOrg, $workspaceEvent]) }}" class="nav-item py-1.5 {{ request()->routeIs('workspace.events.vendors.*') ? 'nav-item-active' : '' }}">
+                                            <x-ui.icon name="archive" class="h-3.5 w-3.5 shrink-0" />
+                                            <span>Vendor</span>
+                                        </a>
+                                    @endcan
                                 </div>
                             </div>
                         @endif
+
+                        @can('viewVendors', $activeOrg)
+                            <a href="{{ route('workspace.vendors.index', $activeOrg) }}" class="nav-item {{ request()->routeIs('workspace.vendors.*') || request()->routeIs('workspace.vendor-categories.*') ? 'nav-item-active' : '' }}">
+                                <x-ui.icon name="archive" class="h-4 w-4 shrink-0 text-accent" />
+                                <span>Vendor</span>
+                            </a>
+                        @endcan
 
                         @if ($orgMemberships->count() > 1)
                             <div class="pt-1">

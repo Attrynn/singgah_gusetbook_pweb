@@ -96,6 +96,72 @@ class PermissionRegistry
 
     const PLAYBOOK_MANAGE = 'playbook.manage';
 
+    // Vendor permissions (Milestone 7)
+    const VENDOR_VIEW = 'vendor.view';
+
+    const VENDOR_CREATE = 'vendor.create';
+
+    const VENDOR_UPDATE = 'vendor.update';
+
+    const VENDOR_ARCHIVE = 'vendor.archive';
+
+    const VENDOR_CONTACT_MANAGE = 'vendor.contact.manage';
+
+    const VENDOR_CATALOG_MANAGE = 'vendor.catalog.manage';
+
+    const VENDOR_REQUIREMENT_MANAGE = 'vendor.requirement.manage';
+
+    const VENDOR_PROPOSAL_VIEW = 'vendor.proposal.view';
+
+    const VENDOR_PROPOSAL_MANAGE = 'vendor.proposal.manage';
+
+    const VENDOR_SELECT = 'vendor.select';
+
+    const VENDOR_ENGAGEMENT_VIEW = 'vendor.engagement.view';
+
+    const VENDOR_ENGAGEMENT_MANAGE = 'vendor.engagement.manage';
+
+    const VENDOR_AGREEMENT_VIEW = 'vendor.agreement.view';
+
+    const VENDOR_AGREEMENT_MANAGE = 'vendor.agreement.manage';
+
+    const VENDOR_COMMERCIAL_VIEW = 'vendor.commercial.view';
+
+    const VENDOR_COMMERCIAL_APPROVE = 'vendor.commercial.approve';
+
+    const VENDOR_DELIVERABLE_VIEW = 'vendor.deliverable.view';
+
+    const VENDOR_DELIVERABLE_REVIEW = 'vendor.deliverable.review';
+
+    const VENDOR_LOGISTICS_MANAGE = 'vendor.logistics.manage';
+
+    const VENDOR_PORTAL_MANAGE = 'vendor.portal.manage';
+
+    const VENDOR_CHANGE_APPROVE = 'vendor.change.approve';
+
+    const VENDOR_PERFORMANCE_VIEW = 'vendor.performance.view';
+
+    const VENDOR_PERFORMANCE_REVIEW = 'vendor.performance.review';
+
+    const VENDOR_REPORT_VIEW = 'vendor.report.view';
+
+    const VENDOR_REPORT_EXPORT = 'vendor.report.export';
+
+    const VENDOR_ENGAGEMENT_CLOSE = 'vendor.engagement.close';
+
+    // Vendor portal permissions (external actors, never part of staff role maps)
+    const VENDOR_PORTAL_ENGAGEMENT_VIEW = 'vendor.portal.engagement.view';
+
+    const VENDOR_PORTAL_DOCUMENT_VIEW = 'vendor.portal.document.view';
+
+    const VENDOR_PORTAL_DELIVERABLE_SUBMIT = 'vendor.portal.deliverable.submit';
+
+    const VENDOR_PORTAL_COMMUNICATION_SUBMIT = 'vendor.portal.communication.submit';
+
+    const VENDOR_PORTAL_CHANGE_REQUEST_SUBMIT = 'vendor.portal.change_request.submit';
+
+    const VENDOR_PORTAL_LOGISTICS_CONFIRM = 'vendor.portal.logistics.confirm';
+
     // Guest permissions
     const GUEST_VIEW = 'guest.view';
 
@@ -171,6 +237,16 @@ class PermissionRegistry
                 self::MEDIA_VIEW, self::MEDIA_MODERATE, self::MEDIA_MANAGE_ALBUMS, self::MEDIA_PUBLISH,
                 self::GIFT_VIEW, self::GIFT_MANAGE,
                 self::REPORTS_VIEW, self::REPORTS_EXPORT,
+                self::VENDOR_VIEW, self::VENDOR_CREATE, self::VENDOR_UPDATE, self::VENDOR_ARCHIVE,
+                self::VENDOR_CONTACT_MANAGE, self::VENDOR_CATALOG_MANAGE,
+                self::VENDOR_REQUIREMENT_MANAGE, self::VENDOR_PROPOSAL_VIEW, self::VENDOR_PROPOSAL_MANAGE,
+                self::VENDOR_SELECT, self::VENDOR_ENGAGEMENT_VIEW, self::VENDOR_ENGAGEMENT_MANAGE,
+                self::VENDOR_AGREEMENT_VIEW, self::VENDOR_AGREEMENT_MANAGE,
+                self::VENDOR_COMMERCIAL_VIEW, self::VENDOR_COMMERCIAL_APPROVE,
+                self::VENDOR_DELIVERABLE_VIEW, self::VENDOR_DELIVERABLE_REVIEW,
+                self::VENDOR_LOGISTICS_MANAGE, self::VENDOR_PORTAL_MANAGE,
+                self::VENDOR_CHANGE_APPROVE, self::VENDOR_PERFORMANCE_VIEW, self::VENDOR_PERFORMANCE_REVIEW,
+                self::VENDOR_REPORT_VIEW, self::VENDOR_REPORT_EXPORT, self::VENDOR_ENGAGEMENT_CLOSE,
             ],
             EventStaffRole::OperationsCoordinator => [
                 self::EVENT_VIEW, self::EVENT_RUN_OF_SHOW_VIEW, self::EVENT_RUN_OF_SHOW_MANAGE,
@@ -182,6 +258,12 @@ class PermissionRegistry
                 self::ANNOUNCEMENT_VIEW, self::ANNOUNCEMENT_MANAGE, self::ANNOUNCEMENT_PUBLISH,
                 self::CHECKIN_VIEW,
                 self::REPORTS_VIEW,
+                self::VENDOR_VIEW, self::VENDOR_REQUIREMENT_MANAGE,
+                self::VENDOR_PROPOSAL_VIEW, self::VENDOR_ENGAGEMENT_VIEW, self::VENDOR_ENGAGEMENT_MANAGE,
+                self::VENDOR_AGREEMENT_VIEW, self::VENDOR_DELIVERABLE_VIEW, self::VENDOR_DELIVERABLE_REVIEW,
+                self::VENDOR_LOGISTICS_MANAGE, self::VENDOR_PORTAL_MANAGE,
+                self::VENDOR_CHANGE_APPROVE, self::VENDOR_PERFORMANCE_VIEW,
+                self::VENDOR_REPORT_VIEW,
             ],
             EventStaffRole::StationSupervisor => [
                 self::EVENT_VIEW, self::EVENT_RUN_OF_SHOW_VIEW,
@@ -192,6 +274,7 @@ class PermissionRegistry
                 self::INCIDENT_VIEW, self::INCIDENT_CREATE, self::INCIDENT_MANAGE,
                 self::ANNOUNCEMENT_VIEW,
                 self::REPORTS_VIEW,
+                self::VENDOR_VIEW, self::VENDOR_DELIVERABLE_VIEW, self::VENDOR_LOGISTICS_MANAGE,
             ],
             EventStaffRole::GuestManager => [
                 self::EVENT_VIEW,
@@ -205,6 +288,7 @@ class PermissionRegistry
                 self::GUEST_IMPORT, self::GUEST_EXPORT,
                 self::CHECKIN_VIEW,
                 self::REPORTS_VIEW,
+                self::VENDOR_VIEW,
             ],
             EventStaffRole::GuestRelations => [
                 self::EVENT_VIEW,
@@ -216,6 +300,7 @@ class PermissionRegistry
                 self::ANNOUNCEMENT_VIEW,
                 self::GUEST_VIEW,
                 self::CHECKIN_VIEW,
+                self::VENDOR_VIEW,
             ],
             EventStaffRole::CheckinSupervisor => [
                 self::EVENT_VIEW,
@@ -231,6 +316,7 @@ class PermissionRegistry
                 self::CHECKIN_CORRECT, self::CHECKIN_REPORT,
                 self::SEATING_VIEW,
                 self::REPORTS_VIEW,
+                self::VENDOR_VIEW, self::VENDOR_DELIVERABLE_VIEW,
             ],
             EventStaffRole::CheckinStaff => [
                 self::EVENT_VIEW,
@@ -242,6 +328,7 @@ class PermissionRegistry
                 self::ANNOUNCEMENT_VIEW,
                 self::CHECKIN_VIEW, self::CHECKIN_SCAN, self::CHECKIN_CREATE,
                 self::SEATING_VIEW,
+                self::VENDOR_VIEW,
             ],
             EventStaffRole::SeatingUsher => [
                 self::EVENT_VIEW,
@@ -253,6 +340,7 @@ class PermissionRegistry
                 self::ANNOUNCEMENT_VIEW,
                 self::SEATING_VIEW, self::SEATING_MANAGE,
                 self::CHECKIN_VIEW,
+                self::VENDOR_VIEW,
             ],
             EventStaffRole::MediaCurator => [
                 self::EVENT_VIEW,
@@ -262,6 +350,7 @@ class PermissionRegistry
                 self::INCIDENT_VIEW, self::INCIDENT_CREATE,
                 self::ANNOUNCEMENT_VIEW,
                 self::MEDIA_VIEW, self::MEDIA_MODERATE, self::MEDIA_MANAGE_ALBUMS, self::MEDIA_PUBLISH,
+                self::VENDOR_VIEW,
             ],
             EventStaffRole::GiftSteward => [
                 self::EVENT_VIEW,
@@ -271,6 +360,7 @@ class PermissionRegistry
                 self::INCIDENT_VIEW, self::INCIDENT_CREATE,
                 self::ANNOUNCEMENT_VIEW,
                 self::GIFT_VIEW, self::GIFT_MANAGE,
+                self::VENDOR_VIEW,
             ],
             EventStaffRole::GeneralStaff => [
                 self::EVENT_VIEW,
@@ -280,6 +370,7 @@ class PermissionRegistry
                 self::TASK_VIEW,
                 self::INCIDENT_VIEW, self::INCIDENT_CREATE,
                 self::ANNOUNCEMENT_VIEW,
+                self::VENDOR_VIEW, self::VENDOR_DELIVERABLE_VIEW,
             ],
             EventStaffRole::Observer => [
                 self::EVENT_VIEW,
@@ -291,6 +382,7 @@ class PermissionRegistry
                 self::INCIDENT_VIEW,
                 self::ANNOUNCEMENT_VIEW,
                 self::REPORTS_VIEW,
+                self::VENDOR_VIEW, self::VENDOR_REPORT_VIEW,
             ],
         };
     }
@@ -311,6 +403,13 @@ class PermissionRegistry
             self::ANNOUNCEMENT_VIEW, self::ANNOUNCEMENT_MANAGE, self::ANNOUNCEMENT_PUBLISH,
             self::EVENT_RUN_OF_SHOW_VIEW, self::EVENT_RUN_OF_SHOW_MANAGE,
             self::REPORTS_VIEW,
+            self::VENDOR_VIEW, self::VENDOR_REQUIREMENT_MANAGE,
+            self::VENDOR_PROPOSAL_VIEW, self::VENDOR_ENGAGEMENT_VIEW, self::VENDOR_ENGAGEMENT_MANAGE,
+            self::VENDOR_AGREEMENT_VIEW, self::VENDOR_COMMERCIAL_VIEW,
+            self::VENDOR_DELIVERABLE_VIEW, self::VENDOR_DELIVERABLE_REVIEW,
+            self::VENDOR_LOGISTICS_MANAGE, self::VENDOR_PORTAL_MANAGE,
+            self::VENDOR_CHANGE_APPROVE, self::VENDOR_PERFORMANCE_VIEW, self::VENDOR_PERFORMANCE_REVIEW,
+            self::VENDOR_REPORT_VIEW,
         ];
     }
 
@@ -342,6 +441,16 @@ class PermissionRegistry
             self::MEDIA_VIEW, self::MEDIA_MODERATE, self::MEDIA_MANAGE_ALBUMS, self::MEDIA_PUBLISH,
             self::GIFT_VIEW, self::GIFT_MANAGE,
             self::REPORTS_VIEW, self::REPORTS_EXPORT,
+            self::VENDOR_VIEW, self::VENDOR_CREATE, self::VENDOR_UPDATE, self::VENDOR_ARCHIVE,
+            self::VENDOR_CONTACT_MANAGE, self::VENDOR_CATALOG_MANAGE,
+            self::VENDOR_REQUIREMENT_MANAGE, self::VENDOR_PROPOSAL_VIEW, self::VENDOR_PROPOSAL_MANAGE,
+            self::VENDOR_SELECT, self::VENDOR_ENGAGEMENT_VIEW, self::VENDOR_ENGAGEMENT_MANAGE,
+            self::VENDOR_AGREEMENT_VIEW, self::VENDOR_AGREEMENT_MANAGE,
+            self::VENDOR_COMMERCIAL_VIEW, self::VENDOR_COMMERCIAL_APPROVE,
+            self::VENDOR_DELIVERABLE_VIEW, self::VENDOR_DELIVERABLE_REVIEW,
+            self::VENDOR_LOGISTICS_MANAGE, self::VENDOR_PORTAL_MANAGE,
+            self::VENDOR_CHANGE_APPROVE, self::VENDOR_PERFORMANCE_VIEW, self::VENDOR_PERFORMANCE_REVIEW,
+            self::VENDOR_REPORT_VIEW, self::VENDOR_REPORT_EXPORT, self::VENDOR_ENGAGEMENT_CLOSE,
         ];
     }
 

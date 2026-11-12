@@ -65,3 +65,5 @@ require __DIR__.'/admin.php';
 require __DIR__.'/owner.php';
 require __DIR__.'/guest.php';
 require __DIR__.'/workspace-events.php';
+require __DIR__.'/workspace-vendors.php';
+require __DIR__.'/vendor-portal.php';

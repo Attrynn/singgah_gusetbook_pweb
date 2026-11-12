@@ -6,6 +6,7 @@
     | operations | operations-my-work | operations-staff | operations-stations
     | operations-tasks | operations-incidents | operations-announcements
     | operations-reports | operations-closure
+    | vendors | vendors-engagements | vendors-portal | vendors-reports
 --}}
 @php
     $active = $active ?? 'overview';
@@ -65,6 +66,13 @@
             </a>
         @endcan
 
+        @if ($canGuests && Route::has('workspace.events.vendors.index'))
+            <a href="{{ route('workspace.events.vendors.index', [$organization, $event]) }}" class="{{ $tabClass($active === 'vendors') }}" @if ($active === 'vendors') aria-current="page" @endif>
+                <x-ui.icon name="clipboard" class="h-3.5 w-3.5 shrink-0" />
+                <span>Vendor</span>
+            </a>
+        @endif
+
         @if ($canGuests)
             <a href="{{ route('workspace.events.guests.index', [$organization, $event]) }}" class="{{ $tabClass($active === 'guests') }}" @if ($active === 'guests') aria-current="page" @endif>
                 <x-ui.icon name="ticket" class="h-3.5 w-3.5 shrink-0" />
@@ -87,6 +95,46 @@
         @endif
     </nav>
 </div>
+
+{{-- Vendor sub-navigation for vendor hub pages --}}
+@php
+    $vendorSubTabClass = fn (bool $isActive): string => $isActive
+        ? 'inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-3 py-1.5 text-[11px] font-semibold text-accent'
+        : 'inline-flex items-center gap-1.5 rounded-full border border-line/60 bg-surface px-3 py-1.5 text-[11px] font-medium text-muted transition hover:border-accent/30 hover:text-ink';
+@endphp
+
+@if (str_starts_with($active ?? '', 'vendors'))
+    <div class="mt-3 -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <nav class="flex min-w-max items-center gap-1.5" aria-label="Navigasi vendor">
+            @if (Route::has('workspace.events.vendors.index'))
+                <a href="{{ route('workspace.events.vendors.index', [$organization, $event]) }}" class="{{ $vendorSubTabClass($active === 'vendors') }}">
+                    <x-ui.icon name="clipboard" class="h-3 w-3 shrink-0" />
+                    <span>Vendor Hub</span>
+                </a>
+            @endif
+            @if (Route::has('workspace.events.vendors.engagements.index'))
+                <a href="{{ route('workspace.events.vendors.engagements.index', [$organization, $event]) }}" class="{{ $vendorSubTabClass($active === 'vendors-engagements') }}">
+                    <x-ui.icon name="users" class="h-3 w-3 shrink-0" />
+                    <span>Engagements</span>
+                </a>
+            @endif
+            @if (Route::has('workspace.events.vendors.portal.index'))
+                <a href="{{ route('workspace.events.vendors.portal.index', [$organization, $event]) }}" class="{{ $vendorSubTabClass($active === 'vendors-portal') }}">
+                    <x-ui.icon name="share" class="h-3 w-3 shrink-0" />
+                    <span>Portal</span>
+                </a>
+            @endif
+            @can('viewVendorReports', $event)
+                @if (Route::has('workspace.events.vendors.reports.index'))
+                    <a href="{{ route('workspace.events.vendors.reports.index', [$organization, $event]) }}" class="{{ $vendorSubTabClass($active === 'vendors-reports') }}">
+                        <x-ui.icon name="chart" class="h-3 w-3 shrink-0" />
+                        <span>Laporan</span>
+                    </a>
+                @endif
+            @endif
+        </nav>
+    </div>
+@endif
 
 {{-- Secondary navigation for the operations workspace. Rendered only while
      one of the operations pages is active so the event tabs stay compact. --}}

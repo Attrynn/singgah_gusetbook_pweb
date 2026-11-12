@@ -64,4 +64,47 @@ class OrganizationPolicy
 
         return $this->permissions->hasOrgPermission($user, $org, PermissionRegistry::PLAYBOOK_MANAGE);
     }
+
+    // ---------------------------------------------------------------------
+    // Milestone 7 — organization vendor directory
+    // ---------------------------------------------------------------------
+
+    public function viewVendors(User $user, Organization $org): bool
+    {
+        return $this->allowsVendorPermission($user, $org, PermissionRegistry::VENDOR_VIEW);
+    }
+
+    public function createVendors(User $user, Organization $org): bool
+    {
+        return $this->allowsVendorPermission($user, $org, PermissionRegistry::VENDOR_CREATE);
+    }
+
+    public function updateVendors(User $user, Organization $org): bool
+    {
+        return $this->allowsVendorPermission($user, $org, PermissionRegistry::VENDOR_UPDATE);
+    }
+
+    public function archiveVendors(User $user, Organization $org): bool
+    {
+        return $this->allowsVendorPermission($user, $org, PermissionRegistry::VENDOR_ARCHIVE);
+    }
+
+    public function manageVendorContacts(User $user, Organization $org): bool
+    {
+        return $this->allowsVendorPermission($user, $org, PermissionRegistry::VENDOR_CONTACT_MANAGE);
+    }
+
+    public function manageVendorCatalog(User $user, Organization $org): bool
+    {
+        return $this->allowsVendorPermission($user, $org, PermissionRegistry::VENDOR_CATALOG_MANAGE);
+    }
+
+    protected function allowsVendorPermission(User $user, Organization $org, string $permission): bool
+    {
+        if ($user->isSuperadmin() || $user->isPlatformSuperadmin()) {
+            return true;
+        }
+
+        return $this->permissions->hasOrgPermission($user, $org, $permission);
+    }
 }
