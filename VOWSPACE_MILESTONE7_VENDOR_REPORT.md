@@ -35,8 +35,11 @@ Delivered:
 
 ## 2. Schema
 
-Five additive migrations, all verified through the test suite on SQLite and
-compatible with the development MySQL database:
+Five additive migrations, verified through the test suite on SQLite and
+verified up/down on the development MySQL database. During release verification,
+long auto-generated foreign-key names were replaced with explicit short names to
+satisfy MySQL's 64-character identifier limit; the five migrations were then
+rolled back and re-applied successfully on MySQL.
 
 1. `2026_11_11_001000_create_vendor_directory_tables.php`
 2. `2026_11_11_001100_create_event_vendor_sourcing_tables.php`
@@ -308,6 +311,8 @@ Other executed checks:
 ```
 php artisan view:cache           -> Blade templates cached successfully
 php artisan route:list           -> 82 vendor routes resolve
+php artisan migrate:rollback --step=5 -> all five M7 migrations rolled back
+php artisan migrate --force      -> all five M7 migrations re-applied
 vendor/bin/pint --dirty          -> passed (no violations)
 npm run build                    -> built successfully
 ```

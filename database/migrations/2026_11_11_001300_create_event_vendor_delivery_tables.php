@@ -39,11 +39,11 @@ return new class extends Migration
 
         Schema::create('event_vendor_deliverable_submissions', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('event_vendor_deliverable_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('submitted_by_user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('submitted_by_contact_id')->nullable()->constrained('vendor_contacts')->nullOnDelete();
+            $table->foreignId('event_vendor_deliverable_id')->constrained('event_vendor_deliverables', 'id', 'fk_ev_deliv_submissions_deliverable')->cascadeOnDelete();
+            $table->foreignId('submitted_by_user_id')->nullable()->constrained('users', 'id', 'fk_ev_deliv_submissions_user')->nullOnDelete();
+            $table->foreignId('submitted_by_contact_id')->nullable()->constrained('vendor_contacts', 'id', 'fk_ev_deliv_submissions_contact')->nullOnDelete();
             $table->text('notes')->nullable();
-            $table->foreignId('event_vendor_document_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('event_vendor_document_id')->nullable()->constrained('event_vendor_documents', 'id', 'fk_ev_deliv_submissions_document')->nullOnDelete();
             $table->string('status', 30)->default('submitted');
             $table->foreignId('reviewed_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('reviewed_at')->nullable();
@@ -58,8 +58,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
             $table->foreignId('event_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('event_vendor_engagement_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('event_run_of_show_item_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('event_vendor_engagement_id')->constrained('event_vendor_engagements', 'id', 'fk_ev_schedule_refs_engagement')->cascadeOnDelete();
+            $table->foreignId('event_run_of_show_item_id')->nullable()->constrained('event_run_of_show_items', 'id', 'fk_ev_schedule_refs_ros_item')->nullOnDelete();
             $table->foreignId('event_station_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('vendor_contact_id')->nullable()->constrained()->nullOnDelete();
             $table->string('arrival_status', 30)->default('expected');
@@ -87,7 +87,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
             $table->foreignId('event_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('event_vendor_engagement_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('event_vendor_engagement_id')->constrained('event_vendor_engagements', 'id', 'fk_ev_logistics_reqs_engagement')->cascadeOnDelete();
             $table->foreignId('event_station_id')->nullable()->constrained()->nullOnDelete();
             $table->string('type', 30)->default('other');
             $table->text('description');

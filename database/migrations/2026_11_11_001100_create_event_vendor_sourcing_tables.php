@@ -37,7 +37,7 @@ return new class extends Migration
 
         Schema::create('event_vendor_requirement_candidates', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('event_vendor_requirement_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('event_vendor_requirement_id')->constrained('event_vendor_requirements', 'id', 'fk_ev_req_candidates_requirement')->cascadeOnDelete();
             $table->foreignId('vendor_id')->constrained()->cascadeOnDelete();
             $table->string('state', 30)->default('candidate');
             $table->boolean('is_preferred')->default(false);

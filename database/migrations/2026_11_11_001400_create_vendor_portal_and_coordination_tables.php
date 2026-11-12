@@ -41,8 +41,8 @@ return new class extends Migration
 
         Schema::create('vendor_portal_engagement_access', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('vendor_portal_membership_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('event_vendor_engagement_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('vendor_portal_membership_id')->constrained('vendor_portal_memberships', 'id', 'fk_vp_access_membership')->cascadeOnDelete();
+            $table->foreignId('event_vendor_engagement_id')->constrained('event_vendor_engagements', 'id', 'fk_vp_access_engagement')->cascadeOnDelete();
             $table->timestamp('granted_at')->nullable();
             $table->foreignId('granted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('revoked_at')->nullable();
@@ -80,8 +80,8 @@ return new class extends Migration
 
         Schema::create('event_vendor_engagement_revisions', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('event_vendor_engagement_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('event_vendor_change_request_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('event_vendor_engagement_id')->constrained('event_vendor_engagements', 'id', 'fk_ev_revisions_engagement')->cascadeOnDelete();
+            $table->foreignId('event_vendor_change_request_id')->nullable()->constrained('event_vendor_change_requests', 'id', 'fk_ev_revisions_change_request')->nullOnDelete();
             $table->unsignedInteger('revision_number');
             $table->json('snapshot');
             $table->text('reason')->nullable();
@@ -106,7 +106,7 @@ return new class extends Migration
             $table->foreignId('author_contact_id')->nullable()->constrained('vendor_contacts')->nullOnDelete();
             $table->text('body');
             $table->foreignId('event_vendor_deliverable_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('event_vendor_change_request_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('event_vendor_change_request_id')->nullable()->constrained('event_vendor_change_requests', 'id', 'fk_ev_comms_change_request')->nullOnDelete();
             $table->timestamps();
 
             $table->index(['event_vendor_engagement_id', 'visibility'], 'vendor_communication_visibility_index');
@@ -138,7 +138,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
             $table->foreignId('event_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('event_vendor_engagement_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('event_vendor_engagement_id')->constrained('event_vendor_engagements', 'id', 'fk_ev_perf_reviews_engagement')->cascadeOnDelete();
             $table->foreignId('vendor_id')->constrained()->cascadeOnDelete();
             $table->foreignId('reviewer_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->unsignedTinyInteger('overall_rating');
