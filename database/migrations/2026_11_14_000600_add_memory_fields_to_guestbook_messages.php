@@ -15,24 +15,24 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('guestbook_messages', function (Blueprint $table): void {
-            $table->foreignId('guest_party_membership_id')->nullable()->after('guest_id');
+            $table->foreignId('guest_party_membership_id')->nullable()->after('guest_id')
+                ->constrained('guest_party_memberships')->nullOnDelete();
             $table->uuid('client_submission_id')->nullable()->after('emoji');
-            $table->foreignId('photo_asset_id')->nullable()->after('guest_party_membership_id');
+            $table->foreignId('photo_asset_id')->nullable()->after('guest_party_membership_id')
+                ->constrained('media_assets')->nullOnDelete();
 
             $table->unique(['event_id', 'client_submission_id'], 'uq_guestbook_event_submission');
 
-            $table->foreign(['event_id', 'guest_party_membership_id'], 'fk_guestbook_event_member')
-                ->references(['event_id', 'id'])->on('guest_party_memberships')->nullOnDelete();
-            $table->foreign(['event_id', 'photo_asset_id'], 'fk_guestbook_event_photo')
-                ->references(['event_id', 'id'])->on('media_assets')->nullOnDelete();
+            $table->index(['event_id', 'guest_party_membership_id']);
         });
     }
 
     public function down(): void
     {
         Schema::table('guestbook_messages', function (Blueprint $table): void {
-            $table->dropForeign('fk_guestbook_event_member');
-            $table->dropForeign('fk_guestbook_event_photo');
+            $table->dropForeign(['guest_party_membership_id']);
+            $table->dropForeign(['photo_asset_id']);
+            $table->dropIndex(['event_id', 'guest_party_membership_id']);
             $table->dropUnique('uq_guestbook_event_submission');
             $table->dropColumn([
                 'guest_party_membership_id',

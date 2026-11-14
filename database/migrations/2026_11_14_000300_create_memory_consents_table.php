@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('contribution_type', 20);
             $table->unsignedBigInteger('contribution_id');
             $table->foreignId('guest_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('guest_party_membership_id')->nullable();
+            $table->foreignId('guest_party_membership_id')->nullable()->constrained()->nullOnDelete();
             $table->string('contributor_name', 120)->nullable();
             $table->boolean('allow_event_display')->default(true);
             $table->boolean('allow_public_display')->default(false);
@@ -33,9 +33,6 @@ return new class extends Migration
 
             $table->unique(['contribution_type', 'contribution_id'], 'memory_consents_contribution_unique');
             $table->index(['event_id', 'accepted_at']);
-
-            $table->foreign(['event_id', 'guest_party_membership_id'], 'fk_memory_consents_event_member')
-                ->references(['event_id', 'id'])->on('guest_party_memberships')->nullOnDelete();
         });
     }
 

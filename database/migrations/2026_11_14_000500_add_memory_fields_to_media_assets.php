@@ -15,7 +15,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('media_assets', function (Blueprint $table): void {
-            $table->foreignId('guest_party_membership_id')->nullable()->after('guest_id');
+            $table->foreignId('guest_party_membership_id')->nullable()->after('guest_id')
+                ->constrained('guest_party_memberships')->nullOnDelete();
             $table->uuid('client_submission_id')->nullable()->after('caption');
             $table->unsignedInteger('width')->nullable();
             $table->unsignedInteger('height')->nullable();
@@ -25,16 +26,13 @@ return new class extends Migration
             // uq_media_assets_event_id already exists from 2026_11_06_000500 and is
             // the composite FK target for guestbook_messages.photo_asset_id.
             $table->unique(['event_id', 'client_submission_id'], 'uq_media_assets_event_submission');
-
-            $table->foreign(['event_id', 'guest_party_membership_id'], 'fk_media_assets_event_member')
-                ->references(['event_id', 'id'])->on('guest_party_memberships')->nullOnDelete();
         });
     }
 
     public function down(): void
     {
         Schema::table('media_assets', function (Blueprint $table): void {
-            $table->dropForeign('fk_media_assets_event_member');
+            $table->dropForeign(['guest_party_membership_id']);
             $table->dropUnique('uq_media_assets_event_submission');
             $table->dropColumn([
                 'guest_party_membership_id',
