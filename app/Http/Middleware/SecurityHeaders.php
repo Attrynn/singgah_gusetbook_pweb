@@ -28,9 +28,10 @@ class SecurityHeaders
 {
     /**
      * Paths whose bearer-style tokens must never be cached or leaked by
-     * referrers (invitation links, email verification, private media).
+     * referrers (invitation links, email verification, private media,
+     * public shares).
      */
-    protected array $tokenPaths = ['invite/*', 'email/verify/*', 'media/*'];
+    protected array $tokenPaths = ['invite/*', 'email/verify/*', 'media/*', 'm/*'];
 
     public function handle(Request $request, Closure $next): Response
     {
