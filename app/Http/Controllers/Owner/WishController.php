@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers\Owner;
 
+use App\Enums\MemoryItemType;
 use App\Http\Controllers\Concerns\ExportsCsv;
 use App\Http\Controllers\Owner\Concerns\ResolvesOwnerEvent;
+use App\Http\Requests\M9\MemoryModerateRequest;
+use App\Models\Event;
 use App\Models\GuestbookMessage;
 use App\Services\GuestbookService;
+use App\Services\MemoryModerationService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -13,7 +18,10 @@ class WishController extends Controller
 {
     use ExportsCsv, ResolvesOwnerEvent;
 
-    public function __construct(protected GuestbookService $guestbook) {}
+    public function __construct(
+        protected GuestbookService $guestbook,
+        protected MemoryModerationService $moderation,
+    ) {}
 
     public function index(Request $request)
     {
@@ -45,6 +53,10 @@ class WishController extends Controller
             'messages' => $messages,
             'favoriteIds' => $favoriteIds,
             'filters' => $request->only(['search', 'date', 'status']),
+            'collections' => $event->memoryCollections()
+                ->whereNull('archived_at')
+                ->orderBy('sort_order')
+                ->get(['id', 'name']),
             'stats' => [
                 'total' => $event->messages()->count(),
                 'approved' => $event->messages()->where('status', 'approved')->count(),
@@ -87,6 +99,23 @@ class WishController extends Controller
         return back()->with('status', $added ? 'Ucapan ditambahkan ke favorit.' : 'Ucapan dihapus dari favorit.');
     }
 
+    public function moderate(MemoryModerateRequest $request, int $message): RedirectResponse
+    {
+        $event = $this->ownerEvent($request);
+        $guestbookMessage = $this->memoryMessage($event, $message);
+
+        $state = $this->moderation->apply(
+            MemoryItemType::GuestbookMessage->value,
+            $guestbookMessage->id,
+            $request->validated('action'),
+            $event,
+            $request->user(),
+            $request->validated('note'),
+        );
+
+        return back()->with('status', 'Status ucapan diperbarui: '.$state->label().'.');
+    }
+
     public function download(Request $request)
     {
         $event = $this->ownerEvent($request);
@@ -122,5 +151,10 @@ class WishController extends Controller
         };
 
         return $this->csvResponse($rows, 'vowspace-wishes-'.$event->slug.'.csv');
+    }
+
+    protected function memoryMessage(Event $event, int $id): GuestbookMessage
+    {
+        return GuestbookMessage::query()->where('event_id', $event->id)->findOrFail($id);
     }
 }

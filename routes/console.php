@@ -15,3 +15,7 @@ Schedule::command('vowspace:purge-trashed')
 Schedule::command('vowspace:expire-invitations')
     ->daily()
     ->withoutOverlapping();
+
+Schedule::command('vowspace:expire-memory-exports')
+    ->dailyAt('03:30')
+    ->withoutOverlapping();
