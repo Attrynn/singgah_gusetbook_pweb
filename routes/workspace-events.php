@@ -6,6 +6,8 @@ use App\Http\Controllers\Workspace\WorkspaceEventController;
 use App\Http\Controllers\Workspace\WorkspaceEventDuplicateController;
 use App\Http\Controllers\Workspace\WorkspaceEventScheduleController;
 use App\Http\Controllers\Workspace\WorkspaceEventTeamController;
+use App\Http\Controllers\Workspace\WorkspaceFloorPlanController;
+use App\Http\Controllers\Workspace\WorkspaceFloorPlanVersionController;
 use App\Http\Controllers\Workspace\WorkspaceGuestController;
 use App\Http\Controllers\Workspace\WorkspaceGuestMemberController;
 use App\Http\Controllers\Workspace\WorkspaceIncidentController;
@@ -16,6 +18,7 @@ use App\Http\Controllers\Workspace\WorkspacePlaybookController;
 use App\Http\Controllers\Workspace\WorkspaceRunOfShowController;
 use App\Http\Controllers\Workspace\WorkspaceStationController;
 use App\Http\Controllers\Workspace\WorkspaceTaskController;
+use App\Http\Controllers\Workspace\WorkspaceVenueController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('workspace/{organization}')->name('workspace.')
@@ -156,4 +159,35 @@ Route::prefix('workspace/{organization}')->name('workspace.')
         Route::put('playbooks/{playbook}', [WorkspacePlaybookController::class, 'update'])->name('playbooks.update');
         Route::post('playbooks/{playbook}/duplicate', [WorkspacePlaybookController::class, 'duplicate'])->name('playbooks.duplicate');
         Route::post('playbooks/{playbook}/deactivate', [WorkspacePlaybookController::class, 'deactivate'])->name('playbooks.deactivate');
+
+        // ------------------------------------------------------------------
+        // Milestone 8 — venue management, floor plans and seating.
+        // ------------------------------------------------------------------
+        Route::get('events/{event}/venues', [WorkspaceVenueController::class, 'index'])->name('events.venues.index');
+        Route::post('events/{event}/venues', [WorkspaceVenueController::class, 'store'])->name('events.venues.store');
+        Route::put('events/{event}/venues/{venue}', [WorkspaceVenueController::class, 'update'])->name('events.venues.update');
+        Route::post('events/{event}/venues/{venue}/archive', [WorkspaceVenueController::class, 'archive'])->name('events.venues.archive');
+        Route::post('events/{event}/venues/{venue}/spaces', [WorkspaceVenueController::class, 'storeSpace'])->name('events.venues.spaces.store');
+        Route::put('events/{event}/venues/{venue}/spaces/{space}', [WorkspaceVenueController::class, 'updateSpace'])->name('events.venues.spaces.update');
+        Route::post('events/{event}/venues/{venue}/spaces/{space}/archive', [WorkspaceVenueController::class, 'archiveSpace'])->name('events.venues.spaces.archive');
+
+        Route::get('events/{event}/floor-plans', [WorkspaceFloorPlanController::class, 'index'])->name('events.floor-plans.index');
+        Route::post('events/{event}/floor-plans', [WorkspaceFloorPlanController::class, 'store'])->name('events.floor-plans.store');
+        Route::get('events/{event}/floor-plans/{floorPlan}/editor', [WorkspaceFloorPlanController::class, 'editor'])->name('events.floor-plans.editor');
+        Route::get('events/{event}/floor-plans/{floorPlan}', [WorkspaceFloorPlanController::class, 'show'])->name('events.floor-plans.show');
+        Route::put('events/{event}/floor-plans/{floorPlan}', [WorkspaceFloorPlanController::class, 'update'])->name('events.floor-plans.update');
+        Route::post('events/{event}/floor-plans/{floorPlan}/archive', [WorkspaceFloorPlanController::class, 'archive'])->name('events.floor-plans.archive');
+        Route::delete('events/{event}/floor-plans/{floorPlan}', [WorkspaceFloorPlanController::class, 'destroy'])->name('events.floor-plans.destroy');
+
+        Route::post('events/{event}/floor-plans/{floorPlan}/versions', [WorkspaceFloorPlanVersionController::class, 'store'])->name('events.floor-plans.versions.store');
+        Route::get('events/{event}/floor-plans/{floorPlan}/versions/{version}', [WorkspaceFloorPlanVersionController::class, 'show'])->name('events.floor-plans.versions.show');
+        Route::put('events/{event}/floor-plans/{floorPlan}/versions/{version}/document', [WorkspaceFloorPlanVersionController::class, 'saveDocument'])->name('events.floor-plans.versions.document');
+        Route::post('events/{event}/floor-plans/{floorPlan}/versions/{version}/publish', [WorkspaceFloorPlanVersionController::class, 'publish'])->name('events.floor-plans.versions.publish');
+        Route::post('events/{event}/floor-plans/{floorPlan}/versions/{version}/archive', [WorkspaceFloorPlanVersionController::class, 'archive'])->name('events.floor-plans.versions.archive');
+        Route::get('events/{event}/floor-plans/{floorPlan}/versions/{version}/validate', [WorkspaceFloorPlanVersionController::class, 'validate'])->name('events.floor-plans.versions.validate');
+        Route::get('events/{event}/floor-plans/{floorPlan}/versions/{version}/seating', [WorkspaceFloorPlanVersionController::class, 'seatingIndex'])->name('events.floor-plans.versions.seating.index');
+        Route::post('events/{event}/floor-plans/{floorPlan}/versions/{version}/seating', [WorkspaceFloorPlanVersionController::class, 'seatingStore'])->name('events.floor-plans.versions.seating.store');
+        Route::delete('events/{event}/floor-plans/{floorPlan}/versions/{version}/seating/{assignment}', [WorkspaceFloorPlanVersionController::class, 'seatingDestroy'])->name('events.floor-plans.versions.seating.destroy');
+        Route::post('events/{event}/floor-plans/{floorPlan}/versions/{version}/spatial-references', [WorkspaceFloorPlanVersionController::class, 'spatialReferenceStore'])->name('events.floor-plans.versions.spatial-references.store');
+        Route::delete('events/{event}/floor-plans/{floorPlan}/versions/{version}/spatial-references/{spatialReference}', [WorkspaceFloorPlanVersionController::class, 'spatialReferenceDestroy'])->name('events.floor-plans.versions.spatial-references.destroy');
     });

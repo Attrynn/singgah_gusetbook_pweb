@@ -66,7 +66,23 @@ window.Alpine = Alpine;
 window.Swal = Swal;
 window.flatpickr = flatpickr;
 
-Alpine.start();
+// Boot Alpine after deferred entry modules have registered their components
+// (e.g. the floor plan editor's `floorPlanEditor`). Deferred scripts all run
+// before DOMContentLoaded, so registering here guarantees ordering.
+function startAlpine() {
+    if (window.__alpineStarted) {
+        return;
+    }
+
+    window.__alpineStarted = true;
+    Alpine.start();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startAlpine, { once: true });
+} else {
+    startAlpine();
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     flatpickr('[data-datepicker]', {

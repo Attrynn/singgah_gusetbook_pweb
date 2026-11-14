@@ -3,6 +3,7 @@
     the acting user passes the matching EventPolicy ability, so a staff member
     never sees links they cannot open. `$active` is one of:
     overview | setup | team | schedule | run-of-show | guests | checkins | playbook
+    | venues | floor-plans
     | operations | operations-my-work | operations-staff | operations-stations
     | operations-tasks | operations-incidents | operations-announcements
     | operations-reports | operations-closure
@@ -16,6 +17,8 @@
     $canRunOfShow = auth()->user()->can('viewRunOfShow', $event);
     $canPlaybooks = auth()->user()->can('managePlaybooks', $organization);
     $canGuests = auth()->user()->can('viewGuests', $event);
+    $canViewVenues = auth()->user()?->can('viewVenues', $event) ?? false;
+    $canViewFloorPlans = auth()->user()?->can('viewFloorPlans', $event) ?? false;
 
     $appliedPlaybook = ($setup ?? null)?->playbook ?? $event->setupConfig?->playbook;
 
@@ -56,6 +59,20 @@
             <a href="{{ route('workspace.events.run-of-show.index', [$organization, $event]) }}" class="{{ $tabClass($active === 'run-of-show') }}" @if ($active === 'run-of-show') aria-current="page" @endif>
                 <x-ui.icon name="list" class="h-3.5 w-3.5 shrink-0" />
                 <span>Run of show</span>
+            </a>
+        @endif
+
+        @if ($canViewVenues && Route::has('workspace.events.venues.index'))
+            <a href="{{ route('workspace.events.venues.index', [$organization, $event]) }}" class="{{ $tabClass($active === 'venues') }}" @if ($active === 'venues') aria-current="page" @endif>
+                <x-ui.icon name="pin" class="h-3.5 w-3.5 shrink-0" />
+                <span>Venue & Layout</span>
+            </a>
+        @endif
+
+        @if ($canViewFloorPlans && Route::has('workspace.events.floor-plans.index'))
+            <a href="{{ route('workspace.events.floor-plans.index', [$organization, $event]) }}" class="{{ $tabClass($active === 'floor-plans') }}" @if ($active === 'floor-plans') aria-current="page" @endif>
+                <x-ui.icon name="grid" class="h-3.5 w-3.5 shrink-0" />
+                <span>Floor Plan</span>
             </a>
         @endif
 

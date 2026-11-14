@@ -246,6 +246,67 @@ class EventPolicy
             && ! $this->isArchived($event);
     }
 
+    // ---------------------------------------------------------------------
+    // Milestone 8 — venue, floor plan and seating
+    // ---------------------------------------------------------------------
+
+    public function viewVenues(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::VENUE_VIEW);
+    }
+
+    public function manageVenues(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::VENUE_MANAGE)
+            && ! $this->isArchived($event);
+    }
+
+    public function viewFloorPlans(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::FLOOR_PLAN_VIEW);
+    }
+
+    public function manageFloorPlans(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::FLOOR_PLAN_MANAGE)
+            && ! $this->isArchived($event);
+    }
+
+    public function publishFloorPlans(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::FLOOR_PLAN_PUBLISH)
+            && ! $this->isArchived($event);
+    }
+
+    public function deleteFloorPlans(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::FLOOR_PLAN_DELETE)
+            && ! $this->isArchived($event);
+    }
+
+    public function manageFloorPlanVersions(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::FLOOR_PLAN_VERSION)
+            && ! $this->isArchived($event);
+    }
+
+    public function viewSeating(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::SEATING_VIEW);
+    }
+
+    public function assignSeating(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::SEATING_ASSIGN)
+            && ! $this->isArchived($event);
+    }
+
+    public function manageSeating(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::SEATING_MANAGE)
+            && ! $this->isArchived($event);
+    }
+
     public function viewTasks(User $user, Event $event): bool
     {
         return $this->allowsPermission($user, $event, PermissionRegistry::TASK_VIEW);

@@ -261,6 +261,23 @@ class Event extends Model
         return $this->hasMany(TableAssignment::class);
     }
 
+    // Milestone 8 — spatial planning.
+
+    public function floorPlans(): HasMany
+    {
+        return $this->hasMany(FloorPlan::class);
+    }
+
+    public function seatingAssignments(): HasMany
+    {
+        return $this->hasMany(SeatingAssignment::class);
+    }
+
+    public function spatialReferences(): HasMany
+    {
+        return $this->hasMany(SpatialReference::class);
+    }
+
     public function songRequests(): HasMany
     {
         return $this->hasMany(SongRequest::class);

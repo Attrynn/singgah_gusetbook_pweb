@@ -191,6 +191,23 @@ class PermissionRegistry
 
     const SEATING_MANAGE = 'seating.manage';
 
+    const SEATING_ASSIGN = 'seating.assign';
+
+    // Venue and floor plan permissions (Milestone 8)
+    const VENUE_VIEW = 'venue.view';
+
+    const VENUE_MANAGE = 'venue.manage';
+
+    const FLOOR_PLAN_VIEW = 'venue.floor_plan.view';
+
+    const FLOOR_PLAN_MANAGE = 'venue.floor_plan.manage';
+
+    const FLOOR_PLAN_PUBLISH = 'venue.floor_plan.publish';
+
+    const FLOOR_PLAN_DELETE = 'venue.floor_plan.delete';
+
+    const FLOOR_PLAN_VERSION = 'venue.floor_plan.version';
+
     // Media permissions
     const MEDIA_VIEW = 'media.view';
 
@@ -233,7 +250,10 @@ class PermissionRegistry
                 self::GUEST_IMPORT, self::GUEST_EXPORT,
                 self::CHECKIN_VIEW, self::CHECKIN_SCAN, self::CHECKIN_CREATE,
                 self::CHECKIN_CORRECT, self::CHECKIN_REPORT,
-                self::SEATING_VIEW, self::SEATING_MANAGE,
+                self::SEATING_VIEW, self::SEATING_MANAGE, self::SEATING_ASSIGN,
+                self::VENUE_VIEW, self::VENUE_MANAGE,
+                self::FLOOR_PLAN_VIEW, self::FLOOR_PLAN_MANAGE, self::FLOOR_PLAN_PUBLISH,
+                self::FLOOR_PLAN_DELETE, self::FLOOR_PLAN_VERSION,
                 self::MEDIA_VIEW, self::MEDIA_MODERATE, self::MEDIA_MANAGE_ALBUMS, self::MEDIA_PUBLISH,
                 self::GIFT_VIEW, self::GIFT_MANAGE,
                 self::REPORTS_VIEW, self::REPORTS_EXPORT,
@@ -258,6 +278,7 @@ class PermissionRegistry
                 self::ANNOUNCEMENT_VIEW, self::ANNOUNCEMENT_MANAGE, self::ANNOUNCEMENT_PUBLISH,
                 self::CHECKIN_VIEW,
                 self::REPORTS_VIEW,
+                self::VENUE_VIEW, self::FLOOR_PLAN_VIEW,
                 self::VENDOR_VIEW, self::VENDOR_REQUIREMENT_MANAGE,
                 self::VENDOR_PROPOSAL_VIEW, self::VENDOR_ENGAGEMENT_VIEW, self::VENDOR_ENGAGEMENT_MANAGE,
                 self::VENDOR_AGREEMENT_VIEW, self::VENDOR_DELIVERABLE_VIEW, self::VENDOR_DELIVERABLE_REVIEW,
@@ -274,6 +295,7 @@ class PermissionRegistry
                 self::INCIDENT_VIEW, self::INCIDENT_CREATE, self::INCIDENT_MANAGE,
                 self::ANNOUNCEMENT_VIEW,
                 self::REPORTS_VIEW,
+                self::VENUE_VIEW, self::FLOOR_PLAN_VIEW,
                 self::VENDOR_VIEW, self::VENDOR_DELIVERABLE_VIEW, self::VENDOR_LOGISTICS_MANAGE,
             ],
             EventStaffRole::GuestManager => [
@@ -288,6 +310,7 @@ class PermissionRegistry
                 self::GUEST_IMPORT, self::GUEST_EXPORT,
                 self::CHECKIN_VIEW,
                 self::REPORTS_VIEW,
+                self::VENUE_VIEW, self::FLOOR_PLAN_VIEW, self::SEATING_VIEW,
                 self::VENDOR_VIEW,
             ],
             EventStaffRole::GuestRelations => [
@@ -316,6 +339,7 @@ class PermissionRegistry
                 self::CHECKIN_CORRECT, self::CHECKIN_REPORT,
                 self::SEATING_VIEW,
                 self::REPORTS_VIEW,
+                self::VENUE_VIEW, self::FLOOR_PLAN_VIEW,
                 self::VENDOR_VIEW, self::VENDOR_DELIVERABLE_VIEW,
             ],
             EventStaffRole::CheckinStaff => [
@@ -328,6 +352,7 @@ class PermissionRegistry
                 self::ANNOUNCEMENT_VIEW,
                 self::CHECKIN_VIEW, self::CHECKIN_SCAN, self::CHECKIN_CREATE,
                 self::SEATING_VIEW,
+                self::VENUE_VIEW, self::FLOOR_PLAN_VIEW,
                 self::VENDOR_VIEW,
             ],
             EventStaffRole::SeatingUsher => [
@@ -338,7 +363,8 @@ class PermissionRegistry
                 self::TASK_VIEW,
                 self::INCIDENT_VIEW, self::INCIDENT_CREATE,
                 self::ANNOUNCEMENT_VIEW,
-                self::SEATING_VIEW, self::SEATING_MANAGE,
+                self::SEATING_VIEW, self::SEATING_MANAGE, self::SEATING_ASSIGN,
+                self::VENUE_VIEW, self::FLOOR_PLAN_VIEW,
                 self::CHECKIN_VIEW,
                 self::VENDOR_VIEW,
             ],
@@ -370,6 +396,7 @@ class PermissionRegistry
                 self::TASK_VIEW,
                 self::INCIDENT_VIEW, self::INCIDENT_CREATE,
                 self::ANNOUNCEMENT_VIEW,
+                self::VENUE_VIEW, self::FLOOR_PLAN_VIEW,
                 self::VENDOR_VIEW, self::VENDOR_DELIVERABLE_VIEW,
             ],
             EventStaffRole::Observer => [
@@ -382,6 +409,7 @@ class PermissionRegistry
                 self::INCIDENT_VIEW,
                 self::ANNOUNCEMENT_VIEW,
                 self::REPORTS_VIEW,
+                self::VENUE_VIEW, self::FLOOR_PLAN_VIEW,
                 self::VENDOR_VIEW, self::VENDOR_REPORT_VIEW,
             ],
         };
@@ -403,6 +431,8 @@ class PermissionRegistry
             self::ANNOUNCEMENT_VIEW, self::ANNOUNCEMENT_MANAGE, self::ANNOUNCEMENT_PUBLISH,
             self::EVENT_RUN_OF_SHOW_VIEW, self::EVENT_RUN_OF_SHOW_MANAGE,
             self::REPORTS_VIEW,
+            self::VENUE_VIEW, self::FLOOR_PLAN_VIEW,
+            self::SEATING_VIEW, self::SEATING_ASSIGN,
             self::VENDOR_VIEW, self::VENDOR_REQUIREMENT_MANAGE,
             self::VENDOR_PROPOSAL_VIEW, self::VENDOR_ENGAGEMENT_VIEW, self::VENDOR_ENGAGEMENT_MANAGE,
             self::VENDOR_AGREEMENT_VIEW, self::VENDOR_COMMERCIAL_VIEW,
@@ -437,7 +467,10 @@ class PermissionRegistry
             self::GUEST_IMPORT, self::GUEST_EXPORT,
             self::CHECKIN_VIEW, self::CHECKIN_SCAN, self::CHECKIN_CREATE,
             self::CHECKIN_CORRECT, self::CHECKIN_REPORT,
-            self::SEATING_VIEW, self::SEATING_MANAGE,
+            self::SEATING_VIEW, self::SEATING_MANAGE, self::SEATING_ASSIGN,
+            self::VENUE_VIEW, self::VENUE_MANAGE,
+            self::FLOOR_PLAN_VIEW, self::FLOOR_PLAN_MANAGE, self::FLOOR_PLAN_PUBLISH,
+            self::FLOOR_PLAN_DELETE, self::FLOOR_PLAN_VERSION,
             self::MEDIA_VIEW, self::MEDIA_MODERATE, self::MEDIA_MANAGE_ALBUMS, self::MEDIA_PUBLISH,
             self::GIFT_VIEW, self::GIFT_MANAGE,
             self::REPORTS_VIEW, self::REPORTS_EXPORT,

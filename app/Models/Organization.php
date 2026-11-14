@@ -28,6 +28,18 @@ class Organization extends Model
         return $this->hasMany(Event::class);
     }
 
+    // Milestone 8 — organization venue catalog.
+
+    public function venues(): HasMany
+    {
+        return $this->hasMany(Venue::class);
+    }
+
+    public function floorPlans(): HasMany
+    {
+        return $this->hasMany(FloorPlan::class);
+    }
+
     // Milestone 7 — organization vendor directory.
 
     public function vendorCategories(): HasMany
