@@ -6,10 +6,12 @@ use App\Http\Controllers\Guest\GuestGiftController;
 use App\Http\Controllers\Guest\GuestGuestbookController;
 use App\Http\Controllers\Guest\GuestInteractionController;
 use App\Http\Controllers\Guest\GuestInvitationController;
+use App\Http\Controllers\Guest\GuestMemoryController;
 use App\Http\Controllers\Guest\GuestPassController;
 use App\Http\Controllers\Guest\GuestRsvpController;
 use App\Http\Controllers\Guest\LiveWallController;
 use App\Http\Controllers\MediaDeliveryController;
+use App\Http\Controllers\MemoryShareController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/e/{slug}', [GuestInvitationController::class, 'landing'])->name('guest.landing');
@@ -22,6 +24,13 @@ Route::get('/media/{asset}', MediaDeliveryController::class)
     ->name('media.show');
 Route::get('/wall/{slug}', [LiveWallController::class, 'show'])->name('live-wall.show');
 Route::get('/wall/{slug}/messages', [LiveWallController::class, 'messages'])->name('live-wall.messages');
+
+// Public, revocable memory share link. A missing, revoked, expired or
+// disabled token resolves to 404 in the controller, as does a soft-deleted
+// or archived event.
+Route::get('m/{token}', [MemoryShareController::class, 'show'])
+    ->middleware('throttle:memory-public')
+    ->name('memory.public');
 
 Route::prefix('invite/{token}')->name('guest.')->middleware('guest.token')->group(function () {
     Route::get('/', [GuestInvitationController::class, 'show'])->name('invitation');
@@ -36,6 +45,10 @@ Route::prefix('invite/{token}')->name('guest.')->middleware('guest.token')->grou
 
     Route::get('gallery', [GuestGalleryController::class, 'index'])->name('gallery');
     Route::post('gallery', [GuestGalleryController::class, 'store'])->middleware('throttle:guest-uploads')->name('gallery.store');
+
+    Route::get('memories', [GuestMemoryController::class, 'index'])->name('memories');
+    Route::post('memories', [GuestMemoryController::class, 'store'])->middleware('throttle:memory-contribute')->name('memories.store');
+    Route::post('memories/message', [GuestMemoryController::class, 'storeMessage'])->middleware('throttle:guestbook')->name('memories.message');
 
     Route::get('gift', [GuestGiftController::class, 'index'])->name('gift');
 

@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
+import { describeSelection, formatFileSize } from './memory/selection';
 
 // Heavy, page-specific libraries are loaded on demand so they never weigh down
 // the shared bundle. Each loader memoises its in-flight promise so repeated
@@ -65,6 +66,10 @@ window.Theme = Theme;
 window.Alpine = Alpine;
 window.Swal = Swal;
 window.flatpickr = flatpickr;
+
+// Guest memory upload: the Blade form renders the selected files from these
+// pure helpers so the client and the server enforce the same limits.
+window.memorySelection = { describeSelection, formatFileSize };
 
 // Boot Alpine after deferred entry modules have registered their components
 // (e.g. the floor plan editor's `floorPlanEditor`). Deferred scripts all run

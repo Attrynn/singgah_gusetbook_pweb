@@ -15,7 +15,14 @@ class GuestbookService
 {
     public function __construct(protected AuditService $audit) {}
 
-    public function submit(Guest $guest, array $data): GuestbookMessage
+    /**
+     * @param  bool  $enforceEventLifecycle  Memory contributions may keep accepting
+     *                                       messages after an event is completed, so
+     *                                       the caller can opt out of the generic
+     *                                       guest-action gate while still passing the
+     *                                       guestbook-enabled and guest-status checks.
+     */
+    public function submit(Guest $guest, array $data, bool $enforceEventLifecycle = true): GuestbookMessage
     {
         $guest->loadMissing('event');
 
@@ -25,7 +32,7 @@ class GuestbookService
             ]);
         }
 
-        if (! $guest->event->allowsGuestActions()) {
+        if ($enforceEventLifecycle && ! $guest->event->allowsGuestActions()) {
             throw ValidationException::withMessages([
                 'message' => 'Guestbook untuk acara ini belum dibuka atau sudah ditutup.',
             ]);
@@ -42,7 +49,7 @@ class GuestbookService
         $message = GuestbookMessage::create([
             'event_id' => $guest->event_id,
             'guest_id' => $guest->id,
-            'sender_name' => $guest->name,
+            'sender_name' => $data['sender_name'] ?? $guest->name,
             'message' => trim($data['message']),
             'emoji' => $data['emoji'] ?? null,
             'visibility' => $data['visibility'] ?? 'public',

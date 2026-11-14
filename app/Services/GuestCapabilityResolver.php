@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\EventStatus;
 use App\Enums\GuestStatus;
 use App\Models\Event;
+use App\Models\EventMemorySettings;
 use App\Models\Game;
 use App\Models\Guest;
 use App\Models\Poll;
@@ -38,7 +39,28 @@ class GuestCapabilityResolver
             'interactions' => $active && $actions,
             'song_request' => $active && $actions,
             'live_wall' => $public && (bool) $event->live_wall_enabled,
+            'memory_contribute' => $active && $this->memoryOpen($event),
         ];
+    }
+
+    /**
+     * Guest memory contributions stay open while the per-event submission
+     * window is open and the event lifecycle is permissive. A completed event
+     * may opt in to post-event submissions explicitly.
+     */
+    private function memoryOpen(Event $event): bool
+    {
+        $settings = EventMemorySettings::resolve($event);
+
+        if ($settings->submissionsClosed()) {
+            return false;
+        }
+
+        if ($event->allowsGuestActions()) {
+            return true;
+        }
+
+        return $event->status === EventStatus::Completed && (bool) $settings->post_event_submissions;
     }
 
     public function pollOpen(Poll $poll): bool
@@ -84,6 +106,9 @@ class GuestCapabilityResolver
             'gallery', 'gallery_upload' => 'Galeri tidak diaktifkan untuk acara ini.',
             'gift' => 'Informasi hadiah tidak diaktifkan untuk acara ini.',
             'live_wall' => 'Live wall tidak diaktifkan untuk acara ini.',
+            'memory_contribute' => EventMemorySettings::resolve($event)->submissionsClosed()
+                ? 'Pengiriman kenangan untuk acara ini sudah ditutup.'
+                : 'Acara ini belum membuka kontribusi kenangan.',
             default => null,
         };
     }

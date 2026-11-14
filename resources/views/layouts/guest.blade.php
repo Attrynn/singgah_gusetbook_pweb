@@ -57,6 +57,15 @@
                 ];
             }
 
+            if ($can('memory_contribute', $ev !== null && $ev->allowsGuestActions())) {
+                $guestNav[] = [
+                    'href' => route('guest.memories', $navToken),
+                    'active' => request()->routeIs('guest.memories*'),
+                    'label' => 'Kenangan',
+                    'icon' => 'heart'
+                ];
+            }
+
             if ($can('pass', $ev !== null && $ev->allowsGuestActions())) {
                 $guestNav[] = [
                     'href' => route('guest.pass', $navToken),
