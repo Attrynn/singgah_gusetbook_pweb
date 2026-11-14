@@ -96,6 +96,11 @@ class Guest extends Model
         return $this->hasMany(MediaAsset::class);
     }
 
+    public function memoryConsents(): HasMany
+    {
+        return $this->hasMany(MemoryConsent::class);
+    }
+
     public function songRequests(): HasMany
     {
         return $this->hasMany(SongRequest::class);

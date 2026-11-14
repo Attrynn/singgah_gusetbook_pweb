@@ -217,6 +217,17 @@ class PermissionRegistry
 
     const MEDIA_PUBLISH = 'media.publish';
 
+    // Memory permissions
+    const MEMORY_VIEW = 'memory.view';
+
+    const MEMORY_MODERATE = 'memory.moderate';
+
+    const MEMORY_CURATE = 'memory.curate';
+
+    const MEMORY_EXPORT = 'memory.export';
+
+    const MEMORY_SETTINGS = 'memory.settings';
+
     // Gift permissions
     const GIFT_VIEW = 'gift.view';
 
@@ -255,6 +266,7 @@ class PermissionRegistry
                 self::FLOOR_PLAN_VIEW, self::FLOOR_PLAN_MANAGE, self::FLOOR_PLAN_PUBLISH,
                 self::FLOOR_PLAN_DELETE, self::FLOOR_PLAN_VERSION,
                 self::MEDIA_VIEW, self::MEDIA_MODERATE, self::MEDIA_MANAGE_ALBUMS, self::MEDIA_PUBLISH,
+                self::MEMORY_VIEW, self::MEMORY_MODERATE, self::MEMORY_CURATE, self::MEMORY_EXPORT, self::MEMORY_SETTINGS,
                 self::GIFT_VIEW, self::GIFT_MANAGE,
                 self::REPORTS_VIEW, self::REPORTS_EXPORT,
                 self::VENDOR_VIEW, self::VENDOR_CREATE, self::VENDOR_UPDATE, self::VENDOR_ARCHIVE,
@@ -309,6 +321,7 @@ class PermissionRegistry
                 self::GUEST_VIEW, self::GUEST_CREATE, self::GUEST_UPDATE,
                 self::GUEST_IMPORT, self::GUEST_EXPORT,
                 self::CHECKIN_VIEW,
+                self::MEMORY_VIEW, self::MEMORY_MODERATE,
                 self::REPORTS_VIEW,
                 self::VENUE_VIEW, self::FLOOR_PLAN_VIEW, self::SEATING_VIEW,
                 self::VENDOR_VIEW,
@@ -376,6 +389,7 @@ class PermissionRegistry
                 self::INCIDENT_VIEW, self::INCIDENT_CREATE,
                 self::ANNOUNCEMENT_VIEW,
                 self::MEDIA_VIEW, self::MEDIA_MODERATE, self::MEDIA_MANAGE_ALBUMS, self::MEDIA_PUBLISH,
+                self::MEMORY_VIEW, self::MEMORY_MODERATE, self::MEMORY_CURATE, self::MEMORY_EXPORT,
                 self::VENDOR_VIEW,
             ],
             EventStaffRole::GiftSteward => [
@@ -409,6 +423,7 @@ class PermissionRegistry
                 self::INCIDENT_VIEW,
                 self::ANNOUNCEMENT_VIEW,
                 self::REPORTS_VIEW,
+                self::MEMORY_VIEW,
                 self::VENUE_VIEW, self::FLOOR_PLAN_VIEW,
                 self::VENDOR_VIEW, self::VENDOR_REPORT_VIEW,
             ],
@@ -431,6 +446,7 @@ class PermissionRegistry
             self::ANNOUNCEMENT_VIEW, self::ANNOUNCEMENT_MANAGE, self::ANNOUNCEMENT_PUBLISH,
             self::EVENT_RUN_OF_SHOW_VIEW, self::EVENT_RUN_OF_SHOW_MANAGE,
             self::REPORTS_VIEW,
+            self::MEMORY_VIEW,
             self::VENUE_VIEW, self::FLOOR_PLAN_VIEW,
             self::SEATING_VIEW, self::SEATING_ASSIGN,
             self::VENDOR_VIEW, self::VENDOR_REQUIREMENT_MANAGE,
@@ -472,6 +488,7 @@ class PermissionRegistry
             self::FLOOR_PLAN_VIEW, self::FLOOR_PLAN_MANAGE, self::FLOOR_PLAN_PUBLISH,
             self::FLOOR_PLAN_DELETE, self::FLOOR_PLAN_VERSION,
             self::MEDIA_VIEW, self::MEDIA_MODERATE, self::MEDIA_MANAGE_ALBUMS, self::MEDIA_PUBLISH,
+            self::MEMORY_VIEW, self::MEMORY_MODERATE, self::MEMORY_CURATE, self::MEMORY_EXPORT, self::MEMORY_SETTINGS,
             self::GIFT_VIEW, self::GIFT_MANAGE,
             self::REPORTS_VIEW, self::REPORTS_EXPORT,
             self::VENDOR_VIEW, self::VENDOR_CREATE, self::VENDOR_UPDATE, self::VENDOR_ARCHIVE,

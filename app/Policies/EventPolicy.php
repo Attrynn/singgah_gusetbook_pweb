@@ -307,6 +307,44 @@ class EventPolicy
             && ! $this->isArchived($event);
     }
 
+    // ---------------------------------------------------------------------
+    // Milestone 9 — guest memory wall
+    // ---------------------------------------------------------------------
+
+    public function viewMemories(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::MEMORY_VIEW);
+    }
+
+    public function moderateMemories(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::MEMORY_MODERATE)
+            && ! $this->isArchived($event);
+    }
+
+    public function curateMemories(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::MEMORY_CURATE)
+            && ! $this->isArchived($event);
+    }
+
+    public function exportMemories(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::MEMORY_EXPORT);
+    }
+
+    public function manageMemorySettings(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::MEMORY_SETTINGS)
+            && ! $this->isArchived($event);
+    }
+
+    public function shareMemories(User $user, Event $event): bool
+    {
+        return $this->allowsPermission($user, $event, PermissionRegistry::MEMORY_SETTINGS)
+            && ! $this->isArchived($event);
+    }
+
     public function viewTasks(User $user, Event $event): bool
     {
         return $this->allowsPermission($user, $event, PermissionRegistry::TASK_VIEW);

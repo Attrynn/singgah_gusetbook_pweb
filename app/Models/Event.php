@@ -278,6 +278,23 @@ class Event extends Model
         return $this->hasMany(SpatialReference::class);
     }
 
+    // Milestone 9 — event memory.
+
+    public function memorySettings(): HasOne
+    {
+        return $this->hasOne(EventMemorySettings::class);
+    }
+
+    public function memoryCollections(): HasMany
+    {
+        return $this->hasMany(MemoryCollection::class);
+    }
+
+    public function memoryExportJobs(): HasMany
+    {
+        return $this->hasMany(MemoryExportJob::class);
+    }
+
     public function songRequests(): HasMany
     {
         return $this->hasMany(SongRequest::class);
