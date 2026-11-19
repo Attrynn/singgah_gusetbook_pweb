@@ -5,6 +5,10 @@ namespace App\Models;
 use App\Enums\EventUserRole;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
+/**
+ * @deprecated Legacy `event_user` pivot model, retained for backward compatibility only.
+ * The canonical model for event ownership is {@see EventOwnerMembership}.
+ */
 class EventUser extends Pivot
 {
     protected $table = 'event_user';

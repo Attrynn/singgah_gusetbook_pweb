@@ -50,8 +50,6 @@ erDiagram
     GAME_QUESTIONS ||--o{ GAME_ANSWERS : answered
     GAME_OPTIONS ||--o{ GAME_ANSWERS : selected
 
-    MEDIA_ALBUMS ||--o{ MEDIA_ALBUM_ITEMS : groups
-    MEDIA_ASSETS ||--o{ MEDIA_ALBUM_ITEMS : "added to"
     GUESTBOOK_MESSAGES ||--o{ GUESTBOOK_FAVORITES : favourited
     USERS ||--o{ GUESTBOOK_FAVORITES : marks
 
@@ -78,7 +76,6 @@ erDiagram
 | `game_attempts` | one attempt per guest per game (`unique(game_id, guest_id)`) |
 | `game_answers` | one answer per question per attempt (`unique(game_attempt_id, game_question_id)`) |
 | `table_assignments` | one table per guest per event (`unique(event_id, guest_id)`) |
-| `media_album_items` | unique `(media_album_id, media_asset_id)` |
 
 ## Status enums
 

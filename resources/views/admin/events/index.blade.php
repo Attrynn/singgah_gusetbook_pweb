@@ -75,6 +75,8 @@
                                             <x-ui.icon name="edit" class="h-4 w-4" />
                                         </a>
                                         <form method="POST" action="{{ route('admin.events.destroy', $event) }}" class="inline" data-confirm="Yakin ingin menghapus event ini?">
+                                            @csrf
+                                            @method('DELETE')
                                             <button type="submit" class="text-xs text-danger" title="Hapus" aria-label="Hapus">
                                                 <x-ui.icon name="trash" class="h-4 w-4" />
                                             </button>

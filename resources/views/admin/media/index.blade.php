@@ -141,6 +141,7 @@
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('admin.media.feature', $asset) }}" class="inline">
+                                    @csrf
                                     <button type="submit" class="btn-ghost btn-xs" title="Tandai unggulan" aria-label="Tandai unggulan">
                                         <x-ui.icon name="star" class="h-3 w-3" />
                                     </button>

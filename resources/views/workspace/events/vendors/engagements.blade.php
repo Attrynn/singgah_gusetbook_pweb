@@ -4,6 +4,20 @@
 
 @php
     use App\Enums\VendorEngagementStatus;
+
+    $formatMoney = function ($amount, ?string $currency = null): string {
+        if ($amount === null || $amount === '') {
+            return '—';
+        }
+
+        $currency = strtoupper($currency ?: 'IDR');
+
+        if ($currency === 'IDR') {
+            return 'Rp'.number_format((float) $amount, 0, ',', '.');
+        }
+
+        return $currency.' '.number_format((float) $amount, 2, ',', '.');
+    };
 @endphp
 
 @section('content')
@@ -24,7 +38,7 @@
             <x-ui.select name="status" label="Status">
                 <option value="">Semua status</option>
                 @foreach (VendorEngagementStatus::cases() as $case)
-                    <option value="{{ $case->value }}" @selected($filters['status'] === $case->value)>{{ $case->label() }}</option>
+                    <option value="{{ $case->value }}" @selected(($filters['status'] ?? null) === $case->value)>{{ $case->label() }}</option>
                 @endforeach
             </x-ui.select>
         </div>

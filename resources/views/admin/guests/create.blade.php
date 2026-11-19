@@ -12,6 +12,7 @@
 
     <div class="mt-6">
         <form method="POST" action="{{ route('admin.guests.store') }}" class="space-y-6">
+            @csrf
             <div>
                 <label for="event_id" class="label">
                     Event

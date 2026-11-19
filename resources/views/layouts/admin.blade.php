@@ -110,6 +110,7 @@
                         <x-ui.icon name="qr" class="h-4 w-4 shrink-0" />
                         <span x-show="!sidebarCollapsed" class="truncate">Check-in & Scanner</span>
                     </a>
+                    {{-- @deprecated legacy M1 seating surface; retained for backward compatibility, superseded by the Milestone 8 floor-plan seating --}}
                     <a href="{{ route('admin.seating.index') }}" class="nav-item {{ request()->routeIs('admin.seating.*') ? 'nav-item-active' : '' }}" title="Seating">
                         <x-ui.icon name="grid" class="h-4 w-4 shrink-0" />
                         <span x-show="!sidebarCollapsed" class="truncate">Seating</span>

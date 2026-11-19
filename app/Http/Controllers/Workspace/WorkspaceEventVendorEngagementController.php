@@ -48,6 +48,7 @@ class WorkspaceEventVendorEngagementController extends Controller
             'statuses' => VendorEngagementStatus::cases(),
             'filters' => $filters,
             'canManage' => $request->user()->can('manageVendorEngagements', $event),
+            'canManageCommercial' => $request->user()->can('viewVendorCommercial', $event),
         ]);
     }
 

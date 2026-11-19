@@ -35,6 +35,8 @@
                                 <x-ui.icon name="edit" class="h-4 w-4" />
                             </button>
                             <form method="POST" action="{{ route('admin.gifts.destroy', $gift) }}" class="inline" data-confirm="Yakin ingin menghapus rekening hadiah ini?" data-confirm-title="Hapus Rekening">
+                                @csrf
+                                @method('DELETE')
                                 <button type="submit" class="icon-btn" title="Hapus" aria-label="Hapus">
                                     <x-ui.icon name="trash" class="h-4 w-4" />
                                 </button>

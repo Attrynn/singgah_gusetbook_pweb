@@ -19,7 +19,7 @@ php artisan test --compact          # one-line summary
 php artisan test --filter=Checkin   # a single file
 ```
 
-Current state: **133 tests, 391 assertions, all passing.**
+Current state: **733 tests, 2307 assertions, all passing.**
 
 Environment: `phpunit.xml` forces `APP_ENV=testing`, `DB_CONNECTION=sqlite`,
 `DB_DATABASE=:memory:`, `CACHE_STORE=array`, `MAIL_MAILER=array`, `QUEUE_CONNECTION=sync`,
@@ -91,7 +91,7 @@ Stated honestly:
 
 ```bash
 php bin/blade_lint.php
-# ALL 84 VIEWS CLEAN
+# ALL 145 VIEWS CLEAN
 ```
 
 The script clears the view cache, compiles every `resources/views/**/*.blade.php`, resolves the

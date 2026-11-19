@@ -33,9 +33,6 @@
                         </div>
                         @if ($canManage)
                             <div class="flex items-center gap-1">
-                                <a href="{{ route('workspace.vendor-categories.edit', [$organization, $category]) }}" class="icon-btn h-7 w-7 !rounded-lg" title="Edit">
-                                    <x-ui.icon name="edit" class="h-3.5 w-3.5" />
-                                </a>
                                 <form method="POST" action="{{ route('workspace.vendor-categories.destroy', [$organization, $category]) }}" data-confirm="Hapus kategori {{ $category->name }}?" data-confirm-button="Ya, hapus">
                                     @csrf
                                     @method('DELETE')

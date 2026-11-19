@@ -12,6 +12,7 @@
 
     <div class="mt-6">
         <form method="POST" action="{{ route('admin.events.store') }}" enctype="multipart/form-data" class="space-y-6">
+            @csrf
             <div>
                 <label for="name" class="label">
                     Nama Event <span class="text-danger">*</span>

@@ -183,4 +183,27 @@ class VendorCatalogTest extends TestCase
             ->postJson(route('workspace.vendors.status', [$org, $vendor]), ['status' => 'bogus'])
             ->assertStatus(422);
     }
+
+    /**
+     * Regression: the category index view referenced `$canManage`, which the
+     * controller never passed, so the whole page 500'd.
+     */
+    public function test_vendor_categories_index_renders_for_an_owner(): void
+    {
+        $org = $this->organization();
+        $owner = $this->owner($org);
+
+        VendorCategory::create([
+            'organization_id' => $org->id,
+            'name' => 'Katering',
+            'slug' => 'katering',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('workspace.vendor-categories.index', $org))
+            ->assertOk()
+            ->assertSee('Kategori vendor')
+            ->assertSee('Katering')
+            ->assertSee('Tambah kategori');
+    }
 }

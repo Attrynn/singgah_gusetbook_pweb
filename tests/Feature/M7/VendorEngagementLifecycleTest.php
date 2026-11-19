@@ -10,6 +10,7 @@ use App\Enums\VendorEngagementStatus;
 use App\Enums\VendorIssueSeverity;
 use App\Enums\VendorIssueStatus;
 use App\Models\EventVendorChangeRequest;
+use App\Models\EventVendorDeliverable;
 use App\Models\EventVendorIssue;
 use App\Models\Organization;
 use App\Models\User;
@@ -242,5 +243,58 @@ class VendorEngagementLifecycleTest extends TestCase
                 'title' => 'Engagement tidak sah',
             ])
             ->assertForbidden();
+    }
+
+    /**
+     * Regression: the engagement index view read `$filters['status']` even when
+     * no status filter was supplied, and referenced `$canManageCommercial` /
+     * `$formatMoney`, none of which were provided. The page 500'd on load.
+     */
+    public function test_engagements_index_renders_without_a_status_filter(): void
+    {
+        $org = $this->organization();
+        $event = $this->eventIn($org);
+        $vendor = $this->vendorIn($org);
+        $owner = $this->owner($org);
+
+        $engagement = $this->engagementFor($event, $vendor, [
+            'agreed_amount' => 10000000,
+            'currency' => 'IDR',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('workspace.events.vendors.engagements.index', [$org, $event]))
+            ->assertOk()
+            ->assertSee($engagement->title)
+            ->assertSee('Rp10.000.000');
+    }
+
+    /**
+     * Regression: the engagement detail view referenced an undefined
+     * `workspace.events.vendors.deliverables.show` route and used
+     * VendorEngagementStatus without importing it, so opening an engagement
+     * 500'd. The deliverable table is display-only here — there is no detail
+     * page to link to.
+     */
+    public function test_engagement_detail_renders_with_its_deliverables(): void
+    {
+        $org = $this->organization();
+        [$event, $vendor, $engagement] = $this->readyEngagement($org);
+        $owner = $this->owner($org);
+
+        EventVendorDeliverable::create([
+            'organization_id' => $org->id,
+            'event_vendor_engagement_id' => $engagement->id,
+            'event_id' => $event->id,
+            'title' => 'Dekorasi akad',
+            'status' => VendorDeliverableStatus::NotStarted->value,
+            'due_at' => now()->addWeek(),
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('workspace.events.vendors.engagements.show', [$org, $event, $engagement]))
+            ->assertOk()
+            ->assertSee($engagement->title)
+            ->assertSee('Dekorasi akad');
     }
 }

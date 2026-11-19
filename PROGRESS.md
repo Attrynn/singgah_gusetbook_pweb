@@ -1,8 +1,28 @@
 # VOWSPACE Delivery Progress
 
-Updated: November 2026 (remediation cycle closed 2026-11-08)
+Updated: November 2026
 
-Status: **Delivered, hardened, and release-ready. All 16 security/privacy/backend findings closed.**
+Status: **Delivered, hardened, and release-ready. All security/privacy/backend findings closed.**
+
+---
+
+## Milestone 10 — Legacy Cleanup & System Consolidation
+
+Milestone 10 consolidated the codebase and removed accumulated legacy surface:
+
+- **Removed the dead MFA subsystem** — deleted `MfaChallenge` / `MfaService` and dropped the
+  `pragmarx/google2fa` dependency; nothing in routes, controllers or views referenced it.
+- **Removed duplicate documentation** — deleted the redundant `CLAUDE.md` and the superseded
+  `VOWSPACE_*.md` reports, leaving this file, `README.md` and `docs/` as the single source of truth.
+- **Data integrity fixes** — added the missing database indexes and backfilled orphan events into
+  the Legacy Workspace.
+- **Extended tenant integrity** — database-enforced `event` scoping now uses composite
+  `(event_id, id)` foreign keys across the M5–M9 tables.
+- **Retained but deprecated** — the legacy M1 admin seating surface and the `event_user` pivot are
+  intentionally kept for backward compatibility and marked `@deprecated`; the canonical replacements
+  are the Milestone 8 floor-plan seating and `event_owner_memberships`.
+
+All changes were additive or cleanup-safe; no destructive migrations were applied.
 
 ---
 
@@ -11,88 +31,164 @@ Status: **Delivered, hardened, and release-ready. All 16 security/privacy/backen
 | Area | Target | Delivered | Status |
 | --- | --- | --- | --- |
 | Architecture & tenancy | Single-codebase, 3 roles, row-level event scoping | `events` as tenancy anchor, `ResolveGuestToken`, `ResolvesOwnerEvent`, role middleware | Complete |
-| Database | Schema, migrations, factories, seeders | 18 migrations, 32 domain tables, 4 factories, rich `DemoSeeder` (2 events, 38 guests, all relations) | Complete |
-| Backend domain | Models, enums, services, form requests | 33 models, 13 enums, 13 domain services, 22 Form Requests, 4 policies | Complete |
+| Database | Schema, migrations, factories, seeders | 58 migrations, 90 domain tables, 18 factories, rich `DemoSeeder` | Complete |
+| Backend domain | Models, enums, services, form requests | 91 models, 71 enums, 63 domain services, 52 Form Requests, 7 policies | Complete |
 | Security | Hashed tokens, authorization, rate limiters, duplicate guards, audit | SHA-256 + ciphertext tokens, `EnsureRole`, `EnsureActiveUser`, unique check-in constraint, `audit_logs` | Complete |
-| Views & UI | 3 distinct role shells, cold-minimalist neumorphic design | 84 Blade views, 5 layouts, 12 `x-ui` components, Tailwind v4 `@utility` system, Vite assets | Complete |
-| Routes | Superadmin, Owner, Guest, Public | 152 route lines across `admin.php`, `owner.php`, `guest.php`, `web.php` (101 admin, 19 owner, 15 guest) | Complete |
-| Automated verification | Feature tests, Blade lint, real HTTP smoke | 133 tests (391 assertions, all passing), `bin/blade_lint.php` (84 views clean), `./bin/smoke.sh` (real server, all roles passing) | Complete |
-| Documentation | ERD, schema, roles, journeys, install, deploy, demo, testing | `README.md`, `PROGRESS.md`, and 8 full guides in `docs/`; `VOWSPACE_REMEDIATION_REGISTER.md`, `VOWSPACE_RELEASE_READINESS_REPORT.md` | Complete |
+| Views & UI | Role shells, cold-minimalist neumorphic design | 145 Blade views, 6 layouts, 13 `x-ui` components, Tailwind v4 `@utility` system, Vite assets | Complete |
+| Routes | Superadmin, Owner, Guest, Workspace, Vendor portal, Public | 366 route registrations across `admin.php` (68), `owner.php` (42), `guest.php` (22), `web.php` (21), `workspace-events.php` (131), `workspace-vendors.php` (72), `vendor-portal.php` (10) | Complete |
+| Automated verification | Feature tests, Blade lint, real HTTP smoke | 733 PHPUnit tests (2307 assertions, all passing) + 56 Vitest tests in 6 files, `bin/blade_lint.php` (145 views clean), `./bin/smoke.sh` (real server, all roles passing) | Complete |
+| Documentation | ERD, schema, roles, journeys, install, deploy, demo, testing | `README.md`, `PROGRESS.md`, and 21 documents in `docs/` | Complete |
 
 ---
 
 ## 2. Component inventory
 
-### Schema & persistence (18 migrations, 32 domain tables)
-- `events`, `event_user`, `event_settings`, `event_venues`, `event_schedules`, `gift_accounts`
-- `guest_categories`, `guest_groups`, `guests`, `guest_tokens`, `invitations`
-- `rsvps`, `checkins`
-- `guestbook_messages`, `guestbook_favorites`
-- `media_albums`, `media_assets`, `media_album_items`
-- `seating_tables`, `table_assignments`
-- `song_requests`, `polls`, `poll_options`, `poll_responses`, `games`, `game_questions`, `game_options`, `game_attempts`, `game_answers`
-- `event_activities`, `audit_logs`, `app_settings`
-- Framework tables: `users`, `password_reset_tokens`, `sessions`, `cache`, `cache_locks`, `jobs`, `job_batches`, `failed_jobs`, `notifications`
+### Schema & persistence (58 migrations, 90 domain tables)
+The domain schema is anchored on `events`. Grouped by area:
+- **Core & tenancy**: `events`, `event_user` (legacy), `event_owner_memberships`, `event_settings`,
+  `event_venues`, `event_schedules`, `event_phases`, `event_sessions`, `event_setup_configs`,
+  `event_setup_checklist_items`
+- **Guests & invitations**: `guests`, `guest_categories`, `guest_groups`, `guest_tokens`, `guest_passes`,
+  `guest_party_memberships`, `invitations`, `rsvps`, `checkins`
+- **Guestbook, media & memory**: `guestbook_messages`, `guestbook_favorites`, `media_albums`,
+  `media_assets`, `memory_collections`, `memory_collection_items`,
+  `memory_consents`, `memory_export_jobs`, `event_memory_settings`
+- **Interactions**: `song_requests`, `polls`, `poll_options`, `poll_responses`, `games`,
+  `game_questions`, `game_options`, `game_attempts`, `game_answers`
+- **Operations & people**: `event_tasks`, `event_task_checklist_items`, `event_task_comments`,
+  `event_task_dependencies`, `event_staff_memberships`, `event_staff_permission_grants`,
+  `event_stations`, `event_station_assignments`, `event_run_of_show_items`,
+  `event_run_of_show_assignees`, `event_incidents`, `event_incident_updates`, `event_announcements`,
+  `event_announcement_recipients`, `event_operations`, `playbooks`, `playbook_versions`,
+  `event_activities`
+- **Vendors**: `vendors`, `vendor_categories`, `vendor_contacts`, `vendor_services`,
+  `vendor_service_packages`, `event_vendor_requirements`, `event_vendor_requirement_candidates`,
+  `event_vendor_proposals`, `event_vendor_engagements`, `event_vendor_engagement_revisions`,
+  `event_vendor_change_requests`, `event_vendor_communications`, `event_vendor_deliverables`,
+  `event_vendor_deliverable_submissions`, `event_vendor_documents`, `event_vendor_issues`,
+  `event_vendor_logistics_requirements`, `event_vendor_performance_reviews`,
+  `event_vendor_schedule_references`, `vendor_portal_memberships`, `vendor_portal_engagement_access`
+- **Venue & floor plan**: `venues`, `venue_spaces`, `floor_plans`, `floor_plan_versions`,
+  `seating_tables`, `seating_assignments`, `table_assignments`, `spatial_references`
+- **Platform**: `organizations`, `organization_memberships`, `workspace_invitations`, `audit_logs`,
+  `app_settings`, `gift_accounts`, `users`
+- Framework tables: `password_reset_tokens`, `sessions`, `cache`, `cache_locks`, `jobs`,
+  `job_batches`, `failed_jobs`, `notifications`
 
-### Models (33)
-`AppSetting`, `AuditLog`, `Checkin`, `Event`, `EventActivity`, `EventSchedule`, `EventSetting`,
-`EventUser`, `EventVenue`, `Game`, `GameAnswer`, `GameAttempt`, `GameOption`, `GameQuestion`,
-`GiftAccount`, `Guest`, `GuestbookFavorite`, `GuestbookMessage`, `GuestCategory`, `GuestGroup`,
-`GuestToken`, `Invitation`, `MediaAlbum`, `MediaAlbumItem`, `MediaAsset`, `Poll`, `PollOption`,
-`PollResponse`, `Rsvp`, `SeatingTable`, `SongRequest`, `TableAssignment`, `User`.
+### Models (91)
+`AppSetting`, `AuditLog`, `Checkin`, `Event`, `EventActivity`, `EventAnnouncement`,
+`EventAnnouncementRecipient`, `EventIncident`, `EventIncidentUpdate`, `EventMemorySettings`,
+`EventOperation`, `EventOwnerMembership`, `EventPhase`, `EventRunOfShowAssignee`,
+`EventRunOfShowItem`, `EventSchedule`, `EventSession`, `EventSetting`, `EventSetupChecklistItem`,
+`EventSetupConfig`, `EventStaffMembership`, `EventStaffPermissionGrant`, `EventStation`,
+`EventStationAssignment`, `EventTask`, `EventTaskChecklistItem`, `EventTaskComment`,
+`EventTaskDependency`, `EventUser`, `EventVendorChangeRequest`, `EventVendorCommunication`,
+`EventVendorDeliverable`, `EventVendorDeliverableSubmission`, `EventVendorDocument`,
+`EventVendorEngagement`, `EventVendorEngagementRevision`, `EventVendorIssue`,
+`EventVendorLogisticsRequirement`, `EventVendorPerformanceReview`, `EventVendorProposal`,
+`EventVendorRequirement`, `EventVendorRequirementCandidate`, `EventVendorScheduleReference`,
+`EventVenue`, `FloorPlan`, `FloorPlanVersion`, `Game`, `GameAnswer`, `GameAttempt`, `GameOption`,
+`GameQuestion`, `GiftAccount`, `Guest`, `GuestbookFavorite`, `GuestbookMessage`, `GuestCategory`,
+`GuestGroup`, `GuestPartyMembership`, `GuestPass`, `GuestToken`, `Invitation`, `MediaAlbum`,
+`MediaAsset`, `MemoryCollection`, `MemoryCollectionItem`, `MemoryConsent`, `MemoryExportJob`,
+`Organization`, `OrganizationMembership`, `Playbook`, `PlaybookVersion`, `Poll`, `PollOption`,
+`PollResponse`, `Rsvp`, `SeatingAssignment`, `SeatingTable`, `SongRequest`, `SpatialReference`,
+`TableAssignment`, `User`, `Vendor`, `VendorCategory`, `VendorContact`,
+`VendorPortalEngagementAccess`, `VendorPortalMembership`, `VendorService`, `VendorServicePackage`,
+`Venue`, `VenueSpace`, `WorkspaceInvitation`.
 
-### Enums (13)
-`CheckinMethod`, `EventStatus`, `GuestStatus`, `InvitationStatus`, `MediaStatus`, `MessageStatus`,
-`MessageVisibility`, `OwnerRole`, `RsvpStatus`, `SongStatus`, `TokenType`, `UserRole`, `GameType`.
+### Enums (71)
+`AnnouncementAudience`, `AnnouncementPriority`, `AnnouncementStatus`, `CheckinMethod`,
+`EventOwnerRole`, `EventStaffRole`, `EventStatus`, `EventUserRole`, `FloorPlanObjectType`,
+`FloorPlanStatus`, `FloorPlanVersionStatus`, `FloorPlanZoneType`, `GuestPartyStatus`, `GuestStatus`,
+`IncidentCategory`, `IncidentSeverity`, `IncidentStatus`, `InvitationStatus`, `MediaStatus`,
+`MembershipStatus`, `MemoryExportStatus`, `MemoryItemType`, `MemoryState`, `MessageStatus`,
+`MessageVisibility`, `OperationsStatus`, `OrganizationMembershipStatus`, `OrganizationRole`,
+`PlatformRole`, `PlaybookStatus`, `ReadinessStatus`, `RsvpStatus`, `RunOfShowStatus`,
+`ScheduleStatus`, `SeatingAssignmentStatus`, `SetupStatus`, `SongStatus`, `SpatialReferenceStatus`,
+`StationCategory`, `StationStatus`, `TaskPriority`, `TaskStatus`, `TokenType`, `UserRole`,
+`VendorArrivalStatus`, `VendorCandidateState`, `VendorChangeRequestStatus`,
+`VendorCommunicationDirection`, `VendorCommunicationType`, `VendorCommunicationVisibility`,
+`VendorContactPurpose`, `VendorDeliverableStatus`, `VendorDocumentReviewStatus`, `VendorDocumentType`,
+`VendorDocumentVisibility`, `VendorEngagementStatus`, `VendorIssueSeverity`, `VendorIssueStatus`,
+`VendorLogisticsResponsibility`, `VendorLogisticsStatus`, `VendorLogisticsType`, `VendorPortalStatus`,
+`VendorProposalStatus`, `VendorRequirementStatus`, `VendorStatus`, `VendorSubmissionStatus`,
+`VendorType`, `VenueSpaceType`, `VenueStatus`, `WorkspaceInvitationStatus`, `WorkspaceInvitationType`.
 
-### Domain services (17)
-`AuditService`, `CheckinService`, `EmailChangeService`, `EventLifecycleService`, `EventService`,
-`GameService`, `GuestCapabilityResolver`, `GuestService`, `GuestbookService`, `InvitationService`,
-`MediaDerivativeService`, `MediaService`, `PollService`, `QrService` (SVG + GD PNG),
-`ReportService`, `RsvpService`, `SeatingService`.
+### Domain services (63)
+`AnnouncementService`, `AttendanceService`, `AuditService`, `CheckinService`, `EmailChangeService`,
+`EventBlueprintService`, `EventLifecycleService`, `EventService`, `EventSetupService`,
+`EventTeamService`, `FloorPlanDocumentValidator`, `FloorPlanService`, `FloorPlanValidationService`,
+`FloorPlanVersionService`, `GameService`, `GuestbookService`, `GuestCapabilityResolver`,
+`GuestLegacyMigrationService`, `GuestPartyService`, `GuestPassService`, `GuestService`,
+`IncidentService`, `InvitationService`, `MediaDerivativeService`, `MediaService`,
+`MemoryCollectionService`, `MemoryContributionService`, `MemoryExportService`, `MemoryFeedService`,
+`MemoryMediaSanitizer`, `MemoryModerationService`, `MemorySettingsService`,
+`OperationsDashboardService`, `OperationsLifecycleService`, `OperationsReadinessService`,
+`OperationsReportService`, `PermissionService`, `PlaybookService`, `PollService`, `QrService`
+(SVG + GD PNG), `ReportService`, `RsvpService`, `RunOfShowService`, `SeatingAssignmentService`,
+`SeatingService`, `SpatialReferenceService`, `StaffOperationsService`, `StationService`,
+`TaskService`, `TenantContextService`, `VendorCoordinationService`, `VendorDeliverableService`,
+`VendorDirectoryService`, `VendorDocumentService`, `VendorEngagementService`,
+`VendorLogisticsService`, `VendorPortalAccessService`, `VendorReportService`, `VendorSourcingService`,
+`VenueService`, `WorkspaceInvitationService`, `WorkspaceMembershipService`,
+`WorkspaceRegistrationService`.
 
-### Policies (4)
-`EventPolicy`, `GuestPolicy`, `GuestbookMessagePolicy`, `MediaAssetPolicy`.
+### Policies (7)
+`EventPolicy`, `GuestbookMessagePolicy`, `GuestPartyMembershipPolicy`, `GuestPassPolicy`,
+`GuestPolicy`, `MediaAssetPolicy`, `OrganizationPolicy`.
 
-### Middleware (3)
-`EnsureRole` (role gate with 403), `EnsureActiveUser` (invalidates inactive sessions),
-`ResolveGuestToken` (hashes token, scopes guest + event, shares view variables, 404 for invalid).
+### Middleware (6)
+`EnsureActiveUser` (invalidates inactive sessions), `EnsureOrganizationMembership`,
+`EnsureRole` (role gate with 403), `ResolveGuestToken` (hashes token, scopes guest + event, shares
+view variables, 404 for invalid), `ResolveOrganizationContext`, `SecurityHeaders`.
 
-### Views (84)
-- 36 admin views (CRUD for events, guests, categories, groups, invitations, rsvps, checkins,
-  guestbook, media, seating, polls, games, songs, reports, settings, audit logs, profile)
-- 12 owner views (dashboard, wishes, attendance, memories, timeline, interactions, story, profile)
-- 8 guest views (invitation, pass, gifts, song-request, poll, game, error, invalid)
+### Views (145)
+- 36 admin views (events, owners, guests, categories, groups, invitations, rsvps, checkins,
+  guestbook, media, seating, interactions, reports, settings, audit logs, profile)
+- 46 workspace views (event workspace, setup wizard, team, vendors, operations, memory)
+- 17 owner views (dashboard, wishes, attendance, memories, timeline, interactions, story, profile)
+- 9 guest views (invitation, pass, gifts, song-request, poll, game, error, invalid)
+- 3 vendor-portal views
+- 3 auth views
+- 8 error views
 - 1 live-wall view (projector layout with polling script)
-- 1 auth view (`auth.login`)
+- 1 public memory view
+- 1 mail view
 - 1 public home view
-- 5 layouts (`admin`, `owner`, `guest`, `auth`, `live-wall`)
-- 12 shared `x-ui` components (`button`, `card`, `stat-card`, `badge`, `page-header`, `empty-state`,
-  `avatar`, `icon`, `modal`, `tabs`, `dropdown`, `input`)
+- 6 layouts (`admin`, `auth`, `guest`, `memory-public`, `owner`, `vendor-portal`)
+- 13 shared `x-ui` components (`avatar`, `badge`, `button`, `empty-state`, `flash`, `icon`,
+  `input`, `modal`, `page-header`, `select`, `stat-card`, `textarea`, `theme-switcher`)
 
-### Tests (106 tests, 325 assertions, PHPUnit 12)
-`AuthenticationTest` (6), `AuthorizationTest` (7), `GuestInvitationTest` (7), `RsvpTest` (5),
-`CheckinTest` (5), `GuestbookTest` (5), `InteractionTest` (5), `MediaUploadTest` (8),
-`AdminCrudTest` (8), `EventLifecycleTest` (4), `GuestCapabilityTest` (4), `CsvImportTest` (7),
-`LiveWallCursorTest` (2), `EventTimezoneTest` (3), `ReportPerformanceTest` (2),
-`MasterSecurityRemediationTest` (11), `ProductionHardeningTest` (17),
-`ExampleTest` (Feature 1, Unit 1).
+### Tests (733 PHPUnit tests / 2307 assertions, PHPUnit 12; 56 Vitest tests in 6 files)
+76 PHPUnit test classes under `tests/Unit` and `tests/Feature` (see `docs/TESTING.md` for the
+per-file breakdown), plus 6 Vitest client test files under `tests/js/`.
 
 ### Verification scripts (`bin/`)
-- `bin/blade_lint.php` — view compiler + PHP syntax linter (77 views clean)
+- `bin/blade_lint.php` — view compiler + PHP syntax linter (145 views clean)
 - `bin/smoke.sh` — real HTTP test through `php artisan serve` (admin, owner, guest, invalid token)
 - `bin/smoke_urls.php` — dynamic route-to-URL resolver with database parameter binding
 
 ### Documentation (`docs/`)
 - `docs/ERD.md` — Mermaid entity relationship diagram, cardinality notes, enum tables
-- `docs/DATABASE.md` — full schema dictionary for all 32 domain tables
+- `docs/DATABASE.md` — full schema dictionary for all 90 domain tables
 - `docs/ROLES.md` — role matrix, route protection, policy rules, token model, owner scoping
-- `docs/USER-JOURNEY.md` — 4 complete user journeys (superadmin, owner, guest, visitor)
+- `docs/PERMISSIONS.md` — permission and authorization reference
+- `docs/IDENTITY.md` — identity model (users, owners, memberships)
+- `docs/TENANCY.md` — event/organization tenancy and isolation
+- `docs/EVENT-WORKSPACE.md`, `docs/EVENT-TEAM.md`,
+  `docs/EVENT-SETUP-WIZARD.md`, `docs/WORKSPACE-ONBOARDING.md`, `docs/INVITATIONS.md`,
+  `docs/SCHEDULE-ARCHITECTURE.md`, `docs/OPERATIONAL-PLAYBOOK.md`, `docs/DUPLICATE-BLUEPRINT.md`
+  — milestone feature documentation
+- `docs/MILESTONE-2-MIGRATION.md`, `docs/MILESTONE-3-MIGRATION.md` — retained historical migration
+  notes
+- `docs/USER-JOURNEY.md` — end-to-end user journeys (superadmin, owner, guest, visitor)
 - `docs/INSTALL.md` — system MariaDB vs user-space MariaDB, environment, seeding, troubleshooting
 - `docs/DEPLOY.md` — production release guide, nginx config, permissions, release recipe
 - `docs/DEMO.md` — 15-minute guided tour of every role and edge case
 - `docs/TESTING.md` — test suite breakdown, verification layers, debugging recipes
 - `README.md` — project overview, feature map, security model, quick start
+- `PROGRESS.md` — this file; delivery status and known limitations
 
 ---
 

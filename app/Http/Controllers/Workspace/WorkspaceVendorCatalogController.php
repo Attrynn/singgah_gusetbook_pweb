@@ -95,6 +95,7 @@ class WorkspaceVendorCatalogController extends Controller
         return view('workspace.vendor-categories.index', [
             'organization' => $organization,
             'categories' => $this->vendors->listCategories($organization),
+            'canManage' => $request->user()->can('manageVendorCatalog', $organization),
         ]);
     }
 

@@ -16,6 +16,7 @@
             <div class="card p-4 rounded-2xl border border-line/70 bg-surface">
                 <h2 class="text-base font-semibold text-ink mb-3">Undangan</h2>
                 <form method="POST" action="{{ route('workspace.events.vendors.portal.invite', [$organization, $event, $engagement]) }}" class="mt-3">
+                    @csrf
                     <div class="grid gap-3 sm:grid-cols-2">
                         <div>
                             <label class="block text-sm font-semibold text-ink">Email</label>
@@ -63,12 +64,14 @@
                             </p>
                             <div class="mt-2 flex items-center gap-2">
                                 <form method="POST" action="{{ route('workspace.events.vendors.portal.grant', [$organization, $event, $membership]) }}" class="inline">
+                                    @csrf
                                     <input type="hidden" name="event_vendor_engagement_id" value="{{ $engagement->id }}">
                                     <button type="submit" class="btn btn-primary btn-sm w-full">
                                         <x-ui.icon name="check" class="h-3.5 w-3.5" /> Beri Akses
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('workspace.events.vendors.portal.revoke', [$organization, $event, $membership]) }}" class="inline">
+                                    @csrf
                                     <button type="submit" class="btn btn-danger btn-sm w-full">
                                         <x-ui.icon name="x" class="h-3.5 w-3.5" /> Cabut
                                     </button>

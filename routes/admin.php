@@ -73,6 +73,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'auth.session', 'act
     Route::delete('albums/{album}', [MediaController::class, 'destroyAlbum'])->name('albums.destroy');
     Route::post('albums/{album}/attach', [MediaController::class, 'attach'])->name('albums.attach');
 
+    /*
+     |--------------------------------------------------------------------------
+     | Legacy M1 admin seating (deprecated)
+     |--------------------------------------------------------------------------
+     |
+     | @deprecated Superseded by the Milestone 8 floor-plan seating surface in
+     | routes/workspace-events.php. Intentionally retained for backward
+     | compatibility and not yet removed.
+     */
     Route::get('seating', [SeatingController::class, 'index'])->name('seating.index');
     Route::post('seating/tables', [SeatingController::class, 'storeTable'])->name('seating.tables.store');
     Route::put('seating/tables/{table}', [SeatingController::class, 'updateTable'])->name('seating.tables.update');

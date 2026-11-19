@@ -1,6 +1,6 @@
 # Database Dictionary
 
-32 domain tables plus the framework tables (`password_reset_tokens`, `sessions`, `cache`,
+90 domain tables plus the framework tables (`password_reset_tokens`, `sessions`, `cache`,
 `cache_locks`, `jobs`, `job_batches`, `failed_jobs`, `notifications`).
 
 Conventions:
@@ -253,13 +253,6 @@ Indexes: `(event_id, status, visibility)`, `(event_id, is_pinned)`.
 | `deleted_at` | timestamp null | Soft delete |
 
 Indexes: `(event_id, status)`, `(event_id, is_featured)`.
-
-### `media_album_items`
-
-| Column | Type | Notes |
-| --- | --- | --- |
-| `media_album_id`, `media_asset_id` | FK | Unique pair |
-| `sort_order` | smallint | |
 
 ---
 

@@ -21,13 +21,13 @@ mobile-native with a maximum shell width of 480px.
 | Runtime | PHP 8.5 (compatible with `^8.3`) |
 | Framework | Laravel 13.40 |
 | Database | MySQL 8 / MariaDB 10.6+ (SQLite supported for the test suite) |
-| Views | Blade + 12 reusable `x-ui` components + 5 layouts |
+| Views | Blade + 13 reusable `x-ui` components + 6 layouts |
 | Styling | Tailwind CSS v4 (`@utility`-based design system) |
 | Client | Alpine.js, Chart.js, Flatpickr, SweetAlert2, html5-qrcode |
 | Build | Vite 8 |
 | QR | `simplesoftwareio/simple-qrcode` (SVG) + a GD-based PNG renderer |
 | PDF | `barryvdh/laravel-dompdf` |
-| Tests | PHPUnit 12 (`php artisan test`) |
+| Tests | PHPUnit 12 (`php artisan test`) + Vitest 5 (`npm test`) |
 
 ---
 
@@ -125,8 +125,9 @@ MariaDB instance), and [docs/DEMO.md](docs/DEMO.md) for a guided tour.
 ## Verification
 
 ```bash
-php artisan test                 # 80 feature tests, 227 assertions, all passing
-php bin/blade_lint.php           # compiles + PHP-lints every Blade view (77 views)
+php artisan test                 # 733 PHPUnit tests, 2307 assertions, all passing
+npm test                         # 56 Vitest tests across 6 files
+php bin/blade_lint.php           # compiles + PHP-lints every Blade view (145 views clean)
 ./bin/smoke.sh                   # real HTTP smoke test against `php artisan serve`
 npm run build                    # Vite production build
 ```
@@ -135,35 +136,55 @@ The smoke script logs in as each role and requests every resolvable GET route, t
 guest token flow. It expects the app to be serving on `http://127.0.0.1:8123` (override with
 `BASE=...`).
 
+## M10 — Legacy Cleanup & System Consolidation
+
+Milestone 10 consolidated the codebase and removed accumulated legacy surface:
+
+- **Removed the dead MFA subsystem** — deleted `MfaChallenge` / `MfaService` and dropped the
+  `pragmarx/google2fa` dependency; nothing in routes, controllers or views referenced it.
+- **Removed duplicate documentation** — deleted the redundant `CLAUDE.md` and the superseded
+  `VOWSPACE_*.md` reports; `README.md`, `PROGRESS.md` and `docs/` are now the source of truth.
+- **Data integrity fixes** — added the missing DB indexes and backfilled orphan events into the
+  Legacy Workspace.
+- **Extended tenant integrity** — database-enforced `event` scoping now uses composite
+  `(event_id, id)` foreign keys across the M5–M9 tables.
+- **Retained but deprecated** — the legacy M1 admin seating surface and the `event_user` pivot are
+  intentionally kept for backward compatibility (marked `@deprecated`); the canonical replacements
+  are the Milestone 8 floor-plan seating and `event_owner_memberships`.
+
+All changes are additive or cleanup-safe; no destructive migrations were applied.
+
 ---
 
 ## Project layout
 
 ```
 app/
-  Enums/           13 domain enums (statuses, token types, roles…)
+  Enums/           71 domain enums (statuses, token types, roles, vendor/venue/memory…)
   Http/
-    Controllers/   Auth, Admin, Owner, Guest, LiveWall
-    Middleware/    EnsureActiveUser, EnsureRole, ResolveGuestToken
+    Controllers/   Auth, Admin, Owner, Guest, Workspace, VendorPortal, LiveWall
+    Middleware/    EnsureActiveUser, EnsureRole, ResolveGuestToken, org context, security headers
     Requests/      Form Requests for every write action
-  Models/          33 Eloquent models
-  Policies/        Event, Guest, GuestbookMessage, MediaAsset
-  Services/        Audit, Checkin, Event, Game, Guest, Guestbook, Invitation,
-                   Media, Poll, Qr, Report, Rsvp, Seating
+  Models/          91 Eloquent models
+  Policies/        7 policies (Event, Guest, GuestbookMessage, MediaAsset, Organization, Pass, Party)
+  Services/        63 domain services (guest, operations, vendor, venue/floorplan, memory…)
 database/
-  migrations/      12 migrations, 32 domain tables
-  seeders/         DemoSeeder (2 events, 38 guests, RSVP/check-in/wishes/media/polls/games)
-  factories/       User, Event, Guest, GuestbookMessage
+  migrations/      58 migration files, 90 domain tables
+  seeders/         DemoSeeder + milestone-specific seeders
+  factories/       Model factories for all core entities
 docs/              ERD, database dictionary, roles, journeys, install, deploy, demo, testing
 resources/
   css/app.css      Tailwind v4 design system
   js/app.js        Alpine + Chart.js + Flatpickr + SweetAlert + QR helpers
-  views/           77 Blade views (admin, owner, guest, live-wall, layouts, components)
+  views/           145 Blade views (admin, owner, guest, workspace, vendor portal, memory, layouts, components)
 routes/
   web.php          Auth + home
-  admin.php        142 routes total across the three role files
+  admin.php        Full route set across admin, owner, guest, workspace, vendor portal
   owner.php
   guest.php
+  workspace-events.php
+  workspace-vendors.php
+  vendor-portal.php
 bin/               blade_lint.php, smoke.sh, smoke_urls.php
 ```
 

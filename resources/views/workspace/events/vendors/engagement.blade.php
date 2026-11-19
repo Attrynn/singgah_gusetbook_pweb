@@ -1,5 +1,9 @@
 @extends('layouts.owner')
 
+@php
+    use App\Enums\VendorEngagementStatus;
+@endphp
+
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <x-ui.page-header
@@ -38,6 +42,7 @@
         <div class="col-span-1">
             <div class="mt-4">
                 <form method="POST" action="{{ route('workspace.events.vendors.engagements.status', [$organization, $event, $engagement]) }}" class="mb-3">
+                    @csrf
                     <div class="flex items-center gap-2">
                         <select name="status" class="input input-sm rounded-xl border border-line/50 px-3 py-2 text-sm text-ink" required>
                             <option value="">Pilih status</option>
@@ -55,6 +60,7 @@
                 </form>
 
                 <form method="POST" action="{{ route('workspace.events.vendors.engagements.cancel', [$organization, $event, $engagement]) }}" class="mb-3">
+                    @csrf
                     <div class="flex items-center gap-2">
                         <input type="text" name="reason" class="input input-sm w-full rounded-xl border border-line/50 px-3 py-2 text-sm text-ink" placeholder="Alasan pembatalan" required>
                         <button type="submit" class="btn btn-danger btn-sm">
@@ -64,8 +70,9 @@
                 </form>
 
                 <form method="POST" action="{{ route('workspace.events.vendors.engagements.close', [$organization, $event, $engagement]) }}" class="mb-3">
+                    @csrf
                     <div class="flex items-center gap-2">
-                        <input type="text" name="closure_notes" class="input input-sm w-full rounded-xl border border-line/50 px-3 py-2 text-sm text-ink" placeholder="Catatan penutupan" placeholder="Catatan penutupan (opsional)">
+                        <input type="text" name="closure_notes" class="input input-sm w-full rounded-xl border border-line/50 px-3 py-2 text-sm text-ink" placeholder="Catatan penutupan (opsional)">
                         <button type="submit" class="btn btn-danger btn-sm">
                             <x-ui.icon name="check" class="h-3.5 w-3.5" /> Tutup
                         </button>
@@ -107,6 +114,7 @@
         <div class="mt-5 card p-4 rounded-2xl border border-line/70 bg-surface">
             <h2 class="text-base font-semibold text-ink mb-3">Assignments</h2>
             <form method="POST" action="{{ route('workspace.events.vendors.engagements.assignments', [$organization, $event, $engagement]) }}" class="mt-3">
+                @csrf
                 <div class="grid gap-3 sm:grid-cols-2">
                     <div>
                         <label class="block text-sm font-semibold text-ink">Koordinator</label>
@@ -166,7 +174,6 @@
                         <th class="text-left">Judul</th>
                         <th class="text-left">Status</th>
                         <th class="text-left">Tenggat</th>
-                        <th class="text-left">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -175,11 +182,6 @@
                             <td class="text-left">{{ $deliverable->title }}</td>
                             <td class="text-left">{{ $deliverable->status->label() }}</td>
                             <td class="text-left">{{ $deliverable->due_at?->translatedFormat('d M Y, H:i') ?? '—' }}</td>
-                            <td class="text-left">
-                                <a href="{{ route('workspace.events.vendors.deliverables.show', [$organization, $event, $deliverable]) }}" class="btn btn-ghost btn-sm">
-                                    Lihat
-                                </a>
-                            </td>
                         </tr>
                     @endforeach
                 </tbody>

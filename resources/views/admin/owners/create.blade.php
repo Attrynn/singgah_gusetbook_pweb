@@ -12,6 +12,7 @@
 
     <div class="mt-6">
         <form method="POST" action="{{ route('admin.owners.store') }}" class="space-y-6">
+            @csrf
             <div>
                 <label for="name" class="label">
                     Name <span class="text-danger">*</span>

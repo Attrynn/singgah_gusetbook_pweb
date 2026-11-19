@@ -193,8 +193,8 @@ client bootstrap in `resources/js/app.js` (Alpine, Chart.js, Flatpickr, SweetAle
 ## 7. Verify the installation
 
 ```bash
-php artisan test            # 54 tests
-php bin/blade_lint.php      # compiles + lints all 77 views
+php artisan test            # 733 tests
+php bin/blade_lint.php      # compiles + lints all 145 views
 ./bin/smoke.sh              # real HTTP sweep, needs the server on :8123
 ```
 

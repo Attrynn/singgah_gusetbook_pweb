@@ -7,6 +7,8 @@
 
     {{-- Profile Form --}}
     <form method="POST" action="{{ route('owner.profile.update') }}" enctype="multipart/form-data" class="card p-5 mb-5">
+        @csrf
+        @method('PUT')
         <div class="flex items-center gap-3 mb-4">
             @if ($user->avatar_path)
                 <img src="{{ $user->avatar_path ? Illuminate\Support\Facades\Storage::disk('public')->url($user->avatar_path) : null }}" alt="Avatar" class="h-16 w-16 rounded-2xl object-cover" />
@@ -39,6 +41,8 @@
 
     {{-- Password Form --}}
     <form method="POST" action="{{ route('owner.profile.password') }}" class="card p-5 mb-5">
+        @csrf
+        @method('PUT')
         <p class="section-kicker">Ubah kata sandi</p>
         <div class="mt-3 space-y-4">
             <x-ui.input name="current_password" label="Kata sandi sekarang" type="password" required hint="Digunakan untuk memverifikasi identitas saat login." />
@@ -101,6 +105,8 @@
 
     {{-- Password Form --}}
     <form method="POST" action="{{ route('owner.profile.password') }}" class="card p-5 mb-5">
+        @csrf
+        @method('PUT')
         <p class="section-kicker">Ubah kata sandi</p>
         <div class="mt-3 space-y-4">
             <x-ui.input name="current_password" label="Kata sandi sekarang" type="password" required hint="Digunakan untuk memverifikasi identitas saat login." />

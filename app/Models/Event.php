@@ -86,6 +86,10 @@ class Event extends Model
         return $this->organization_id !== null;
     }
 
+    /**
+     * @deprecated The `event_user` pivot is legacy and retained for backward compatibility only;
+     * the canonical model for event ownership is {@see EventOwnerMembership}.
+     */
     public function owners(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'event_user')

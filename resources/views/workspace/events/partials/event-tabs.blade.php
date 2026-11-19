@@ -135,12 +135,9 @@
                     <span>Engagements</span>
                 </a>
             @endif
-            @if (Route::has('workspace.events.vendors.portal.index'))
-                <a href="{{ route('workspace.events.vendors.portal.index', [$organization, $event]) }}" class="{{ $vendorSubTabClass($active === 'vendors-portal') }}">
-                    <x-ui.icon name="share" class="h-3 w-3 shrink-0" />
-                    <span>Portal</span>
-                </a>
-            @endif
+            {{-- The vendor portal is scoped to a single engagement, so it is
+                 reached from the engagement page rather than this event-level
+                 strip (which has no engagement to bind). --}}
             @can('viewVendorReports', $event)
                 @if (Route::has('workspace.events.vendors.reports.index'))
                     <a href="{{ route('workspace.events.vendors.reports.index', [$organization, $event]) }}" class="{{ $vendorSubTabClass($active === 'vendors-reports') }}">

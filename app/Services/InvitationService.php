@@ -125,13 +125,6 @@ class InvitationService
         return $raw ? route('guest.invitation', $raw) : null;
     }
 
-    public function qrUrl(Guest $guest): ?string
-    {
-        $raw = $this->rawToken($guest, TokenType::Qr);
-
-        return $raw ? route('guest.pass', $raw) : null;
-    }
-
     public function whatsappUrl(Guest $guest): ?string
     {
         $url = $this->invitationUrl($guest);

@@ -18,6 +18,8 @@
             Gifts
         </x-ui.button>
         <form method="POST" action="{{ route('admin.events.destroy', $event) }}" class="inline" data-confirm="Yakin ingin menghapus event ini?" data-confirm-title="Hapus Event">
+            @csrf
+            @method('DELETE')
             <button type="submit" class="btn btn-danger" icon="trash">
                 Hapus
             </button>

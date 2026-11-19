@@ -196,6 +196,7 @@
 
                                 @if ($canManage && $incident->status !== IncidentStatus::Resolved && $incident->status !== IncidentStatus::Closed)
                                     <form method="POST" action="{{ route('workspace.events.operations.incidents.escalate', [$organization, $event, $incident]) }}" class="rounded-xl border border-warning/30 bg-warning/10 p-3">
+                                        @csrf
                                         <h4 class="text-[11px] font-semibold uppercase tracking-[0.08em] text-faint">Eskalasi</h4>
                                         <p class="mt-1 text-[10px] text-muted">Bila insiden melebihi tanggung jawab staf yang ada.</p>
                                         <div class="mt-2 flex flex-wrap items-end gap-2">
@@ -219,6 +220,7 @@
 
                                 @if ($canResolve)
                                     <form method="POST" action="{{ route('workspace.events.operations.incidents.resolve', [$organization, $event, $incident]) }}" class="rounded-xl border border-success/30 bg-success/10 p-3">
+                                        @csrf
                                         <h4 class="text-[11px] font-semibold uppercase tracking-[0.08em] text-success">Selesaikan insiden</h4>
                                         <p class="mt-1 text-[10px] text-muted">Catat solusi yang diterapkan.</p>
                                         <x-ui.textarea name="resolution_notes" label="Solusi" rows="3" placeholder="Langkah penyelesaian dan hasil akhir" />
@@ -230,6 +232,7 @@
 
                                 @if ($canManage)
                                     <form method="POST" action="{{ route('workspace.events.operations.incidents.assign', [$organization, $event, $incident]) }}" class="rounded-xl border border-line/60 bg-surface p-3">
+                                        @csrf
                                         <h4 class="text-[11px] font-semibold uppercase tracking-[0.08em] text-faint">Atur penanggung jawab</h4>
                                         <p class="mt-1 text-[10px] text-muted">Pilih anggota staf aktif yang akan menangani insiden ini.</p>
                                         <div class="mt-2 flex flex-wrap items-end gap-2">
