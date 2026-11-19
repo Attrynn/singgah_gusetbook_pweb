@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Event;
 use App\Models\User;
 use App\Services\InvitationService;
 use App\Services\QrService;
@@ -95,5 +96,65 @@ class QrPassChainTest extends TestCase
         // A QR-type token is a scanner credential, not an invitation link.
         // Allowing it to open the pass page would blur the two token scopes.
         $this->get(route('guest.pass', $qr))->assertNotFound();
+    }
+
+    /**
+     * Regression: generating a QR for a finished event reported success while
+     * minting an already-expired token, so the page still showed "QR belum
+     * tersedia" and the existing invitation link was silently invalidated.
+     */
+    public function test_qr_regeneration_is_refused_for_a_finished_event(): void
+    {
+        $admin = User::factory()->superadmin()->create();
+        $event = Event::factory()->completed()->create();
+        $guest = $this->makeGuest($event);
+        app(InvitationService::class)->issueForGuest($guest);
+        $guest->refresh();
+
+        $invitationId = $guest->activeInvitationToken()?->id;
+        $this->assertNotNull($invitationId);
+
+        $this->actingAs($admin)
+            ->from(route('admin.invitations.show', $guest))
+            ->post(route('admin.invitations.regenerate', $guest))
+            ->assertRedirect(route('admin.invitations.show', $guest))
+            ->assertSessionHasErrors('qr');
+
+        // The refused request must not revoke the working invitation link.
+        $this->assertSame($invitationId, $guest->fresh()->activeInvitationToken()?->id);
+    }
+
+    public function test_admin_invitation_page_explains_a_blocked_qr_for_a_finished_event(): void
+    {
+        $admin = User::factory()->superadmin()->create();
+        $event = Event::factory()->completed()->create();
+        $guest = $this->makeGuest($event);
+        app(InvitationService::class)->issueForGuest($guest);
+
+        $this->actingAs($admin)
+            ->get(route('admin.invitations.show', $guest))
+            ->assertOk()
+            ->assertSee('QR pass tidak dapat diterbitkan karena acara sudah berakhir', false)
+            ->assertDontSee('Generate QR pass');
+    }
+
+    public function test_qr_regeneration_works_for_an_upcoming_event(): void
+    {
+        $admin = User::factory()->superadmin()->create();
+        $event = Event::factory()->create();
+        $guest = $this->makeGuest($event);
+        app(InvitationService::class)->issueForGuest($guest);
+
+        $this->actingAs($admin)
+            ->from(route('admin.invitations.show', $guest))
+            ->post(route('admin.invitations.regenerate', $guest))
+            ->assertRedirect(route('admin.invitations.show', $guest))
+            ->assertSessionHasNoErrors();
+
+        $this->actingAs($admin)
+            ->get(route('admin.invitations.show', $guest))
+            ->assertOk()
+            ->assertSee('QR ini hanya untuk check-in', false)
+            ->assertDontSee('QR belum tersedia');
     }
 }

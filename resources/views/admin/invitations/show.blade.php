@@ -97,19 +97,23 @@
                 <div class="mx-auto mt-4 flex w-full max-w-[260px] items-center justify-center rounded-2xl border border-line bg-surface p-4">
                     @if ($qrSvg)
                         <div class="w-full [&>svg]:h-auto [&>svg]:w-full">{!! $qrSvg !!}</div>
+                    @elseif ($qrBlocked)
+                        <div class="py-10 text-xs text-muted">
+                            QR pass tidak dapat diterbitkan karena acara sudah berakhir lebih dari {{ config('vowspace.tokens.qr_grace_days') }} hari.
+                        </div>
                     @else
                         <div class="py-10 text-xs text-muted">QR belum tersedia.</div>
                     @endif
                 </div>
 
-                @if (! $qrSvg)
+                @if (! $qrSvg && ! $qrBlocked)
                     <form method="POST" action="{{ route('admin.invitations.regenerate', $guest) }}" class="mt-4" data-confirm="Buat ulang token untuk menghasilkan QR pass?" data-confirm-title="Generate QR">
                         @csrf
                         <button type="submit" class="btn btn-primary btn-sm w-full">
                             <x-ui.icon name="qr" class="h-3.5 w-3.5" /> Generate QR pass
                         </button>
                     </form>
-                @else
+                @elseif ($qrSvg)
                     <p class="mt-4 text-[11px] text-faint">QR ini hanya untuk check-in dan tidak dapat dipakai dua kali.</p>
                 @endif
             </div>

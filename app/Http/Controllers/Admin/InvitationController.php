@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\InvitationStatus;
+use App\Enums\TokenType;
 use App\Models\Event;
 use App\Models\Guest;
 use App\Models\Invitation;
@@ -15,8 +17,7 @@ class InvitationController extends Controller
     public function __construct(
         protected InvitationService $invitations,
         protected QrService $qr,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request)
     {
@@ -48,7 +49,7 @@ class InvitationController extends Controller
             'events' => Event::orderBy('event_date')->get(),
             'stats' => $stats,
             'filters' => $request->only(['event_id', 'search', 'status']),
-            'statuses' => \App\Enums\InvitationStatus::cases(),
+            'statuses' => InvitationStatus::cases(),
         ]);
     }
 
@@ -57,10 +58,16 @@ class InvitationController extends Controller
         $guest->load(['event', 'invitation.token', 'category', 'group']);
         $invitationUrl = $this->invitations->invitationUrl($guest);
         $whatsappUrl = $this->invitations->whatsappUrl($guest);
-        $qrRaw = $this->invitations->rawToken($guest, \App\Enums\TokenType::Qr);
+        $qrRaw = $this->invitations->rawToken($guest, TokenType::Qr);
         $qrSvg = $qrRaw ? $this->qr->svg($qrRaw) : null;
 
-        return view('admin.invitations.show', compact('guest', 'invitationUrl', 'whatsappUrl', 'qrSvg'));
+        // A QR pass is bounded by the event end plus the grace period, so a
+        // finished event can never mint a usable pass. Surface that instead of
+        // offering a "generate" button that can only produce an expired token.
+        $qrExpiresAt = $this->invitations->qrExpiresAt($guest);
+        $qrBlocked = $qrExpiresAt !== null && $qrExpiresAt->isPast();
+
+        return view('admin.invitations.show', compact('guest', 'invitationUrl', 'whatsappUrl', 'qrSvg', 'qrBlocked'));
     }
 
     public function preview(Guest $guest)
@@ -104,6 +111,17 @@ class InvitationController extends Controller
 
     public function regenerate(Guest $guest)
     {
+        $qrExpiresAt = $this->invitations->qrExpiresAt($guest);
+
+        // Refuse before touching existing tokens: minting an already-expired
+        // QR would silently invalidate the current invitation link while
+        // reporting success and still showing no QR.
+        if ($qrExpiresAt !== null && $qrExpiresAt->isPast()) {
+            return back()->withErrors([
+                'qr' => 'QR pass tidak dapat diterbitkan karena acara sudah berakhir lebih dari masa tenggang.',
+            ]);
+        }
+
         $this->invitations->issueForGuest($guest);
 
         return back()->with('status', 'Tautan undangan dan QR pass dibuat ulang.');
