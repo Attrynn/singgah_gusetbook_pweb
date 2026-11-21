@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\Guest;
 use App\Models\GuestbookMessage;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -333,36 +334,98 @@ class GuestService
     }
 
     /**
+     * Build the guest listing query shared by the admin index and CSV export.
+     *
+     * @param  array<string,mixed>  $filters
+     */
+    public function filteredQuery(array $filters = []): Builder
+    {
+        $query = Guest::query()->with(['event', 'category', 'group', 'invitation', 'rsvp']);
+
+        if ($eventId = (int) ($filters['event_id'] ?? 0)) {
+            $query->where('event_id', $eventId);
+        }
+
+        if ($search = trim((string) ($filters['search'] ?? ''))) {
+            $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%")
+                ->orWhere('phone', 'like', "%{$search}%"));
+        }
+
+        foreach (['guest_category_id', 'guest_group_id'] as $filter) {
+            if ($value = (int) ($filters[$filter] ?? 0)) {
+                $query->where($filter, $value);
+            }
+        }
+
+        if ($rsvp = (string) ($filters['rsvp_status'] ?? '')) {
+            $query->where('rsvp_status', $rsvp);
+        }
+
+        if ($attendance = (string) ($filters['attendance'] ?? '')) {
+            $attendance === 'checked_in'
+                ? $query->whereNotNull('checked_in_at')
+                : $query->whereNull('checked_in_at');
+        }
+
+        if ($invitation = (string) ($filters['invitation_status'] ?? '')) {
+            $query->whereHas('invitation', fn ($q) => $q->where('status', $invitation));
+        }
+
+        return $query;
+    }
+
+    /**
      * Stream guest rows from the database instead of materialising the whole
      * dataset in memory.
+     *
+     * @param  array<string,mixed>  $filters
      */
-    public function exportRows(Event $event): callable
+    public function exportRows(?Event $event, array $filters = []): callable
     {
-        return function (callable $write) use ($event): void {
-            $write([
+        return function (callable $write) use ($event, $filters): void {
+            $header = [
                 'Name', 'Email', 'Phone', 'Category', 'Group', 'RSVP Status', 'Attendance',
                 'Max Attendees', 'Check-in', 'Invitation Status', 'Created At',
-            ]);
+            ];
 
-            $event->guests()->with(['category', 'group', 'rsvp', 'invitation'])
-                ->orderBy('name')
-                ->chunk(200, function ($guests) use ($write): void {
-                    foreach ($guests as $guest) {
-                        $write([
-                            $guest->name,
-                            $guest->email,
-                            $guest->phone,
-                            $guest->category?->name,
-                            $guest->group?->name,
-                            $guest->rsvp_status->label(),
-                            $guest->rsvp?->attendance_count ?? 0,
-                            $guest->max_attendees,
-                            $guest->checked_in_at?->format('Y-m-d H:i') ?? '',
-                            $guest->invitation?->status->label() ?? 'Not sent',
-                            $guest->created_at?->format('Y-m-d H:i'),
-                        ]);
+            if ($event === null) {
+                array_unshift($header, 'Event');
+            }
+
+            $write($header);
+
+            $query = $this->filteredQuery($filters);
+
+            if ($event !== null) {
+                $query->where('event_id', $event->id)->orderBy('name');
+            } else {
+                $query->orderBy('event_id')->orderBy('name');
+            }
+
+            $query->chunk(200, function ($guests) use ($write, $event): void {
+                foreach ($guests as $guest) {
+                    $row = [
+                        $guest->name,
+                        $guest->email,
+                        $guest->phone,
+                        $guest->category?->name,
+                        $guest->group?->name,
+                        $guest->rsvp_status->label(),
+                        $guest->rsvp?->attendance_count ?? 0,
+                        $guest->max_attendees,
+                        $guest->checked_in_at?->format('Y-m-d H:i') ?? '',
+                        $guest->invitation?->status->label() ?? 'Not sent',
+                        $guest->created_at?->format('Y-m-d H:i'),
+                    ];
+
+                    if ($event === null) {
+                        array_unshift($row, $guest->event?->name);
                     }
-                });
+
+                    $write($row);
+                }
+            });
         };
     }
 

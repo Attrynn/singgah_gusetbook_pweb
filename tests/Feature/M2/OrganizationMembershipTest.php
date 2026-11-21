@@ -9,6 +9,7 @@ use App\Models\OrganizationMembership;
 use App\Models\User;
 use App\Services\WorkspaceMembershipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class OrganizationMembershipTest extends TestCase
@@ -210,6 +211,29 @@ class OrganizationMembershipTest extends TestCase
             'status' => OrganizationMembershipStatus::Revoked->value,
         ]);
         $this->assertDatabaseHas('audit_logs', ['action' => 'membership.revoked']);
+    }
+
+    public function test_restore_is_blocked_for_lower_privileged_actor(): void
+    {
+        $service = app(WorkspaceMembershipService::class);
+        $org = Organization::factory()->create();
+        $actor = User::factory()->create();
+        $target = User::factory()->create();
+        $this->membership($org, $actor, OrganizationRole::Member->value);
+        $this->membership($org, $target, OrganizationRole::Owner->value, OrganizationMembershipStatus::Suspended->value);
+
+        try {
+            $service->restore($org, $target, $actor);
+            $this->fail('A lower-privileged actor must not be able to restore an Owner membership.');
+        } catch (HttpException $exception) {
+            $this->assertSame(422, $exception->getStatusCode());
+        }
+
+        $this->assertDatabaseHas('organization_memberships', [
+            'organization_id' => $org->id,
+            'user_id' => $target->id,
+            'status' => OrganizationMembershipStatus::Suspended->value,
+        ]);
     }
 
     public function test_status_lifecycle_casts(): void

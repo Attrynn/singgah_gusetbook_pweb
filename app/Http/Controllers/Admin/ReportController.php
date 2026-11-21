@@ -37,7 +37,7 @@ class ReportController extends Controller
 
     public function export(Request $request, ReportService $reports)
     {
-        $event = Event::findOrFail($request->integer('event_id'));
+        $event = $request->integer('event_id') ? Event::findOrFail($request->integer('event_id')) : Event::orderByDesc('event_date')->firstOrFail();
         $type = $request->string('type', 'summary')->value();
 
         $rows = match ($type) {
@@ -55,7 +55,7 @@ class ReportController extends Controller
 
     public function pdf(Request $request, ReportService $reports)
     {
-        $event = Event::findOrFail($request->integer('event_id'));
+        $event = $request->integer('event_id') ? Event::findOrFail($request->integer('event_id')) : Event::orderByDesc('event_date')->firstOrFail();
         $stats = $reports->eventStats($event);
         $rsvpBreakdown = $reports->rsvpBreakdown($event);
         $timeline = $reports->checkinTimeline($event);

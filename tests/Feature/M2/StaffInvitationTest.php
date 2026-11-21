@@ -89,6 +89,21 @@ class StaffInvitationTest extends TestCase
         $this->assertDatabaseCount('workspace_invitations', 0);
     }
 
+    public function test_admin_can_invite_admin_role_within_authority(): void
+    {
+        $org = $this->makeOrganization();
+        $this->makeEvent($org);
+        $admin = $this->makeMember($org, OrganizationRole::Admin);
+
+        $response = $this->actingAs($admin)->post(route('workspace.invitations.store', $org), [
+            'email' => 'peer-admin@example.com',
+            'organization_role' => OrganizationRole::Admin->value,
+        ]);
+
+        $response->assertStatus(302);
+        $this->assertSame('admin', WorkspaceInvitation::first()?->organization_role);
+    }
+
     public function test_event_assignment_outside_organization_is_rejected(): void
     {
         $org = $this->makeOrganization();

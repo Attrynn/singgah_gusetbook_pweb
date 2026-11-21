@@ -101,6 +101,8 @@ class WorkspaceMembershipService
         DB::transaction(function () use ($org, $target, $actor): void {
             $membership = $this->lockedMembership($org, $target);
 
+            $this->assertActorMayManage($org, $membership, $actor);
+
             $membership->update([
                 'status' => OrganizationMembershipStatus::Active->value,
                 'accepted_at' => now(),

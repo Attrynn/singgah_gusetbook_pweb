@@ -102,9 +102,7 @@ class WorkspaceMemberController extends Controller
             'assignments.*.role' => ['required_with:assignments', Rule::in(array_column(EventStaffRole::cases(), 'value'))],
         ]);
 
-        if ($data['organization_role'] === OrganizationRole::Owner->value && ! $this->canGrantOwner($request, $organization)) {
-            abort(403, 'Anda tidak dapat memberikan role di atas kewenangan Anda.');
-        }
+        $this->assertMayGrantRole($request, $organization, OrganizationRole::from($data['organization_role']));
 
         $assignments = collect($data['assignments'] ?? [])
             ->map(fn (array $assignment): array => [
@@ -189,9 +187,7 @@ class WorkspaceMemberController extends Controller
             'role' => ['required', Rule::in(array_column(OrganizationRole::cases(), 'value'))],
         ]);
 
-        if ($data['role'] === OrganizationRole::Owner->value && ! $this->canGrantOwner($request, $organization)) {
-            abort(403, 'Anda tidak dapat memberikan role di atas kewenangan Anda.');
-        }
+        $this->assertMayGrantRole($request, $organization, OrganizationRole::from($data['role']));
 
         $this->membershipService->changeRole(
             $organization,
@@ -213,14 +209,22 @@ class WorkspaceMemberController extends Controller
     }
 
     /**
-     * Only an active Workspace Owner or a platform superadmin may grant the Owner role.
+     * A non-superadmin actor may only grant a role at or below their own
+     * Workspace role. Owner is the ceiling, so this also blocks privilege
+     * escalation by Workspace Admins.
      */
-    private function canGrantOwner(Request $request, Organization $organization): bool
+    private function assertMayGrantRole(Request $request, Organization $organization, OrganizationRole $role): void
     {
         $user = $request->user();
 
-        return $user->isSuperadmin()
-            || $user->isPlatformSuperadmin()
-            || $user->isWorkspaceOwner($organization);
+        if ($user->isSuperadmin() || $user->isPlatformSuperadmin()) {
+            return;
+        }
+
+        $actorRole = $organization->membershipFor($user)?->role;
+
+        if ($actorRole === null || ! $actorRole->isAtLeast($role)) {
+            abort(403, 'Anda tidak dapat memberikan role di atas kewenangan Anda.');
+        }
     }
 }

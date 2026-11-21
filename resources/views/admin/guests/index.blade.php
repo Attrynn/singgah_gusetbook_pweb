@@ -11,7 +11,7 @@
         <x-ui.button variant="secondary" href="{{ route('admin.guests.import') }}" icon="download">
             Import
         </x-ui.button>
-        <a href="{{ route('admin.guests.export', ['event_id' => request('event_id')]) }}" class="btn btn-soft">
+        <a href="{{ route('admin.guests.export', array_filter(request()->only(['event_id', 'search', 'guest_category_id', 'guest_group_id', 'rsvp_status', 'attendance', 'invitation_status']), fn ($v) => $v !== null && $v !== '')) }}" class="btn btn-soft">
             <x-ui.icon name="download" class="h-4 w-4" />
             Export
         </a>
@@ -19,7 +19,14 @@
 
     <div class="mt-6">
         <form method="GET" class="flex flex-wrap items-center gap-4">
-            <input type="text" name="event_id" placeholder="Event" class="input w-48" value="{{ request('event_id') }}" aria-label="Filter event">
+            <select name="event_id" class="input w-48" aria-label="Filter event">
+                <option value="">Semua event</option>
+                @foreach ($events as $eventOption)
+                    <option value="{{ $eventOption->id }}" {{ request('event_id') == $eventOption->id ? 'selected' : '' }}>
+                        {{ $eventOption->name }}
+                    </option>
+                @endforeach
+            </select>
             <input type="text" name="search" placeholder="Cari tamu..." class="input w-64" value="{{ request('search') }}" aria-label="Cari tamu">
             <select name="guest_category_id" class="input w-48" aria-label="Filter kategori">
                 <option value="">Semua kategori</option>

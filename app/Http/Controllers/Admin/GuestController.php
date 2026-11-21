@@ -32,37 +32,9 @@ class GuestController extends Controller
 
     public function index(Request $request)
     {
-        $query = Guest::query()->with(['event', 'category', 'group', 'invitation', 'rsvp']);
-
-        if ($eventId = $request->integer('event_id')) {
-            $query->where('event_id', $eventId);
-        }
-
-        if ($search = $request->string('search')->trim()->value()) {
-            $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%")
-                ->orWhere('phone', 'like', "%{$search}%"));
-        }
-
-        foreach (['guest_category_id', 'guest_group_id'] as $filter) {
-            if ($value = $request->integer($filter)) {
-                $query->where($filter, $value);
-            }
-        }
-
-        if ($rsvp = $request->string('rsvp_status')->value()) {
-            $query->where('rsvp_status', $rsvp);
-        }
-
-        if ($attendance = $request->string('attendance')->value()) {
-            $attendance === 'checked_in'
-                ? $query->whereNotNull('checked_in_at')
-                : $query->whereNull('checked_in_at');
-        }
-
-        if ($invitation = $request->string('invitation_status')->value()) {
-            $query->whereHas('invitation', fn ($q) => $q->where('status', $invitation));
-        }
+        $query = $this->guests->filteredQuery($request->only([
+            'event_id', 'search', 'guest_category_id', 'guest_group_id', 'rsvp_status', 'attendance', 'invitation_status',
+        ]));
 
         $sort = $request->string('sort', 'name')->value();
         $direction = $request->string('direction', 'asc')->value() === 'desc' ? 'desc' : 'asc';
@@ -182,11 +154,12 @@ class GuestController extends Controller
 
     public function export(Request $request)
     {
-        $event = Event::findOrFail($request->integer('event_id'));
+        $event = $request->integer('event_id') ? Event::findOrFail($request->integer('event_id')) : null;
+        $filters = $request->only(['event_id', 'search', 'guest_category_id', 'guest_group_id', 'rsvp_status', 'attendance', 'invitation_status']);
 
         return $this->csvResponse(
-            $this->guests->exportRows($event),
-            'vowspace-guests-'.$event->slug.'.csv'
+            $this->guests->exportRows($event, $filters),
+            'vowspace-guests-'.($event?->slug ?? 'all').'.csv'
         );
     }
 

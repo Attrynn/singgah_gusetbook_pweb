@@ -77,6 +77,56 @@ class AdminCrudTest extends TestCase
         $this->assertStringContainsString('Tamu Ekspor', $response->streamedContent());
     }
 
+    public function test_guest_export_without_event_returns_csv_for_all_events(): void
+    {
+        $admin = User::factory()->superadmin()->create();
+        $first = $this->makeEvent();
+        $second = $this->makeEvent();
+        $this->makeGuest($first, ['name' => 'Tamu Pertama']);
+        $this->makeGuest($second, ['name' => 'Tamu Kedua']);
+
+        $response = $this->actingAs($admin)->get(route('admin.guests.export'));
+
+        $response->assertOk();
+        $this->assertStringContainsString('text/csv', $response->headers->get('content-type'));
+
+        $csv = $response->streamedContent();
+        $this->assertStringContainsString('Tamu Pertama', $csv);
+        $this->assertStringContainsString('Tamu Kedua', $csv);
+        $this->assertStringContainsString('Event', $csv);
+    }
+
+    public function test_guest_export_applies_search_filter(): void
+    {
+        $admin = User::factory()->superadmin()->create();
+        $event = $this->makeEvent();
+        $this->makeGuest($event, ['name' => 'only-one-name']);
+        $this->makeGuest($event, ['name' => 'other-guest']);
+
+        $response = $this->actingAs($admin)->get(route('admin.guests.export', [
+            'event_id' => $event->id,
+            'search' => 'only-one-name',
+        ]));
+
+        $response->assertOk();
+
+        $csv = $response->streamedContent();
+        $this->assertStringContainsString('only-one-name', $csv);
+        $this->assertStringNotContainsString('other-guest', $csv);
+    }
+
+    public function test_admin_guests_index_export_link_preserves_all_guests_without_filter(): void
+    {
+        $admin = User::factory()->superadmin()->create();
+        $this->makeEvent();
+
+        $response = $this->actingAs($admin)->get(route('admin.guests.index'));
+
+        $response->assertOk();
+        $response->assertSee('href="'.route('admin.guests.export').'"', false);
+        $response->assertDontSee(route('admin.guests.export').'?', false);
+    }
+
     public function test_report_export_returns_csv(): void
     {
         $admin = User::factory()->superadmin()->create();
@@ -87,6 +137,28 @@ class AdminCrudTest extends TestCase
 
         $response->assertOk();
         $this->assertStringContainsString('text/csv', $response->headers->get('content-type'));
+    }
+
+    public function test_report_export_without_event_id_uses_latest_event(): void
+    {
+        $admin = User::factory()->superadmin()->create();
+        $this->makeEvent();
+
+        $response = $this->actingAs($admin)->get(route('admin.reports.export'));
+
+        $response->assertOk();
+        $this->assertStringContainsString('text/csv', $response->headers->get('content-type'));
+    }
+
+    public function test_report_pdf_without_event_id_uses_latest_event(): void
+    {
+        $admin = User::factory()->superadmin()->create();
+        $this->makeEvent();
+
+        $response = $this->actingAs($admin)->get(route('admin.reports.pdf'));
+
+        $response->assertOk();
+        $this->assertStringContainsString('application/pdf', $response->headers->get('content-type'));
     }
 
     public function test_event_status_can_be_changed(): void
