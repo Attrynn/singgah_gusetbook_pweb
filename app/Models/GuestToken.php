@@ -6,6 +6,7 @@ use App\Enums\TokenType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 
 class GuestToken extends Model
@@ -13,6 +14,7 @@ class GuestToken extends Model
     protected $fillable = [
         'guest_id', 'event_id', 'type', 'token_hash', 'token_ciphertext', 'token_prefix',
         'expires_at', 'revoked_at', 'last_used_at',
+        'short_code',
     ];
 
     protected $hidden = ['token_hash', 'token_ciphertext'];
@@ -54,6 +56,42 @@ class GuestToken extends Model
             ->first();
     }
 
+    public static function generateShortCode(): string
+    {
+        $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+        do {
+            $code = '';
+            for ($i = 0; $i < 8; $i++) {
+                $code .= $alphabet[random_int(0, strlen($alphabet) - 1)];
+            }
+        } while (static::where('short_code', $code)->exists());
+
+        return $code;
+    }
+
+    public static function findByShortCode(string $shortCode): ?self
+    {
+        $normalized = strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', $shortCode));
+
+        if (strlen($normalized) !== 8) {
+            return null;
+        }
+
+        return static::with(['guest.event', 'event'])
+            ->where('short_code', $normalized)
+            ->first();
+    }
+
+    public function formattedShortCode(): ?string
+    {
+        if (! $this->short_code) {
+            return null;
+        }
+
+        return substr($this->short_code, 0, 4).'-'.substr($this->short_code, 4);
+    }
+
     public function isExpired(): bool
     {
         return $this->expires_at !== null && $this->expires_at->isPast();
@@ -77,7 +115,7 @@ class GuestToken extends Model
 
     public function rawToken(): string
     {
-        return \Illuminate\Support\Facades\Crypt::decryptString($this->token_ciphertext);
+        return Crypt::decryptString($this->token_ciphertext);
     }
 
     public function markUsed(): void

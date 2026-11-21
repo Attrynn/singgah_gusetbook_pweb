@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Checkin;
 use App\Models\Event;
+use App\Models\GuestToken;
 use App\Models\User;
 use App\Services\InvitationService;
 use App\Services\QrService;
@@ -156,5 +158,78 @@ class QrPassChainTest extends TestCase
             ->assertOk()
             ->assertSee('QR ini hanya untuk check-in', false)
             ->assertDontSee('QR belum tersedia');
+    }
+
+    public function test_guest_pass_page_shows_the_short_checkin_code(): void
+    {
+        $event = $this->makeEvent();
+        $guest = $this->makeGuest($event);
+        $token = $this->invitationToken($guest);
+        $code = app(InvitationService::class)->qrShortCode($guest);
+
+        $this->assertNotNull($code);
+        $this->assertMatchesRegularExpression('/^[A-Z0-9]{4}-[A-Z0-9]{4}$/', $code);
+
+        $this->get(route('guest.pass', $token))
+            ->assertOk()
+            ->assertSee('Tunjukkan QR ini kepada petugas registrasi', false)
+            ->assertSee($code, false)
+            ->assertDontSee('Pindai QR ini pada meja registrasi', false);
+    }
+
+    public function test_staff_scanner_accepts_the_short_checkin_code(): void
+    {
+        $admin = User::factory()->superadmin()->create();
+        $event = $this->makeEvent();
+        $guest = $this->makeGuest($event, ['rsvp_status' => 'confirmed']);
+        $this->invitationToken($guest);
+        $code = (string) app(InvitationService::class)->qrShortCode($guest);
+
+        $typed = strtolower(str_replace('-', ' ', $code));
+
+        $this->actingAs($admin)
+            ->postJson(route('admin.checkins.scan'), ['token' => $typed, 'event_id' => $event->id])
+            ->assertOk()
+            ->assertJson(['status' => 'success']);
+
+        $guest->refresh();
+        $this->assertNotNull($guest->checked_in_at);
+        $this->assertDatabaseHas('checkins', ['guest_id' => $guest->id, 'event_id' => $event->id]);
+    }
+
+    public function test_short_checkin_code_cannot_check_in_twice(): void
+    {
+        $admin = User::factory()->superadmin()->create();
+        $event = $this->makeEvent();
+        $guest = $this->makeGuest($event, ['rsvp_status' => 'confirmed']);
+        $this->invitationToken($guest);
+        $code = (string) app(InvitationService::class)->qrShortCode($guest);
+
+        $this->actingAs($admin)
+            ->postJson(route('admin.checkins.scan'), ['token' => $code, 'event_id' => $event->id])
+            ->assertOk()
+            ->assertJson(['status' => 'success']);
+
+        $this->actingAs($admin)
+            ->postJson(route('admin.checkins.scan'), ['token' => $code, 'event_id' => $event->id])
+            ->assertOk()
+            ->assertJson(['status' => 'duplicate']);
+
+        $this->assertSame(1, Checkin::where('guest_id', $guest->id)->count());
+    }
+
+    public function test_short_code_is_unique_per_qr_token(): void
+    {
+        $event = $this->makeEvent();
+        $first = $this->makeGuest($event);
+        $second = $this->makeGuest($event);
+
+        $this->qrToken($first);
+        $this->qrToken($second);
+
+        $codes = GuestToken::where('type', 'qr')->pluck('short_code')->filter();
+
+        $this->assertCount(2, $codes);
+        $this->assertSame($codes->unique()->count(), $codes->count());
     }
 }

@@ -76,7 +76,7 @@
 
         <div class="card mt-4 p-5">
             <div class="flex items-center gap-3">
-                <input type="text" id="manualToken" placeholder="Tempel token QR..." class="input w-full max-w-md" x-model="manualToken" @keydown.enter.window="pasteToken()" aria-label="Token QR manual">
+                <input type="text" id="manualToken" placeholder="Tempel token atau kode check-in..." class="input w-full max-w-md" x-model="manualToken" @keydown.enter.window="pasteToken()" aria-label="Token QR manual">
                 <button type="button" class="btn btn-secondary" x-on:click="pasteToken">
                     <x-ui.icon name="send" class="h-4 w-4" /> Kirim
                 </button>

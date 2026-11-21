@@ -61,7 +61,7 @@
                         </div>
 
                         <div class="mt-4 flex items-center gap-3">
-                            <input type="text" id="manualToken" placeholder="Tempel token QR…" class="input flex-1" x-model="manualToken" @keydown.enter="pasteToken" aria-label="Token QR manual">
+                            <input type="text" id="manualToken" placeholder="Tempel token atau kode check-in…" class="input flex-1" x-model="manualToken" @keydown.enter="pasteToken" aria-label="Token QR manual">
                             <button type="button" class="btn-secondary" x-on:click="pasteToken">
                                 <x-ui.icon name="send" class="h-4 w-4" /> Kirim
                             </button>

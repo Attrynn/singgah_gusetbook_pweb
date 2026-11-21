@@ -17,7 +17,7 @@ class QrService
             ->generate($payload);
     }
 
-    public function pngBinary(string $payload, int $size = 480): string
+    public function pngBinary(string $payload, int $size = 480, ?string $caption = null): string
     {
         $matrix = Encoder::encode($payload, ErrorCorrectionLevel::H())->getMatrix();
         $matrixWidth = $matrix->getWidth();
@@ -46,6 +46,10 @@ class QrService
             }
         }
 
+        if ($caption !== null && $caption !== '') {
+            $img = $this->appendCaption($img, $caption);
+        }
+
         ob_start();
         imagepng($img);
         $png = (string) ob_get_clean();
@@ -53,8 +57,45 @@ class QrService
         return $png;
     }
 
-    public function pngDataUri(string $payload, int $size = 480): string
+    public function pngDataUri(string $payload, int $size = 480, ?string $caption = null): string
     {
-        return 'data:image/png;base64,'.base64_encode($this->pngBinary($payload, $size));
+        return 'data:image/png;base64,'.base64_encode($this->pngBinary($payload, $size, $caption));
+    }
+
+    protected function appendCaption(\GdImage $image, string $caption): \GdImage
+    {
+        $width = imagesx($image);
+        $font = 5;
+        $textWidth = imagefontwidth($font) * strlen($caption);
+        $textHeight = imagefontheight($font);
+
+        $text = imagecreatetruecolor($textWidth, $textHeight);
+        $white = imagecolorallocate($text, 255, 255, 255);
+        $ink = imagecolorallocate($text, 37, 52, 71);
+        imagefill($text, 0, 0, $white);
+        imagestring($text, $font, 0, 0, $caption, $ink);
+
+        $scale = max(1, (int) floor(($width * 0.55) / max(1, $textWidth)));
+        $scaledWidth = $textWidth * $scale;
+        $scaledHeight = $textHeight * $scale;
+        $gap = (int) round($width * 0.04);
+
+        $canvas = imagecreatetruecolor($width, imagesy($image) + $gap + $scaledHeight);
+        imagefill($canvas, 0, 0, $white);
+        imagecopy($canvas, $image, 0, 0, 0, 0, $width, imagesy($image));
+        imagecopyresampled(
+            $canvas,
+            $text,
+            (int) (($width - $scaledWidth) / 2),
+            imagesy($image) + $gap,
+            0,
+            0,
+            $scaledWidth,
+            $scaledHeight,
+            $textWidth,
+            $textHeight,
+        );
+
+        return $canvas;
     }
 }

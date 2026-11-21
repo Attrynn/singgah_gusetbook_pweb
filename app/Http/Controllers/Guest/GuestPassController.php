@@ -30,8 +30,9 @@ class GuestPassController extends Controller
 
         $raw = $this->invitations->ensureQrToken($guest);
         $qrSvg = $this->qr->svg($raw, 300);
+        $checkinCode = $this->invitations->qrShortCode($guest);
 
-        return view('guest.pass', compact('guest', 'event', 'qrSvg'));
+        return view('guest.pass', compact('guest', 'event', 'qrSvg', 'checkinCode'));
     }
 
     public function download(Request $request)
@@ -44,7 +45,8 @@ class GuestPassController extends Controller
         $this->ensurePassStillValid($guest);
 
         $raw = $this->invitations->ensureQrToken($guest);
-        $dataUri = $this->qr->pngDataUri($raw, 800);
+        $checkinCode = $this->invitations->qrShortCode($guest);
+        $dataUri = $this->qr->pngDataUri($raw, 800, $checkinCode ? 'KODE: '.$checkinCode : null);
         $png = base64_decode(Str::after($dataUri, 'base64,'), true);
 
         return response()->streamDownload(function () use ($png) {

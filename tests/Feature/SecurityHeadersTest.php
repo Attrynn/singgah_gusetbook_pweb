@@ -62,7 +62,7 @@ class SecurityHeadersTest extends TestCase
         $this->assertStringContainsString('x-data="scanner"', $response->getContent());
         $this->assertStringContainsString('data-scan-url="'.route('admin.checkins.scan').'"', $response->getContent());
         $this->assertStringContainsString('Mulai Kamera', $response->getContent());
-        $this->assertStringContainsString('Tempel token QR', $response->getContent());
+        $this->assertStringContainsString('Tempel token atau kode check-in', $response->getContent());
     }
 
     public function test_tokenised_pages_are_not_cached_or_referred(): void

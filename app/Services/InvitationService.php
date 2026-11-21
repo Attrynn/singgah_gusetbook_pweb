@@ -59,6 +59,7 @@ class InvitationService
             'expires_at' => $type === TokenType::Qr
                 ? $this->qrExpiresAt($guest)
                 : $this->invitationExpiresAt(),
+            'short_code' => $type === TokenType::Qr ? GuestToken::generateShortCode() : null,
         ]);
     }
 
@@ -164,9 +165,36 @@ class InvitationService
         return $this->resolve($raw, TokenType::Qr);
     }
 
+    /**
+     * Short, typable code printed under the QR for camera failures.
+     */
+    public function qrShortCode(Guest $guest): ?string
+    {
+        $token = $guest->activeQrToken();
+
+        if (! $token) {
+            $this->ensureQrToken($guest);
+            $token = $guest->fresh()?->activeQrToken();
+        }
+
+        if (! $token) {
+            return null;
+        }
+
+        if (! $token->short_code) {
+            $token->forceFill(['short_code' => GuestToken::generateShortCode()])->save();
+        }
+
+        return $token->formattedShortCode();
+    }
+
     protected function resolve(string $raw, TokenType $type): ?GuestToken
     {
         $token = GuestToken::findByRaw($raw);
+
+        if (! $token && $type === TokenType::Qr) {
+            $token = GuestToken::findByShortCode($raw);
+        }
 
         if (! $token || $token->type !== $type) {
             return null;

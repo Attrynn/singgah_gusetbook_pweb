@@ -205,7 +205,7 @@ class CheckinService
      */
     protected function scanLegacyToken(string $rawToken, User $officer, ?Event $expectedEvent): array
     {
-        $token = GuestToken::findByRaw($rawToken);
+        $token = GuestToken::findByRaw($rawToken) ?? GuestToken::findByShortCode($rawToken);
 
         if (! $token || $token->type !== TokenType::Qr) {
             return $this->result('invalid', 'QR tidak dikenali. Pastikan QR berasal dari VOWSPACE.');

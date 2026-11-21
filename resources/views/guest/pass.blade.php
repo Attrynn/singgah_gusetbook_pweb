@@ -94,8 +94,11 @@
                     </div>
 
                     <p class="mt-4 text-xs font-medium text-muted">
-                        Pindai QR ini pada meja registrasi tamu saat kehadiran
+                        Tunjukkan QR ini kepada petugas registrasi saat tiba
                     </p>
+                    @if (! empty($checkinCode))
+                        <p class="mt-2 font-mono text-sm font-semibold tracking-[0.25em] text-ink">{{ $checkinCode }}</p>
+                    @endif
                     <p class="mt-0.5 text-[10px] text-faint">
                         Kode unik autentik &bull; Berlaku untuk {{ $guest->max_attendees ?? 1 }} orang
                     </p>
