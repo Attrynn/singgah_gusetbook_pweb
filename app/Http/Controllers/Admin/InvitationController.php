@@ -46,7 +46,7 @@ class InvitationController extends Controller
 
         return view('admin.invitations.index', [
             'guests' => $guests,
-            'events' => Event::orderBy('event_date')->get(),
+            'events' => Event::orderByRaw("CASE WHEN status IN ('live', 'published') THEN 0 ELSE 1 END, event_date DESC")->get(),
             'stats' => $stats,
             'filters' => $request->only(['event_id', 'search', 'status']),
             'statuses' => InvitationStatus::cases(),
@@ -74,12 +74,15 @@ class InvitationController extends Controller
     {
         $guest->load('event');
         $token = $this->invitations->rawToken($guest);
+        $qrRaw = $this->invitations->rawToken($guest, TokenType::Qr);
+        $qrSvg = $qrRaw ? $this->qr->svg($qrRaw, 220) : null;
 
         return view('guest.invitation', [
             'event' => $guest->event,
             'guest' => $guest,
             'token' => $token,
             'preview' => true,
+            'qrSvg' => $qrSvg,
         ]);
     }
 

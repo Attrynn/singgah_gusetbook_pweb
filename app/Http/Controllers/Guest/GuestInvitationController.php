@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Guest;
 
+use App\Enums\TokenType;
 use App\Http\Controllers\Guest\Concerns\ResolvesGuest;
 use App\Models\Event;
 use App\Services\InvitationService;
+use App\Services\QrService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -12,7 +14,10 @@ class GuestInvitationController extends Controller
 {
     use ResolvesGuest;
 
-    public function __construct(protected InvitationService $invitations) {}
+    public function __construct(
+        protected InvitationService $invitations,
+        protected QrService $qr,
+    ) {}
 
     public function landing(string $slug)
     {
@@ -50,11 +55,15 @@ class GuestInvitationController extends Controller
             $this->invitations->registerOpen($guest);
         }
 
+        $qrRaw = $this->invitations->rawToken($guest, TokenType::Qr);
+        $qrSvg = $qrRaw ? $this->qr->svg($qrRaw, 220) : null;
+
         return view('guest.invitation', [
             'event' => $event,
             'guest' => $guest,
             'token' => $token,
             'preview' => false,
+            'qrSvg' => $qrSvg,
             'messages' => $messages,
             'photos' => $photos,
             'poll' => $poll,

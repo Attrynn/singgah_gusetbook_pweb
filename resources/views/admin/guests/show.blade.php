@@ -155,6 +155,29 @@
         </div>
 
         <aside class="space-y-4">
+            <div class="card p-5 text-center">
+                <h2 class="section-title">QR pass check-in</h2>
+                <p class="mt-1 text-xs text-muted">QR code tamu untuk check-in registrasi.</p>
+
+                <div class="mx-auto mt-4 flex w-full max-w-[220px] items-center justify-center rounded-2xl border border-line bg-surface p-3">
+                    @if ($qrSvg)
+                        <div class="w-full [&>svg]:h-auto [&>svg]:w-full">{!! $qrSvg !!}</div>
+                    @elseif ($qrBlocked)
+                        <div class="py-6 text-xs text-muted">
+                            QR pass tidak dapat diterbitkan karena acara sudah berakhir.
+                        </div>
+                    @else
+                        <div class="py-6 text-xs text-muted">QR belum tersedia.</div>
+                    @endif
+                </div>
+
+                <div class="mt-3 flex flex-wrap gap-2 justify-center">
+                    <a href="{{ route('admin.invitations.show', $guest) }}" class="btn btn-soft btn-sm">
+                        <x-ui.icon name="mail" class="h-3.5 w-3.5" /> Halaman Undangan &amp; QR
+                    </a>
+                </div>
+            </div>
+
             <div class="card p-5">
                 <h2 class="section-title">Tautan undangan</h2>
                 @if ($invitationUrl)

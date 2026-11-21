@@ -88,18 +88,21 @@
 
     <div class="mobile-shell">
         <!-- Guest Top Header -->
-        <header class="sticky top-0 z-30 border-b border-line/60 bg-surface/90 px-4 py-3 backdrop-blur sm:px-6">
+        <header class="sticky top-0 z-30 border-b border-line/70 bg-surface/90 px-4 py-3 backdrop-blur sm:px-6">
             <div class="mx-auto flex max-w-5xl items-center justify-between gap-4">
-                <div class="min-w-0">
-                    <p class="guest-eyebrow">Undangan Pernikahan</p>
-                    <p class="truncate font-serif text-sm font-bold text-ink">
-                        {{ $ev ? $ev->coupleNames() : 'VOWSPACE' }}
-                    </p>
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-[#D4AF7A]/50 bg-[#1A1714] font-serif text-xs font-semibold text-[#D4AF7A] shadow-xs">V</span>
+                    <div class="min-w-0">
+                        <p class="text-[9px] font-semibold uppercase tracking-[0.25em] text-accent">Wedding Invitation</p>
+                        <p class="truncate font-serif text-sm font-medium tracking-wide text-ink">
+                            {{ $ev ? $ev->coupleNames() : 'VOWSPACE' }}
+                        </p>
+                    </div>
                 </div>
 
-                <div class="flex shrink-0 items-center gap-2">
+                <div class="flex shrink-0 items-center gap-2.5">
                     @if ($ev && $ev->event_date)
-                        <span class="hidden rounded-full border border-line bg-surface-2/60 px-2.5 py-0.5 text-[10px] font-medium text-muted sm:inline-flex">
+                        <span class="hidden rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[10px] font-medium tracking-wider text-accent sm:inline-flex uppercase font-serif">
                             {{ $ev->event_date->translatedFormat('d M Y') }}
                         </span>
                     @endif

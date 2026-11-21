@@ -40,10 +40,10 @@
             <!-- Brand / Header -->
             <div class="flex h-16 items-center justify-between border-b border-line/70 px-5">
                 <a href="{{ route('owner.dashboard') }}" class="flex items-center gap-3 min-w-0">
-                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent text-sm font-bold text-[var(--color-accent-text)] shadow-raised">V</span>
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#D4AF7A]/40 bg-[#1A1714] font-serif text-sm font-semibold text-[#D4AF7A] shadow-sm">V</span>
                     <div class="min-w-0">
-                        <p class="text-sm font-bold tracking-[0.16em] text-ink">VOWSPACE</p>
-                        <p class="text-[9px] font-semibold uppercase tracking-[0.18em] text-accent">Owner Workspace</p>
+                        <p class="font-serif text-sm font-semibold tracking-[0.18em] text-ink">VOWSPACE</p>
+                        <p class="text-[9px] font-semibold uppercase tracking-[0.25em] text-accent">Owner Concierge</p>
                     </div>
                 </a>
 

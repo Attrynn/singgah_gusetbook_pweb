@@ -20,7 +20,7 @@
                 <select id="event_id" name="event_id" class="input appearance-none">
                     <option value="">Semua event</option>
                     @foreach ($events as $event)
-                        <option value="{{ $event->id }}" @selected(($filters['event_id'] ?? null) == $event->id)>{{ $event->name }}</option>
+                        <option value="{{ $event->id }}" @selected(($filters['event_id'] ?? null) == $event->id)>{{ $event->name }} [{{ $event->status->label() }}]</option>
                     @endforeach
                 </select>
             </div>

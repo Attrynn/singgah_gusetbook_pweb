@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\EventStatus;
 use App\Enums\GuestStatus;
 use App\Enums\RsvpStatus;
+use App\Enums\TokenType;
 use App\Http\Controllers\Concerns\ExportsCsv;
 use App\Http\Requests\GuestBulkRequest;
 use App\Http\Requests\GuestImportRequest;
@@ -14,6 +16,7 @@ use App\Models\GuestCategory;
 use App\Models\GuestGroup;
 use App\Services\GuestService;
 use App\Services\InvitationService;
+use App\Services\QrService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -24,8 +27,8 @@ class GuestController extends Controller
     public function __construct(
         protected GuestService $guests,
         protected InvitationService $invitations,
-    ) {
-    }
+        protected QrService $qr,
+    ) {}
 
     public function index(Request $request)
     {
@@ -68,9 +71,11 @@ class GuestController extends Controller
 
         $eventId = $request->integer('event_id');
 
+        $events = Event::orderByRaw("CASE WHEN status IN ('live', 'published') THEN 0 ELSE 1 END, event_date DESC")->get();
+
         return view('admin.guests.index', [
             'guests' => $query->paginate(20)->withQueryString(),
-            'events' => Event::orderBy('event_date')->get(),
+            'events' => $events,
             'categories' => $eventId ? GuestCategory::where('event_id', $eventId)->get() : GuestCategory::all(),
             'groups' => $eventId ? GuestGroup::where('event_id', $eventId)->get() : GuestGroup::all(),
             'filters' => $request->only(['event_id', 'search', 'guest_category_id', 'guest_group_id', 'rsvp_status', 'attendance', 'invitation_status', 'sort', 'direction']),
@@ -81,11 +86,14 @@ class GuestController extends Controller
 
     public function create(Request $request)
     {
-        $eventId = $request->integer('event_id') ?: Event::orderBy('event_date')->value('id');
+        $activeEventId = Event::whereIn('status', [EventStatus::Live, EventStatus::Published])->orderBy('event_date')->value('id')
+            ?: Event::latest('event_date')->value('id');
+        $eventId = $request->integer('event_id') ?: $activeEventId;
+        $events = Event::orderByRaw("CASE WHEN status IN ('live', 'published') THEN 0 ELSE 1 END, event_date DESC")->get();
 
         return view('admin.guests.create', [
             'guest' => new Guest(['event_id' => $eventId, 'max_attendees' => 2, 'status' => GuestStatus::Active, 'rsvp_status' => RsvpStatus::Pending]),
-            'events' => Event::orderBy('event_date')->get(),
+            'events' => $events,
             'categories' => $eventId ? GuestCategory::where('event_id', $eventId)->get() : collect(),
             'groups' => $eventId ? GuestGroup::where('event_id', $eventId)->get() : collect(),
             'statuses' => GuestStatus::cases(),
@@ -97,8 +105,15 @@ class GuestController extends Controller
         $event = Event::findOrFail($request->integer('event_id'));
         $guest = $this->guests->create($event, $request->validated(), $request->user());
 
+        $qrExpiresAt = $this->invitations->qrExpiresAt($guest);
+        $qrBlocked = $qrExpiresAt !== null && $qrExpiresAt->isPast();
+
+        $message = $qrBlocked
+            ? "Tamu berhasil ditambahkan. Catatan: Acara ini berstatus {$event->status->label()} (sudah berakhir), sehingga QR pass check-in tidak dapat diterbitkan."
+            : 'Tamu ditambahkan dan tautan undangan serta QR pass berhasil dibuat.';
+
         return redirect()->route('admin.guests.show', $guest)
-            ->with('status', 'Tamu ditambahkan dan tautan undangan personal berhasil dibuat.');
+            ->with('status', $message);
     }
 
     public function show(Guest $guest)
@@ -115,8 +130,12 @@ class GuestController extends Controller
             ->get();
 
         $invitationUrl = $this->invitations->invitationUrl($guest);
+        $qrRaw = $this->invitations->rawToken($guest, TokenType::Qr);
+        $qrSvg = $qrRaw ? $this->qr->svg($qrRaw, 160) : null;
+        $qrExpiresAt = $this->invitations->qrExpiresAt($guest);
+        $qrBlocked = $qrExpiresAt !== null && $qrExpiresAt->isPast();
 
-        return view('admin.guests.show', compact('guest', 'activities', 'invitationUrl'));
+        return view('admin.guests.show', compact('guest', 'activities', 'invitationUrl', 'qrSvg', 'qrBlocked'));
     }
 
     public function edit(Guest $guest)

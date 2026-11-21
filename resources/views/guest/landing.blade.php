@@ -23,50 +23,53 @@
 
     <div class="mobile-shell">
         <header class="flex items-center justify-between px-4 pt-5 pb-3 sm:px-6">
-            <div class="flex items-center gap-2">
-                <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-accent text-xs font-semibold text-[var(--color-accent-text)]">V</span>
-                <span class="font-serif text-sm font-semibold tracking-tight text-ink">VOWSPACE</span>
+            <div class="flex items-center gap-2.5">
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg border border-accent/40 bg-surface font-serif text-xs font-bold text-accent shadow-sm">V</span>
+                <span class="font-serif text-sm font-semibold tracking-[0.2em] text-ink">VOWSPACE</span>
             </div>
-            <a href="{{ route('login') }}" class="text-[11px] font-semibold text-faint transition hover:text-ink">Masuk</a>
+            <div class="flex items-center gap-3">
+                <x-ui.theme-switcher size="sm" />
+                <a href="{{ route('login') }}" class="text-[11px] font-semibold text-faint transition hover:text-accent">Masuk</a>
+            </div>
         </header>
 
         <main class="px-4 pb-16 sm:px-6">
             <div class="mx-auto max-w-3xl">
                 <!-- Hero -->
-                <section class="animate-rise relative overflow-hidden rounded-[2rem] border border-line/60 bg-surface-2/40 shadow-soft sm:rounded-[2.5rem]">
-                    <div class="relative aspect-[4/5] bg-gradient-to-br from-blue-soft via-teal-soft to-blue-soft/60 sm:aspect-[16/10]">
+                <section class="animate-rise relative overflow-hidden rounded-2xl border border-line bg-surface shadow-soft">
+                    <div class="relative aspect-[4/5] bg-gradient-to-br from-surface via-surface-2 to-surface-3 sm:aspect-[16/10]">
                         @if ($cover = $event->coverUrl())
-                            <img src="{{ $cover }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-75">
+                            <img src="{{ $cover }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-85">
                         @endif
-                        <div class="absolute inset-0 bg-gradient-to-t from-scrim/90 via-scrim/35 to-transparent"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent"></div>
                         <div class="absolute inset-0 flex flex-col justify-end p-6 pb-8 sm:p-10">
-                            <p class="text-[10px] font-semibold uppercase tracking-[0.22em] text-on-scrim/80">The Wedding of</p>
-                            <h1 class="mt-2 font-serif text-3xl font-bold leading-tight text-on-scrim sm:text-5xl">
+                            <p class="text-[10px] font-semibold uppercase tracking-[0.25em] text-accent">The Wedding of</p>
+                            <h1 class="mt-2 font-serif text-3xl font-medium leading-tight text-white sm:text-5xl">
                                 {{ $event->groom_name }} &amp; {{ $event->bride_name }}
                             </h1>
-                            <p class="mt-3 max-w-md text-sm leading-relaxed text-on-scrim/85">
+                            <p class="mt-3 max-w-md text-sm leading-relaxed text-white/80 font-light">
                                 Kami mengundang Anda untuk hadir di hari bahagia kami.
                             </p>
                         </div>
                     </div>
 
-                    <div class="grid gap-4 border-t border-line/60 p-6 sm:grid-cols-2 sm:p-8">
-                        <div class="flex items-start gap-3">
-                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-soft text-ink">
-                                <x-ui.icon name="calendar" class="h-5 w-5" />
+                    <div class="grid gap-4 border-t border-line p-6 sm:grid-cols-2 sm:p-8">
+                        <div class="flex items-start gap-3.5">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2/70 text-accent">
+                                <x-ui.icon name="calendar" class="h-4 w-4" />
                             </span>
                             <div>
                                 <p class="guest-eyebrow">Tanggal &amp; waktu</p>
-                                <p class="text-sm font-semibold text-ink">{{ $eventDateTime }}</p>
+                                <p class="text-sm font-semibold text-ink mt-0.5">{{ $eventDateTime }}</p>
                             </div>
                         </div>
-                        <div class="flex items-start gap-3">
-                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-soft text-ink">
-                                <x-ui.icon name="map-pin" class="h-5 w-5" />
+                        <div class="flex items-start gap-3.5">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2/70 text-accent">
+                                <x-ui.icon name="map-pin" class="h-4 w-4" />
                             </span>
                             <div>
                                 <p class="guest-eyebrow">Tempat</p>
-                                <p class="text-sm font-semibold text-ink">{{ $event->venue_name ?: 'Detail lokasi menyusul' }}</p>
+                                <p class="text-sm font-semibold text-ink mt-0.5">{{ $event->venue_name ?: 'Detail lokasi menyusul' }}</p>
                                 @if ($event->venue_address)
                                     <p class="mt-0.5 text-xs text-muted">{{ $event->venue_address }}</p>
                                 @endif
@@ -75,7 +78,7 @@
                     </div>
 
                     @if ($countdownTarget)
-                        <div class="grid grid-cols-4 gap-2 border-t border-line/60 bg-surface-2/30 px-6 py-5 sm:px-8"
+                        <div class="grid grid-cols-4 gap-2 border-t border-line bg-surface-2/30 px-6 py-5 sm:px-8"
                              x-data="{
                                 target: {{ $countdownTarget }},
                                 days: '00', hours: '00', minutes: '00', seconds: '00',
@@ -93,7 +96,7 @@
                              }" x-init="init()">
                             @foreach ([['days', 'Hari'], ['hours', 'Jam'], ['minutes', 'Menit'], ['seconds', 'Detik']] as [$key, $label])
                                 <div class="flex flex-col items-center gap-1">
-                                    <span class="text-[10px] font-semibold uppercase tracking-wide text-faint">{{ $label }}</span>
+                                    <span class="text-[9px] font-semibold uppercase tracking-[0.2em] text-faint">{{ $label }}</span>
                                     <span x-text="{{ $key }}" class="font-serif text-xl font-bold text-ink">00</span>
                                 </div>
                             @endforeach
@@ -103,13 +106,13 @@
 
                 <!-- Private invitation notice -->
                 <section class="card mt-8 p-6">
-                    <div class="flex items-start gap-3">
-                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-ink">
-                            <x-ui.icon name="lock" class="h-5 w-5" />
+                    <div class="flex items-start gap-3.5">
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-accent/30 bg-accent/10 text-accent">
+                            <x-ui.icon name="lock" class="h-4 w-4" />
                         </span>
                         <div>
-                            <p class="text-sm font-semibold text-ink">Undangan pribadi Anda</p>
-                            <p class="mt-1 max-w-prose text-sm leading-relaxed text-muted">
+                            <p class="text-sm font-semibold text-ink">Undangan Pribadi Anda</p>
+                            <p class="mt-1 max-w-prose text-xs leading-relaxed text-muted">
                                 Buka undangan ini melalui tautan pribadi yang dikirimkan kepada Anda, atau pindai QR undangan.
                                 Tautan ini hanya untuk Anda dan tamu yang diundang.
                             </p>
@@ -121,35 +124,35 @@
                 <section class="card mt-8 p-6 sm:p-8">
                     <h2 class="section-kicker mb-5">Rincian Acara</h2>
                     <div class="space-y-5">
-                        <div class="flex items-start gap-3">
-                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-soft text-ink">
-                                <x-ui.icon name="calendar" class="h-5 w-5" />
+                        <div class="flex items-start gap-3.5">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2/70 text-accent">
+                                <x-ui.icon name="calendar" class="h-4 w-4" />
                             </span>
                             <div>
                                 <p class="guest-eyebrow">Tanggal &amp; waktu</p>
-                                <p class="text-sm font-semibold text-ink">{{ $eventDateTime }}</p>
+                                <p class="text-sm font-semibold text-ink mt-0.5">{{ $eventDateTime }}</p>
                             </div>
                         </div>
-                        <div class="flex items-start gap-3">
-                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-soft text-ink">
-                                <x-ui.icon name="map-pin" class="h-5 w-5" />
+                        <div class="flex items-start gap-3.5">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2/70 text-accent">
+                                <x-ui.icon name="map-pin" class="h-4 w-4" />
                             </span>
                             <div>
                                 <p class="guest-eyebrow">Tempat</p>
-                                <p class="text-sm font-semibold text-ink">{{ $event->venue_name ?: 'Detail lokasi menyusul' }}</p>
+                                <p class="text-sm font-semibold text-ink mt-0.5">{{ $event->venue_name ?: 'Detail lokasi menyusul' }}</p>
                                 @if ($event->venue_address)
                                     <p class="mt-0.5 text-xs text-muted">{{ $event->venue_address }}</p>
                                 @endif
                             </div>
                         </div>
                         @if ($event->dress_code)
-                            <div class="flex items-start gap-3">
-                                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-soft text-ink">
-                                    <x-ui.icon name="user" class="h-5 w-5" />
+                            <div class="flex items-start gap-3.5">
+                                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2/70 text-accent">
+                                    <x-ui.icon name="user" class="h-4 w-4" />
                                 </span>
                                 <div>
                                     <p class="guest-eyebrow">Dress code</p>
-                                    <p class="text-sm font-semibold text-ink">{{ $event->dress_code }}</p>
+                                    <p class="text-sm font-semibold text-ink mt-0.5">{{ $event->dress_code }}</p>
                                 </div>
                             </div>
                         @endif

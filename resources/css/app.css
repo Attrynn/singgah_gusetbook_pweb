@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap');
 @import 'tailwindcss';
 
 @source '../views/**/*.blade.php';
@@ -6,66 +6,76 @@
 @source '../../storage/framework/views/*.php';
 
 :root {
-    --color-canvas: #EAE7DF;
-    --color-surface: #F6F4F0;
-    --color-surface-2: #D7DBD7;
-    --color-surface-3: #C8CEC8;
-    --color-line: #CCD1CD;
-    --color-ink: #283640;
-    /* Text tokens are tuned so every one clears WCAG AA (4.5:1)
-       against all three light surfaces (surface / canvas / surface-2). */
-    --color-muted: #48545C;
-    --color-faint: #55606A;
-    --color-accent: #725A40;
-    --color-accent-hover: #675139;
-    --color-accent-text: #F1EEE7;
-    --color-accent-soft: #E5DFD4;
-    --color-blue-soft: #D7E2EB;
-    --color-teal-soft: #D5E5E2;
-    --color-success: #336956;
-    --color-warning: #785A28;
-    --color-danger: #8B4D55;
+    /* Luminous Ivory Silk & Warm Alabaster */
+    --color-canvas: #FAF8F5;
+    --color-surface: #FFFFFF;
+    --color-surface-2: #F5EFE8;
+    --color-surface-3: #ECE4D8;
+    --color-line: #E5DDD3;
+    
+    /* Rich Velvet Espresso / Deep Obsidian Ink */
+    --color-ink: #1A1714;
+    --color-muted: #5C554C;
+    --color-faint: #8A8175;
+    
+    /* Royal Champagne Gold & Burnished Bronze */
+    --color-accent: #A37E4C;
+    --color-accent-hover: #8B693B;
+    --color-accent-text: #FDFBF7;
+    --color-accent-soft: #F6EDE2;
+    --color-blue-soft: #EDE8DE;
+    --color-teal-soft: #E6EFEA;
+    
+    /* Editorial Semantic Tones */
+    --color-success: #2B624A;
+    --color-warning: #946B28;
+    --color-danger: #963A46;
 
-    /* Fixed colours for photo overlays so text stays legible in both themes. */
-    --color-scrim: #1B2530;
-    --color-on-scrim: #F5F2EB;
+    /* Fixed colours for photo overlays */
+    --color-scrim: #141210;
+    --color-on-scrim: #FAF7F2;
 
-    --shadow-raised: 0 1px 3px rgba(40, 54, 64, 0.05), 0 4px 14px rgba(40, 54, 64, 0.04);
-    --shadow-soft: 0 12px 32px -8px rgba(40, 54, 64, 0.10);
-    --shadow-pressed: inset 0 2px 4px rgba(40, 54, 64, 0.05);
+    --shadow-raised: 0 1px 3px rgba(26, 23, 20, 0.04), 0 6px 20px rgba(26, 23, 20, 0.04);
+    --shadow-soft: 0 16px 40px -12px rgba(26, 23, 20, 0.08);
+    --shadow-pressed: inset 0 2px 4px rgba(26, 23, 20, 0.04);
     color-scheme: light;
 }
 
 .dark {
-    --color-canvas: #1F2A34;
-    --color-surface: #26333F;
-    --color-surface-2: #2E3B46;
-    --color-surface-3: #394855;
-    --color-line: #384654;
-    --color-ink: #E9E5DC;
-    --color-muted: #BDC5C9;
-    /* Text tokens are tuned so every one clears WCAG AA (4.5:1)
-       against all three dark surfaces (surface / canvas / surface-2). */
-    --color-faint: #96A6B0;
-    --color-accent: #C3A477;
-    --color-accent-hover: #BC9F75;
-    --color-accent-text: #1F2A34;
-    --color-accent-soft: #38352F;
-    --color-blue-soft: #273744;
-    --color-teal-soft: #243936;
-    --color-success: #66B297;
-    --color-warning: #D5AD70;
-    --color-danger: #D98F98;
+    /* Deep Obsidian Velvet & Polished Onyx */
+    --color-canvas: #0E1013;
+    --color-surface: #15181E;
+    --color-surface-2: #1C2028;
+    --color-surface-3: #252B36;
+    --color-line: #262C36;
+    
+    /* Luminous Diamond Silk Ink */
+    --color-ink: #F8F5EE;
+    --color-muted: #B3ABA0;
+    --color-faint: #7A7368;
+    
+    /* Radiant Champagne Gold Foil */
+    --color-accent: #D4AF7A;
+    --color-accent-hover: #E4C394;
+    --color-accent-text: #0E1013;
+    --color-accent-soft: #282117;
+    --color-blue-soft: #1E232B;
+    --color-teal-soft: #1C2622;
+    
+    /* Editorial Dark Semantic Tones */
+    --color-success: #5DB58F;
+    --color-warning: #DEB36D;
+    --color-danger: #E27B88;
 
-    --shadow-raised: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.22);
-    --shadow-soft: 0 16px 40px -10px rgba(0, 0, 0, 0.45);
-    --shadow-pressed: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+    --shadow-raised: 0 1px 3px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(0, 0, 0, 0.3);
+    --shadow-soft: 0 20px 44px -12px rgba(0, 0, 0, 0.6);
+    --shadow-pressed: inset 0 2px 4px rgba(0, 0, 0, 0.35);
     color-scheme: dark;
 }
 
 @theme {
-    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-    --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+    --font-sans: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
 
     --color-canvas: var(--color-canvas);
     --color-surface: var(--color-surface);
@@ -152,32 +162,32 @@
 }
 
 @utility card {
-    @apply rounded-2xl md:rounded-3xl border border-line/80 bg-surface shadow-raised;
+    @apply rounded-xl md:rounded-2xl border border-line bg-surface shadow-raised transition duration-200;
 }
 
 @utility btn {
-    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-xl md:rounded-2xl px-4 py-2 text-sm font-semibold transition duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:pointer-events-none disabled:opacity-50 cursor-pointer;
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg md:rounded-xl px-4 py-2 text-xs md:text-sm font-medium tracking-wide transition duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:pointer-events-none disabled:opacity-50 cursor-pointer;
 }
 
 @utility badge {
-    @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold leading-none;
+    @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase leading-none;
 }
 
 @layer components {
     .card-flat {
-        @apply rounded-2xl md:rounded-3xl border border-line/80 bg-surface;
+        @apply rounded-xl md:rounded-2xl border border-line bg-surface;
     }
 
     .card-muted {
-        @apply rounded-xl md:rounded-2xl border border-line/70 bg-surface-2/60;
+        @apply rounded-lg md:rounded-xl border border-line/70 bg-surface-2/60;
     }
 
     .btn-primary {
-        @apply btn bg-accent text-[var(--color-accent-text)] shadow-sm hover:opacity-95 active:translate-y-px;
+        @apply btn bg-accent text-[var(--color-accent-text)] shadow-sm hover:brightness-105 active:translate-y-px;
     }
 
     .btn-secondary {
-        @apply btn border border-line bg-surface text-ink shadow-raised hover:bg-surface-2/60 active:translate-y-px;
+        @apply btn border border-line bg-surface text-ink shadow-raised hover:border-accent/40 hover:bg-surface-2/60 active:translate-y-px;
     }
 
     .btn-soft {
@@ -193,27 +203,27 @@
     }
 
     .btn-sm {
-        @apply min-h-8.5 rounded-lg md:rounded-xl px-3 py-1 text-xs;
+        @apply min-h-8.5 rounded-lg px-3 py-1 text-xs;
     }
 
     .btn-lg {
-        @apply min-h-12 rounded-xl md:rounded-2xl px-6 py-3 text-base;
+        @apply min-h-12 rounded-xl px-6 py-3 text-sm md:text-base;
     }
 
     .icon-btn {
-        @apply inline-flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-xl md:rounded-2xl border border-line bg-surface text-muted shadow-raised transition hover:text-ink hover:border-accent/40 active:translate-y-px cursor-pointer;
+        @apply inline-flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-lg md:rounded-xl border border-line bg-surface text-muted shadow-raised transition hover:text-ink hover:border-accent/40 active:translate-y-px cursor-pointer;
     }
 
     .input {
-        @apply block w-full rounded-xl md:rounded-2xl border border-line bg-surface-2/50 px-3.5 py-2.5 text-sm text-ink shadow-pressed transition placeholder:text-faint focus:border-accent focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent/25;
+        @apply block w-full rounded-lg md:rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm text-ink shadow-sm transition placeholder:text-faint focus:border-accent focus:bg-surface focus:outline-none focus:ring-1 focus:ring-accent/30;
     }
 
     .input-sm {
-        @apply rounded-lg md:rounded-xl px-2.5 py-1.5 text-xs;
+        @apply rounded-md md:rounded-lg px-2.5 py-1.5 text-xs;
     }
 
     .label {
-        @apply mb-1.5 block text-xs font-semibold uppercase tracking-[0.08em] text-muted;
+        @apply mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted;
     }
 
     .hint {
@@ -257,7 +267,7 @@
     }
 
     .data-table thead {
-        @apply bg-surface-2/60 text-[11px] uppercase tracking-[0.08em] text-muted;
+        @apply bg-surface-2/60 text-[10px] uppercase tracking-[0.14em] text-muted;
     }
 
     .data-table th {
@@ -277,11 +287,11 @@
     }
 
     .nav-item {
-        @apply flex items-center gap-3 rounded-xl md:rounded-2xl px-3 py-2 text-sm font-medium text-muted transition hover:bg-surface-2/70 hover:text-ink;
+        @apply flex items-center gap-3 rounded-lg md:rounded-xl px-3 py-2 text-xs md:text-sm font-medium text-muted transition hover:bg-surface-2/70 hover:text-ink;
     }
 
     .nav-item-active {
-        @apply bg-surface text-ink font-semibold border border-line/70 shadow-raised text-accent;
+        @apply bg-surface text-ink font-semibold border border-line shadow-raised text-accent;
     }
 
     .stat-card {
@@ -289,11 +299,11 @@
     }
 
     .section-title {
-        @apply text-base font-semibold text-ink;
+        @apply font-serif text-lg md:text-xl font-semibold text-ink tracking-tight;
     }
 
     .section-kicker {
-        @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-accent;
+        @apply text-[10px] font-semibold uppercase tracking-[0.25em] text-accent;
     }
 
     /* Guest mobile-first container: full-bleed on phones, an elegant
@@ -304,11 +314,11 @@
     }
 
     .mobile-card {
-        @apply rounded-2xl md:rounded-3xl border border-line/80 bg-surface p-5 shadow-raised;
+        @apply rounded-xl md:rounded-2xl border border-line bg-surface p-5 shadow-raised;
     }
 
     .bottom-nav {
-        @apply fixed bottom-0 left-1/2 z-40 w-full max-w-3xl -translate-x-1/2 border-t border-line/80 bg-surface/95 px-3 pt-2 backdrop-blur lg:max-w-5xl;
+        @apply fixed bottom-0 left-1/2 z-40 w-full max-w-3xl -translate-x-1/2 border-t border-line bg-surface/95 px-3 pt-2 backdrop-blur lg:max-w-5xl;
     }
 
     /* Consistent vertical rhythm for invitation sections. */
@@ -317,11 +327,11 @@
     }
 
     .guest-eyebrow {
-        @apply text-[10px] font-semibold uppercase tracking-[0.18em] text-faint;
+        @apply text-[9px] font-semibold uppercase tracking-[0.22em] text-faint;
     }
 
     .bottom-nav-item {
-        @apply flex min-h-12 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 text-[10px] font-semibold text-faint transition hover:text-ink;
+        @apply flex min-h-12 flex-1 flex-col items-center justify-center gap-1 rounded-lg px-1 py-1 text-[10px] font-semibold text-faint transition hover:text-ink;
     }
 
     .bottom-nav-item-active {

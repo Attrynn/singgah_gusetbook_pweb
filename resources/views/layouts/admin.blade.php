@@ -31,10 +31,10 @@
             <!-- Brand / Header -->
             <div class="flex h-16 items-center justify-between border-b border-line/70 px-4 md:px-5">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 min-w-0">
-                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent text-sm font-bold text-[var(--color-accent-text)] shadow-raised">V</span>
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#D4AF7A]/40 bg-[#1A1714] font-serif text-sm font-semibold text-[#D4AF7A] shadow-sm">V</span>
                     <div x-show="!sidebarCollapsed" class="min-w-0 transition-opacity duration-150">
-                        <p class="text-sm font-bold tracking-[0.16em] text-ink">VOWSPACE</p>
-                        <p class="text-[9px] font-semibold uppercase tracking-[0.18em] text-accent">Superadmin</p>
+                        <p class="font-serif text-sm font-semibold tracking-[0.18em] text-ink">VOWSPACE</p>
+                        <p class="text-[9px] font-semibold uppercase tracking-[0.25em] text-accent">Concierge Admin</p>
                     </div>
                 </a>
 

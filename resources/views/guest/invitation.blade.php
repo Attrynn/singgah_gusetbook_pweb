@@ -15,41 +15,41 @@
     <div class="mx-auto max-w-5xl">
 
         <!-- 1. Hero — identity of the couple + invitation heading -->
-        <section class="animate-rise relative overflow-hidden rounded-[2rem] border border-line/60 bg-surface-2/40 shadow-soft sm:rounded-[2.5rem]">
-            <div class="relative aspect-[4/5] bg-gradient-to-br from-blue-soft via-teal-soft to-blue-soft/60 sm:aspect-[16/10]">
+        <section class="animate-rise relative overflow-hidden rounded-2xl border border-line bg-surface shadow-soft">
+            <div class="relative aspect-[4/5] bg-gradient-to-br from-surface via-surface-2 to-surface-3 sm:aspect-[16/10]">
                 @if ($cover = $event->coverUrl())
-                    <img src="{{ $cover }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-75">
+                    <img src="{{ $cover }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-85">
                 @endif
-                <div class="absolute inset-0 bg-gradient-to-t from-scrim/90 via-scrim/35 to-transparent"></div>
-                <div class="absolute inset-0 flex flex-col justify-end p-6 pb-8 sm:p-10">
-                    <p class="text-[10px] font-semibold uppercase tracking-[0.22em] text-on-scrim/80">The Wedding of</p>
-                    <h1 class="mt-2 font-serif text-3xl font-bold leading-tight text-on-scrim sm:text-5xl">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent"></div>
+                <div class="absolute inset-0 flex flex-col justify-end p-6 pb-8 sm:p-12">
+                    <p class="text-[10px] font-semibold uppercase tracking-[0.25em] text-accent">The Wedding of</p>
+                    <h1 class="mt-2 font-serif text-3xl font-medium leading-tight text-white sm:text-5xl lg:text-6xl tracking-tight">
                         {{ $event->groom_name }} &amp; {{ $event->bride_name }}
                     </h1>
-                    <p class="mt-3 max-w-md text-sm leading-relaxed text-on-scrim/85">
+                    <p class="mt-3 max-w-md text-sm leading-relaxed text-white/80 font-light">
                         Dengan penuh sukacita kami mengundang Anda untuk hadir di hari bahagia kami.
                     </p>
                 </div>
             </div>
 
             <!-- Date, time & venue -->
-            <div class="grid gap-4 border-t border-line/60 p-6 sm:grid-cols-2 sm:p-8">
-                <div class="flex items-start gap-3">
-                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-soft text-ink">
-                        <x-ui.icon name="calendar" class="h-5 w-5" />
+            <div class="grid gap-4 border-t border-line p-6 sm:grid-cols-2 sm:p-8">
+                <div class="flex items-start gap-3.5">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2/70 text-accent">
+                        <x-ui.icon name="calendar" class="h-4 w-4" />
                     </span>
                     <div>
                         <p class="guest-eyebrow">Tanggal &amp; waktu</p>
-                        <p class="text-sm font-semibold text-ink">{{ $eventDateTime }}</p>
+                        <p class="text-sm font-semibold text-ink mt-0.5">{{ $eventDateTime }}</p>
                     </div>
                 </div>
-                <div class="flex items-start gap-3">
-                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-soft text-ink">
-                        <x-ui.icon name="map-pin" class="h-5 w-5" />
+                <div class="flex items-start gap-3.5">
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2/70 text-accent">
+                        <x-ui.icon name="map-pin" class="h-4 w-4" />
                     </span>
                     <div>
                         <p class="guest-eyebrow">Tempat</p>
-                        <p class="text-sm font-semibold text-ink">{{ $event->venue_name ?: 'Detail lokasi menyusul' }}</p>
+                        <p class="text-sm font-semibold text-ink mt-0.5">{{ $event->venue_name ?: 'Detail lokasi menyusul' }}</p>
                         @if ($event->venue_address)
                             <p class="mt-0.5 text-xs text-muted">{{ $event->venue_address }}</p>
                         @endif
@@ -58,7 +58,7 @@
             </div>
 
             @if ($countdownTarget)
-                <div class="grid grid-cols-4 gap-2 border-t border-line/60 bg-surface-2/30 px-6 py-5 sm:px-8"
+                <div class="grid grid-cols-4 gap-2 border-t border-line bg-surface-2/30 px-6 py-5 sm:px-8"
                      x-data="{
                         target: {{ $countdownTarget }},
                         days: '00', hours: '00', minutes: '00', seconds: '00',
@@ -76,7 +76,7 @@
                      }" x-init="init()">
                     @foreach ([['days', 'Hari'], ['hours', 'Jam'], ['minutes', 'Menit'], ['seconds', 'Detik']] as [$key, $label])
                         <div class="flex flex-col items-center gap-1">
-                            <span class="text-[10px] font-semibold uppercase tracking-wide text-faint">{{ $label }}</span>
+                            <span class="text-[9px] font-semibold uppercase tracking-[0.2em] text-faint">{{ $label }}</span>
                             <span x-text="{{ $key }}" class="font-serif text-xl font-bold text-ink">00</span>
                         </div>
                     @endforeach
@@ -93,14 +93,14 @@
 
         <!-- 2. Personal note — invitation content -->
         <section class="animate-rise mt-8 card p-6 sm:p-8">
-            <div class="flex items-start gap-3">
-                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-ink">
-                    <x-ui.icon name="user" class="h-5 w-5" />
+            <div class="flex items-start gap-3.5">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2/70 text-accent">
+                    <x-ui.icon name="user" class="h-4 w-4" />
                 </span>
                 <div>
-                    <p class="text-sm font-semibold text-ink">Selamat datang, {{ $guest->name }}.</p>
-                    <p class="mt-1 max-w-prose text-sm leading-relaxed text-muted">
-                        Kami senang mengundang Anda bergabung dalam pernikahan kami. Kehadiran dan doa restu Anda berarti bagi kami.
+                    <p class="font-serif text-lg font-medium text-ink">Selamat datang, {{ $guest->name }}.</p>
+                    <p class="mt-1 max-w-prose text-xs leading-relaxed text-muted font-light">
+                        Dengan penuh rasa syukur dan sukacita, kami mengundang Anda untuk turut hadir menyaksikan dan merayakan ikrar suci pernikahan kami.
                     </p>
                 </div>
             </div>
@@ -229,35 +229,35 @@
                 <section class="card p-6 sm:p-8">
                     <h2 class="section-kicker mb-5">Rincian Acara</h2>
                     <div class="space-y-5">
-                        <div class="flex items-start gap-3">
-                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-soft text-ink">
-                                <x-ui.icon name="calendar" class="h-5 w-5" />
+                        <div class="flex items-start gap-3.5">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2/70 text-accent">
+                                <x-ui.icon name="calendar" class="h-4 w-4" />
                             </span>
                             <div>
                                 <p class="guest-eyebrow">Tanggal &amp; waktu</p>
-                                <p class="text-sm font-semibold text-ink">{{ $eventDateTime }}</p>
+                                <p class="text-sm font-semibold text-ink mt-0.5">{{ $eventDateTime }}</p>
                             </div>
                         </div>
-                        <div class="flex items-start gap-3">
-                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-soft text-ink">
-                                <x-ui.icon name="map-pin" class="h-5 w-5" />
+                        <div class="flex items-start gap-3.5">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2/70 text-accent">
+                                <x-ui.icon name="map-pin" class="h-4 w-4" />
                             </span>
                             <div>
                                 <p class="guest-eyebrow">Tempat</p>
-                                <p class="text-sm font-semibold text-ink">{{ $event->venue_name ?: 'Detail lokasi menyusul' }}</p>
+                                <p class="text-sm font-semibold text-ink mt-0.5">{{ $event->venue_name ?: 'Detail lokasi menyusul' }}</p>
                                 @if ($event->venue_address)
                                     <p class="mt-0.5 text-xs text-muted">{{ $event->venue_address }}</p>
                                 @endif
                             </div>
                         </div>
                         @if ($event->dress_code)
-                            <div class="flex items-start gap-3">
-                                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-soft text-ink">
-                                    <x-ui.icon name="user" class="h-5 w-5" />
+                            <div class="flex items-start gap-3.5">
+                                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2/70 text-accent">
+                                    <x-ui.icon name="user" class="h-4 w-4" />
                                 </span>
                                 <div>
                                     <p class="guest-eyebrow">Dress code</p>
-                                    <p class="text-sm font-semibold text-ink">{{ $event->dress_code }}</p>
+                                    <p class="text-sm font-semibold text-ink mt-0.5">{{ $event->dress_code }}</p>
                                 </div>
                             </div>
                         @endif
@@ -344,16 +344,39 @@
             <!-- ASIDE COLUMN -->
             <aside class="mt-8 space-y-8 lg:mt-0">
 
-                <!-- Digital pass -->
-                @if (!$preview && $allowsGuestActions)
-                    <section class="card p-6 sm:p-8">
-                        <h2 class="section-kicker mb-3">Kartu Tamu Digital</h2>
-                        <p class="text-sm leading-relaxed text-muted">
-                            Simpan pass Anda dan tunjukkan QR-nya di meja registrasi saat kedatangan.
+                <!-- Digital pass (Luxury VIP Pass Card) -->
+                @if ((!$preview && $allowsGuestActions) || !empty($qrSvg))
+                    <section class="relative overflow-hidden rounded-2xl border border-accent/40 bg-surface p-6 sm:p-7 shadow-raised text-center">
+                        <div class="mx-auto mb-2 flex items-center justify-center gap-2">
+                            <span class="h-px w-6 bg-accent/40"></span>
+                            <span class="text-[10px] font-semibold uppercase tracking-[0.25em] text-accent">VIP Access Pass</span>
+                            <span class="h-px w-6 bg-accent/40"></span>
+                        </div>
+                        <h2 class="font-serif text-xl font-medium text-ink">Kartu Tamu Digital</h2>
+                        <p class="mt-1 text-xs leading-relaxed text-muted">
+                            Tunjukkan QR pass resmi ini kepada petugas saat tiba di lokasi resepsi.
                         </p>
-                        <a href="{{ route('guest.pass', $token) }}" class="mt-5 block w-full btn-primary text-center">
-                            <x-ui.icon name="qr" class="h-5 w-5" /> Buka pass
-                        </a>
+
+                        @if (!empty($qrSvg))
+                            <div class="relative mx-auto mt-4 flex w-fit items-center justify-center rounded-2xl border-2 border-accent/40 bg-white p-3.5 shadow-sm">
+                                <div class="absolute -top-1 -left-1 h-3 w-3 border-t-2 border-l-2 border-accent"></div>
+                                <div class="absolute -top-1 -right-1 h-3 w-3 border-t-2 border-r-2 border-accent"></div>
+                                <div class="absolute -bottom-1 -left-1 h-3 w-3 border-b-2 border-l-2 border-accent"></div>
+                                <div class="absolute -bottom-1 -right-1 h-3 w-3 border-b-2 border-r-2 border-accent"></div>
+                                <div class="h-44 w-44 [&>svg]:h-auto [&>svg]:w-full">{!! $qrSvg !!}</div>
+                            </div>
+                        @endif
+
+                        @if (!$preview && $token)
+                            <div class="mt-5 flex flex-col gap-2">
+                                <a href="{{ route('guest.pass', $token) }}" class="btn-primary py-2.5 text-center text-xs font-semibold">
+                                    <x-ui.icon name="qr" class="h-4 w-4" /> Buka Halaman Pass Lengkap
+                                </a>
+                                <a href="{{ route('guest.pass.download', $token) }}" class="btn-secondary py-2 text-center text-xs">
+                                    <x-ui.icon name="download" class="h-3.5 w-3.5" /> Unduh Pass (PNG)
+                                </a>
+                            </div>
+                        @endif
                     </section>
                 @endif
 

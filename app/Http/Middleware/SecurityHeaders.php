@@ -44,19 +44,54 @@ class SecurityHeaders
 
         $sensitive = $request->is(...$this->tokenPaths);
 
+        $scriptSrc = ["'self'", "'nonce-{$nonce}'", "'unsafe-eval'"];
+        $styleSrc = ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'];
+        $connectSrc = ["'self'"];
+
+        if (app()->environment('local')) {
+            $devHosts = [
+                'http://localhost:*',
+                'http://127.0.0.1:*',
+                'http://[::1]:*',
+            ];
+            $devWsHosts = [
+                'ws://localhost:*',
+                'ws://127.0.0.1:*',
+                'ws://[::1]:*',
+            ];
+
+            if (file_exists(public_path('hot'))) {
+                $hotUrl = trim((string) @file_get_contents(public_path('hot')));
+                if ($hotUrl !== '') {
+                    $devHosts[] = $hotUrl;
+                    $wsUrl = preg_replace('/^http:/i', 'ws:', $hotUrl);
+                    if ($wsUrl) {
+                        $devWsHosts[] = $wsUrl;
+                    }
+                }
+            }
+
+            $devHosts = array_values(array_unique($devHosts));
+            $devWsHosts = array_values(array_unique($devWsHosts));
+
+            $scriptSrc = array_merge($scriptSrc, $devHosts);
+            $styleSrc = array_merge($styleSrc, $devHosts);
+            $connectSrc = array_merge($connectSrc, $devHosts, $devWsHosts);
+        }
+
         $policy = implode('; ', [
             "default-src 'self'",
             "base-uri 'self'",
             "form-action 'self'",
             "frame-ancestors 'self'",
             "object-src 'none'",
-            "script-src 'self' 'nonce-{$nonce}' 'unsafe-eval'",
-            "style-src 'self' 'unsafe-inline'",
+            'script-src '.implode(' ', $scriptSrc),
+            'style-src '.implode(' ', $styleSrc),
             "img-src 'self' data: blob:",
-            "font-src 'self' data:",
+            "font-src 'self' data: https://fonts.gstatic.com",
             "media-src 'self'",
             "worker-src 'self' blob:",
-            "connect-src 'self'",
+            'connect-src '.implode(' ', $connectSrc),
             "manifest-src 'self'",
         ]);
 

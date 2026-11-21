@@ -13,18 +13,32 @@
     <div class="mt-6">
         <form method="POST" action="{{ route('admin.guests.store') }}" class="space-y-6">
             @csrf
-            <div>
+            <div x-data="{
+                selectedEvent: '{{ old('event_id', $guest->event_id ?? request('event_id')) }}',
+                events: @js($events->keyBy('id')->map(fn($e) => [
+                    'id' => $e->id,
+                    'name' => $e->name,
+                    'status' => $e->status->value,
+                    'is_past' => $e->endsAtUtc() && $e->endsAtUtc()->addDays(config('vowspace.tokens.qr_grace_days', 3))->isPast(),
+                ])),
+            }">
                 <label for="event_id" class="label">
-                    Event
+                    Pilih Acara / Event <span class="text-danger">*</span>
                 </label>
-                <select id="event_id" name="event_id" class="input" required>
+                <select id="event_id" name="event_id" class="input" required x-model="selectedEvent">
                     <option value="">Pilih event</option>
-                    @foreach ($events as $event)
-                        <option value="{{ $event->id }}" {{ request('event_id') == $event->id ? 'selected' : '' }}>
-                            {{ $event->name }}
+                    @foreach ($events as $eventOption)
+                        <option value="{{ $eventOption->id }}">
+                            {{ $eventOption->name }} [{{ $eventOption->status->label() }}] — {{ $eventOption->event_date?->translatedFormat('d M Y') }}
                         </option>
                     @endforeach
                 </select>
+
+                <template x-if="events[selectedEvent] && events[selectedEvent].is_past">
+                    <div class="mt-2.5 rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs text-warning-content">
+                        <strong>Perhatian:</strong> Acara ini telah selesai/melewati masa berlaku. Tamu yang dibuat untuk acara ini tidak akan memiliki QR pass check-in aktif. Pastikan memilih acara yang sedang aktif (Upcoming / Live) jika ingin tamu mendapatkan QR pass.
+                    </div>
+                </template>
             </div>
 
             <div>
