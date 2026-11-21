@@ -104,10 +104,8 @@
                                     $isOverdue = $task->isOverdue();
                                     $checklist = $task->checklistItems;
                                     $completedItems = $checklist->where('completed', true)->count();
-                                    $dependencyRecords = ($task->dependencies_count ?? 0) > 0
-                                        ? \App\Models\EventTaskDependency::query()->where('event_task_id', $task->id)->with('dependsOn')->get()
-                                        : collect();
-                                    $comments = $task->comments()->with('user')->latest()->limit(5)->get();
+                                    $dependencyRecords = $task->dependencyRecords;
+                                    $comments = $task->comments;
                                 @endphp
 
                                 <article class="card overflow-hidden animate-float-in">

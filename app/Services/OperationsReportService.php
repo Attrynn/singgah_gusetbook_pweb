@@ -39,6 +39,14 @@ class OperationsReportService
             $headers[] = 'Email';
         }
 
+        $openTaskCounts = EventTask::query()
+            ->where('event_id', $event->id)
+            ->whereNotNull('assigned_membership_id')
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->selectRaw('assigned_membership_id, COUNT(*) as aggregate')
+            ->groupBy('assigned_membership_id')
+            ->pluck('aggregate', 'assigned_membership_id');
+
         foreach ($memberships as $membership) {
             $stationNames = $membership->stationAssignments
                 ->whereNull('removed_at')
@@ -47,11 +55,7 @@ class OperationsReportService
                 ->unique()
                 ->join(', ');
 
-            $openTasks = EventTask::query()
-                ->where('event_id', $event->id)
-                ->where('assigned_membership_id', $membership->id)
-                ->whereNotIn('status', ['completed', 'cancelled'])
-                ->count();
+            $openTasks = (int) ($openTaskCounts[$membership->id] ?? 0);
 
             $row = [
                 $membership->user?->name ?? '—',

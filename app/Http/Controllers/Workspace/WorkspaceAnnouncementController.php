@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Workspace\Concerns\AssertsEventInOrganization;
 use App\Models\Event;
 use App\Models\EventAnnouncement;
+use App\Models\EventAnnouncementRecipient;
 use App\Models\EventStation;
 use App\Models\Organization;
 use App\Services\AnnouncementService;
@@ -43,12 +44,14 @@ class WorkspaceAnnouncementController extends Controller
             'organization' => $organization,
             'event' => $event,
             'announcements' => $announcements,
-            'progress' => $announcements->mapWithKeys(
-                fn (EventAnnouncement $announcement) => [$announcement->id => $this->announcements->progress($announcement)],
-            ),
-            'myRecipients' => $announcements
-                ->flatMap(fn (EventAnnouncement $announcement) => $announcement->recipients()->where('user_id', $user->id)->get())
-                ->keyBy('event_announcement_id'),
+            'progress' => $this->announcements->progressFor($announcements),
+            'myRecipients' => $announcements->isEmpty()
+                ? collect()
+                : EventAnnouncementRecipient::query()
+                    ->whereIn('event_announcement_id', $announcements->modelKeys())
+                    ->where('user_id', $user->id)
+                    ->get()
+                    ->keyBy('event_announcement_id'),
             'stations' => EventStation::query()->where('event_id', $event->id)->orderBy('name')->get(),
             'staff' => $event->staffMemberships()
                 ->with('user')

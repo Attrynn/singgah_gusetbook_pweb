@@ -93,6 +93,11 @@ class EventTask extends Model
         )->withTimestamps();
     }
 
+    public function dependencyRecords(): HasMany
+    {
+        return $this->hasMany(EventTaskDependency::class, 'event_task_id');
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

@@ -262,7 +262,9 @@ class StationService
      */
     public function coverage(EventStation $station): array
     {
-        $assigned = $station->activeAssignments()->count();
+        $assigned = $station->relationLoaded('activeAssignments')
+            ? $station->activeAssignments->count()
+            : $station->activeAssignments()->count();
         $hasSupervisor = $station->supervisor_membership_id !== null;
 
         $level = match (true) {

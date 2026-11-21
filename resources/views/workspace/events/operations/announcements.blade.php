@@ -6,6 +6,8 @@
     use App\Enums\AnnouncementAudience;
     use App\Enums\AnnouncementPriority;
     use App\Enums\AnnouncementStatus;
+    use App\Models\EventAnnouncement;
+    use App\Models\EventAnnouncementRecipient;
 
     $announcements = collect($announcements ?? []);
     $progress = collect($progress ?? []);

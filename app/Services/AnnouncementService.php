@@ -266,6 +266,43 @@ class AnnouncementService
     }
 
     /**
+     * Batched read/acknowledgement progress for a set of announcements, keyed by
+     * announcement id. Runs a single grouped query instead of three per row.
+     *
+     * @param  Collection<int, EventAnnouncement>  $announcements
+     * @return array<int, array{total:int, read:int, acknowledged:int}>
+     */
+    public function progressFor(Collection $announcements): array
+    {
+        $ids = $announcements->modelKeys();
+
+        if ($ids === []) {
+            return [];
+        }
+
+        $rows = EventAnnouncementRecipient::query()
+            ->whereIn('event_announcement_id', $ids)
+            ->selectRaw('event_announcement_id, COUNT(*) as total, SUM(read_at IS NOT NULL) as read_count, SUM(acknowledged_at IS NOT NULL) as ack_count')
+            ->groupBy('event_announcement_id')
+            ->get()
+            ->keyBy('event_announcement_id');
+
+        $progress = [];
+
+        foreach ($ids as $id) {
+            $row = $rows->get($id);
+
+            $progress[$id] = [
+                'total' => (int) ($row->total ?? 0),
+                'read' => (int) ($row->read_count ?? 0),
+                'acknowledged' => (int) ($row->ack_count ?? 0),
+            ];
+        }
+
+        return $progress;
+    }
+
+    /**
      * Server-side audience resolution. Client-supplied recipient lists are ignored.
      *
      * @return Collection<int, User>

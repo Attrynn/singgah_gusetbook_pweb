@@ -37,7 +37,14 @@ class WorkspaceTaskController extends Controller
         ]);
 
         $query = $this->tasks->visibleTasks($event, $request->user())
-            ->with(['assignee.user', 'station', 'runOfShowItem', 'checklistItems'])
+            ->with([
+                'assignee.user',
+                'station',
+                'runOfShowItem',
+                'checklistItems',
+                'dependencyRecords.dependsOn',
+                'comments' => fn ($q) => $q->with('user')->limit(5),
+            ])
             ->withCount(['dependencies']);
 
         if (! empty($filters['status'])) {
