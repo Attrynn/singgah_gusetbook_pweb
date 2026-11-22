@@ -106,7 +106,7 @@
                     End Time
                 </label>
                 <input id="end_time" type="time" name="end_time" value="{{ old('end_time') }}" class="input">
-                <p class="hint">Format: HH:MM</p>
+                <p class="hint">Format: HH:MM. Must be after the start time.</p>
             </div>
 
             <div>
@@ -118,9 +118,12 @@
 
             <div>
                 <label for="venue_address" class="label">
-                    Venue Address
+                    Venue Address <span class="text-danger">*</span>
                 </label>
-                <textarea id="venue_address" name="venue_address" rows="3" class="input">{{ old('venue_address') }}</textarea>
+                <textarea id="venue_address" name="venue_address" rows="3" class="input" required aria-invalid="true" aria-describedby="venue_address-error">{{ old('venue_address') }}</textarea>
+                @error('venue_address')
+                    <p id="venue_address-error" class="error-text">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
@@ -165,7 +168,7 @@
                 <select id="status" name="status" class="input" required>
                     <option value="">Pilih status</option>
                     @foreach (\App\Enums\EventStatus::cases() as $status)
-                        <option value="{{ $status->value }}" {{ request('status') == $status->value ? 'selected' : '' }}>
+                        <option value="{{ $status->value }}" @selected(old('status', $event->status?->value) === $status->value)>
                             {{ $status->label() }}
                         </option>
                     @endforeach
@@ -255,15 +258,6 @@
                     Owner Assignment
                 </p>
                 <div class="flex flex-col space-y-2">
-                    <div class="flex items-center gap-2">
-                        <input type="text" name="owner_ids[]" placeholder="Cari owner..." class="input w-64" aria-label="Cari owner">
-                        <select name="owner_roles[]" class="input w-48" aria-label="Pilih role">
-                            <option value="">Pilih role</option>
-                            <option value="groom">Groom</option>
-                            <option value="bride">Bride</option>
-                            <option value="partner">Partner</option>
-                        </select>
-                    </div>
                     @forelse ($owners as $owner)
                         <div class="flex items-center gap-2">
                             <input id="owner-{{ $owner->id }}" type="checkbox" name="owner_ids[]" value="{{ $owner->id }}" {{ in_array($owner->id, old('owner_ids', [])) ? 'checked' : '' }}>
@@ -276,15 +270,7 @@
                             </select>
                         </div>
                     @empty
-                        <div class="flex items-center gap-2">
-                            <input type="text" name="owner_ids[]" placeholder="Cari owner..." class="input w-64" aria-label="Cari owner">
-                            <select name="owner_roles[]" class="input w-48" aria-label="Pilih role">
-                                <option value="">Pilih role</option>
-                                <option value="groom">Groom</option>
-                                <option value="bride">Bride</option>
-                                <option value="partner">Partner</option>
-                            </select>
-                        </div>
+                        <p class="text-xs text-muted">Belum ada pengguna dengan peran Owner. Tambahkan peran Owner terlebih dahulu.</p>
                     @endforelse
                 </div>
             </div>

@@ -216,4 +216,32 @@ class AdminCrudTest extends TestCase
             ])
             ->assertForbidden();
     }
+
+    public function test_event_create_form_only_submits_integer_owner_ids(): void
+    {
+        $admin = User::factory()->superadmin()->create();
+        User::factory()->owner()->create(['is_active' => true]);
+
+        $response = $this->actingAs($admin)->get(route('admin.events.create'));
+
+        $response->assertOk();
+        // Owner selection must only submit integer ids via checkboxes. A stray
+        // free-text "Cari owner..." input used to post an empty string into
+        // owner_ids[] and fail with "owner_ids.0 must be an integer".
+        $this->assertStringNotContainsString('type="text" name="owner_ids[]"', $response->getContent());
+        $this->assertStringContainsString('type="checkbox" name="owner_ids[]"', $response->getContent());
+    }
+
+    public function test_event_edit_form_only_submits_integer_owner_ids(): void
+    {
+        $admin = User::factory()->superadmin()->create();
+        User::factory()->owner()->create(['is_active' => true]);
+        $event = $this->makeEvent();
+
+        $response = $this->actingAs($admin)->get(route('admin.events.edit', $event));
+
+        $response->assertOk();
+        $this->assertStringNotContainsString('type="text" name="owner_ids[]"', $response->getContent());
+        $this->assertStringContainsString('type="checkbox" name="owner_ids[]"', $response->getContent());
+    }
 }
